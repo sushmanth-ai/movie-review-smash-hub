@@ -4,8 +4,8 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Heart, MessageCircle, Share2, Send } from 'lucide-react';
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, updateDoc, doc, increment, getDocs, Timestamp } from 'firebase/firestore';
+import { initializeApp, getApps } from 'firebase/app';
+import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, updateDoc, doc, increment, getDocs, Timestamp, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 
 // Firebase configuration - your actual config
@@ -20,8 +20,8 @@ const firebaseConfig = {
   measurementId: "G-CXB0LNYWFH"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Initialize Firebase only if no apps exist
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const db = getFirestore(app);
 
 interface MovieReview {
@@ -202,16 +202,21 @@ const Index = () => {
   const handleLike = async (reviewId: string) => {
     try {
       const reviewRef = doc(db, 'likes', reviewId);
-      await updateDoc(reviewRef, {
-        count: increment(1)
-      }).catch(async () => {
+      
+      // Try to update first, if it fails, create the document
+      try {
+        await updateDoc(reviewRef, {
+          count: increment(1)
+        });
+      } catch (error) {
         // Document doesn't exist, create it
-        await addDoc(collection(db, 'likes'), {
+        await setDoc(reviewRef, {
           reviewId: reviewId,
           count: 1
         });
-      });
+      }
       
+      // Update local state
       setReviews(prev => prev.map(review => 
         review.id === reviewId 
           ? { ...review, likes: review.likes + 1 }
@@ -223,6 +228,7 @@ const Index = () => {
         description: "Your like has been recorded.",
       });
     } catch (error) {
+      console.error('Error liking post:', error);
       // For demo purposes, update locally
       setReviews(prev => prev.map(review => 
         review.id === reviewId 
@@ -232,7 +238,7 @@ const Index = () => {
       
       toast({
         title: "Liked! (Demo Mode)",
-        description: "Like recorded locally - Firebase not connected.",
+        description: "Like recorded locally - Firebase connection issue.",
       });
     }
   };
@@ -251,7 +257,9 @@ const Index = () => {
     try {
       await addDoc(collection(db, 'comments'), {
         reviewId,
-        ...comment
+        text: comment.text,
+        timestamp: comment.timestamp,
+        author: comment.author
       });
 
       toast({
@@ -259,8 +267,9 @@ const Index = () => {
         description: "Your comment has been posted.",
       });
     } catch (error) {
-      console.log('Demo mode: comment added locally');
+      console.error('Error adding comment:', error);
       
+      // Add comment locally for demo
       setReviews(prev => prev.map(review => 
         review.id === reviewId 
           ? { ...review, comments: [comment, ...review.comments] }
@@ -269,10 +278,11 @@ const Index = () => {
 
       toast({
         title: "Comment added! (Demo Mode)",
-        description: "Comment saved locally - Firebase not connected.",
+        description: "Comment saved locally - Firebase connection issue.",
       });
     }
 
+    // Clear the input
     setNewComment(prev => ({ ...prev, [reviewId]: '' }));
   };
 
@@ -291,7 +301,9 @@ const Index = () => {
           description: "Review shared successfully.",
         });
       } catch (error) {
-        console.log('Sharing cancelled');
+        if (error instanceof Error && error.name !== 'AbortError') {
+          console.log('Sharing cancelled or failed');
+        }
       }
     } else {
       // Fallback to copying URL
@@ -302,9 +314,10 @@ const Index = () => {
           description: "Review details copied to clipboard.",
         });
       } catch (error) {
+        console.error('Copy failed:', error);
         toast({
           title: "Share",
-          description: `${shareData.title}\n${shareData.text}`,
+          description: `${shareData.title}: ${shareData.text}`,
         });
       }
     }
