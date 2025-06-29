@@ -1,21 +1,22 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Heart, MessageCircle, Share2, Send } from 'lucide-react';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, updateDoc, doc, increment } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, updateDoc, doc, increment, getDocs } from 'firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
 
-// Firebase configuration - you'll need to replace with your own config
+// Firebase configuration - your actual config
 const firebaseConfig = {
-  // Add your Firebase config here
-  apiKey: "your-api-key",
-  authDomain: "your-project.firebaseapp.com",
-  projectId: "your-project-id",
-  storageBucket: "your-project.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "your-app-id"
+  apiKey: "AIzaSyBgw0O4B_NbCvGfxOzSgEtNNYYYLoxFpic",
+  authDomain: "clgsm-90aa8.firebaseapp.com",
+  databaseURL: "https://clgsm-90aa8-default-rtdb.firebaseio.com",
+  projectId: "clgsm-90aa8",
+  storageBucket: "clgsm-90aa8.firebasestorage.app",
+  messagingSenderId: "599942427925",
+  appId: "1:599942427925:web:b65c4ca2b4537c0fa7e51c",
+  measurementId: "G-CXB0LNYWFH"
 };
 
 // Initialize Firebase
@@ -49,6 +50,7 @@ const Index = () => {
   const [reviews, setReviews] = useState<MovieReview[]>([]);
   const [newComment, setNewComment] = useState<{ [key: string]: string }>({});
   const [showComments, setShowComments] = useState<{ [key: string]: boolean }>({});
+  const { toast } = useToast();
 
   // Movie reviews data
   const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [
@@ -127,20 +129,79 @@ const Index = () => {
   ];
 
   useEffect(() => {
-    // Initialize reviews with Firebase data
+    initializeReviews();
+    loadLikes();
+    loadComments();
+  }, []);
+
+  const initializeReviews = async () => {
     const reviewsWithInteractions: MovieReview[] = movieReviewsData.map(review => ({
       ...review,
       likes: 0,
       comments: []
     }));
     setReviews(reviewsWithInteractions);
-  }, []);
+  };
+
+  const loadLikes = async () => {
+    try {
+      const likesQuery = query(collection(db, 'likes'));
+      const likesSnapshot = await getDocs(likesQuery);
+      const likesData: { [key: string]: number } = {};
+      
+      likesSnapshot.forEach((doc) => {
+        likesData[doc.id] = doc.data().count || 0;
+      });
+
+      setReviews(prev => prev.map(review => ({
+        ...review,
+        likes: likesData[review.id] || 0
+      })));
+    } catch (error) {
+      console.log('Loading likes locally for demo');
+    }
+  };
+
+  const loadComments = async () => {
+    try {
+      const commentsQuery = query(collection(db, 'comments'), orderBy('timestamp', 'desc'));
+      onSnapshot(commentsQuery, (snapshot) => {
+        const commentsData: { [key: string]: Comment[] } = {};
+        
+        snapshot.forEach((doc) => {
+          const comment = doc.data() as Comment & { reviewId: string };
+          if (!commentsData[comment.reviewId]) {
+            commentsData[comment.reviewId] = [];
+          }
+          commentsData[comment.reviewId].push({
+            id: doc.id,
+            text: comment.text,
+            timestamp: comment.timestamp.toDate ? comment.timestamp.toDate() : new Date(comment.timestamp),
+            author: comment.author
+          });
+        });
+
+        setReviews(prev => prev.map(review => ({
+          ...review,
+          comments: commentsData[review.id] || []
+        })));
+      });
+    } catch (error) {
+      console.log('Loading comments locally for demo');
+    }
+  };
 
   const handleLike = async (reviewId: string) => {
     try {
-      const reviewRef = doc(db, 'reviews', reviewId);
+      const reviewRef = doc(db, 'likes', reviewId);
       await updateDoc(reviewRef, {
-        likes: increment(1)
+        count: increment(1)
+      }).catch(async () => {
+        // Document doesn't exist, create it
+        await addDoc(collection(db, 'likes'), {
+          reviewId: reviewId,
+          count: 1
+        });
       });
       
       setReviews(prev => prev.map(review => 
@@ -148,6 +209,11 @@ const Index = () => {
           ? { ...review, likes: review.likes + 1 }
           : review
       ));
+
+      toast({
+        title: "Liked!",
+        description: "Your like has been recorded.",
+      });
     } catch (error) {
       // For demo purposes, update locally
       setReviews(prev => prev.map(review => 
@@ -155,6 +221,11 @@ const Index = () => {
           ? { ...review, likes: review.likes + 1 }
           : review
       ));
+      
+      toast({
+        title: "Liked! (Demo Mode)",
+        description: "Like recorded locally - Firebase not connected.",
+      });
     }
   };
 
@@ -174,34 +245,60 @@ const Index = () => {
         reviewId,
         ...comment
       });
+
+      toast({
+        title: "Comment added!",
+        description: "Your comment has been posted.",
+      });
     } catch (error) {
       console.log('Demo mode: comment added locally');
-    }
+      
+      setReviews(prev => prev.map(review => 
+        review.id === reviewId 
+          ? { ...review, comments: [comment, ...review.comments] }
+          : review
+      ));
 
-    setReviews(prev => prev.map(review => 
-      review.id === reviewId 
-        ? { ...review, comments: [...review.comments, comment] }
-        : review
-    ));
+      toast({
+        title: "Comment added! (Demo Mode)",
+        description: "Comment saved locally - Firebase not connected.",
+      });
+    }
 
     setNewComment(prev => ({ ...prev, [reviewId]: '' }));
   };
 
   const handleShare = async (review: MovieReview) => {
-    if (navigator.share) {
+    const shareData = {
+      title: `SM Review: ${review.title}`,
+      text: `Check out this movie review of ${review.title}: ${review.overall}`,
+      url: window.location.href
+    };
+
+    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
       try {
-        await navigator.share({
-          title: `SM Review: ${review.title}`,
-          text: `Check out this movie review: ${review.overall}`,
-          url: window.location.href
+        await navigator.share(shareData);
+        toast({
+          title: "Shared!",
+          description: "Review shared successfully.",
         });
       } catch (error) {
         console.log('Sharing cancelled');
       }
     } else {
       // Fallback to copying URL
-      navigator.clipboard.writeText(window.location.href);
-      alert('Review link copied to clipboard!');
+      try {
+        await navigator.clipboard.writeText(`${shareData.title}\n${shareData.text}\n${shareData.url}`);
+        toast({
+          title: "Copied!",
+          description: "Review details copied to clipboard.",
+        });
+      } catch (error) {
+        toast({
+          title: "Share",
+          description: `${shareData.title}\n${shareData.text}`,
+        });
+      }
     }
   };
 
@@ -326,6 +423,7 @@ const Index = () => {
                         value={newComment[review.id] || ''}
                         onChange={(e) => setNewComment(prev => ({ ...prev, [review.id]: e.target.value }))}
                         className="flex-1 bg-gray-800 border-gray-600 text-white"
+                        onKeyPress={(e) => e.key === 'Enter' && handleComment(review.id)}
                       />
                       <Button
                         size="sm"
@@ -340,7 +438,9 @@ const Index = () => {
                       {review.comments.map((comment) => (
                         <div key={comment.id} className="bg-gray-800 p-2 rounded text-sm">
                           <p className="text-gray-300">{comment.text}</p>
-                          <p className="text-xs text-gray-500 mt-1">{comment.author}</p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {comment.author} • {comment.timestamp.toLocaleString()}
+                          </p>
                         </div>
                       ))}
                     </div>
