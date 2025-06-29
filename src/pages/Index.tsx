@@ -1,10 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Heart, MessageCircle, Share2, Send } from 'lucide-react';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, updateDoc, doc, increment, getDocs } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, updateDoc, doc, increment, getDocs, Timestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 
 // Firebase configuration - your actual config
@@ -169,20 +170,23 @@ const Index = () => {
         const commentsData: { [key: string]: Comment[] } = {};
         
         snapshot.forEach((doc) => {
-          const comment = doc.data() as Comment & { reviewId: string };
+          const commentData = doc.data();
+          const comment: Comment & { reviewId: string } = {
+            id: doc.id,
+            text: commentData.text,
+            timestamp: commentData.timestamp instanceof Timestamp 
+              ? commentData.timestamp.toDate() 
+              : commentData.timestamp instanceof Date 
+                ? commentData.timestamp 
+                : new Date(),
+            author: commentData.author,
+            reviewId: commentData.reviewId
+          };
+          
           if (!commentsData[comment.reviewId]) {
             commentsData[comment.reviewId] = [];
           }
-          commentsData[comment.reviewId].push({
-            id: doc.id,
-            text: comment.text,
-            timestamp: comment.timestamp && typeof comment.timestamp.toDate === 'function' 
-              ? comment.timestamp.toDate() 
-              : comment.timestamp instanceof Date 
-                ? comment.timestamp 
-                : new Date(comment.timestamp),
-            author: comment.author
-          });
+          commentsData[comment.reviewId].push(comment);
         });
 
         setReviews(prev => prev.map(review => ({
