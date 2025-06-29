@@ -176,7 +176,11 @@ const Index = () => {
           commentsData[comment.reviewId].push({
             id: doc.id,
             text: comment.text,
-            timestamp: comment.timestamp.toDate ? comment.timestamp.toDate() : new Date(comment.timestamp),
+            timestamp: comment.timestamp && typeof comment.timestamp.toDate === 'function' 
+              ? comment.timestamp.toDate() 
+              : comment.timestamp instanceof Date 
+                ? comment.timestamp 
+                : new Date(comment.timestamp),
             author: comment.author
           });
         });
