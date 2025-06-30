@@ -56,16 +56,14 @@ const Index = () => {
 
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-      {/* Fixed Header */}
-      <div className="fixed top-0 left-0 w-full bg-white z-50 p-4 shadow-lg border-b">
-        <h1 className="text-center text-2xl font-bold mb-4" style={{
-         
-          background: #E589A9;
-          background: linear-gradient(135deg, #E589A9, #E52042);
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text'
-        }}>
+      {/* Fixed Header with Gradient Background */}
+      <div
+        className="fixed top-0 left-0 w-full z-50 p-4 shadow-lg border-b"
+        style={{
+          background: 'linear-gradient(135deg, #E589A9, #E52042)',
+        }}
+      >
+        <h1 className="text-center text-2xl font-bold mb-4 text-white">
           WELCOME TO SM REVIEW 2.0
         </h1>
         <div className="flex gap-2 mb-4">
@@ -76,13 +74,8 @@ const Index = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          
         </div>
-        {likedReviews.size > 0 && (
-          <p className="text-sm text-gray-600 text-center">
-            You have liked {likedReviews.size} review{likedReviews.size !== 1 ? 's' : ''}
-          </p>
-        )}
+        
       </div>
 
       {/* Main Content */}
