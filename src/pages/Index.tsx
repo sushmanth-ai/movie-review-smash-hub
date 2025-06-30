@@ -74,14 +74,7 @@ const Index = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <Button 
-            onClick={clearLikedReviews}
-            variant="outline"
-            size="sm"
-            className="whitespace-nowrap"
-          >
-            Clear Likes
-          </Button>
+          
         </div>
         {likedReviews.size > 0 && (
           <p className="text-sm text-gray-600 text-center">
