@@ -58,23 +58,23 @@ export const MovieCard: React.FC<MovieCardProps> = ({
         }}>
           REVIEW
         </h5>
-        <p className="text-pink-400 font-bold text-sm">{review.review}</p>
+        <p className="text-pink-700 font-bold text-sm">{review.review}</p>
         
         <div className="space-y-2">
           <h6 className="text-red-500 font-semibold">First Half:</h6>
-          <p className="text-orange-700 font-bold text-sm">{review.firstHalf}</p>
+          <p className="text-lightpink-700 font-bold text-sm">{review.firstHalf}</p>
           
           <h6 className="text-red-500 font-semibold">Second Half:</h6>
-          <p className="text-orange-700 font-bold text-sm">{review.secondHalf}</p>
+          <p className="text-lightpink-700 font-bold text-sm">{review.secondHalf}</p>
           
           <h6 className="text-red-500 font-semibold">Positives:</h6>
-          <p className="text-orange-700 font-bold text-sm">{review.positives}</p>
+          <p className="text-lightpink-700 font-bold text-sm">{review.positives}</p>
           
           <h6 className="text-red-500 font-semibold">Negatives:</h6>
-          <p className="text-orange-700 font-bold text-sm">{review.negatives}</p>
+          <p className="text-lightpink-700 font-bold text-sm">{review.negatives}</p>
           
           <h6 className="text-red-500 font-semibold">Overall Movie:</h6>
-          <p className="text-orange-700 font-bold text-sm">{review.overall}</p>
+          <p className="text-lightpink-700 font-bold text-sm">{review.overall}</p>
         </div>
 
         <InteractionButtons
@@ -98,16 +98,22 @@ export const MovieCard: React.FC<MovieCardProps> = ({
       <CardFooter 
         className="text-center rounded-b-lg" 
         style={{
-          background: 'linear-gradient(164deg, rgba(238, 174, 202, 1) 0%, rgba(160, 148, 233, 0.8960376386882878) 100%)'
+          background: 'linear-gradient(164deg, rgba(238, 174, 202, 1) 0%, rgba(160, 148, 233, 0.896) 100%)'
         }}
       >
         <div className="w-full">
-          <h1 className="text-lg font-bold text-black mb-2 mt-1 text-pink">SM RATING</h1>
+          <h1 className="text-lg font-bold text-black mb-2 mt-1">SM RATING</h1>
           <div className="flex justify-center">
-            <div className="text-center">
-              <p className="p-2 mt-2 font-bold text-gold">
-                {review.rating}
-              </p>
+            <div
+              className="px-4 py-2 rounded-md font-bold text-black"
+              style={{
+                background: 'linear-gradient(135deg, #FFD700, #FFA500)', // Gold gradient
+                boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+                minWidth: '60px',
+                textAlign: 'center'
+              }}
+            >
+              {review.rating}
             </div>
           </div>
         </div>
