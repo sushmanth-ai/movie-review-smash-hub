@@ -35,6 +35,18 @@ export const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [
     rating: '2.8 STARS'
   },
   {
+    id: 'kannappa',
+    title: 'KANNAPPA',
+    image: 'https://moviemonarch.in/wp-content/uploads/2025/06/Kannappa-Movie-Review.jpg',
+    review: 'kannappa Movie ela vundho detail review lo chudham',
+    firstHalf: 'Movie vishyaniki vaste...we enjoyed a lot sir 🤣🤣..ee madhya kaalam lo Nenu inthala eppudu navuko ledu..idhi Eyy context lo tisukuntaro mee oohake vadilestunanu...aa dialogues aa scenes,aa casting naa booto naa bavishatu...',
+    secondHalf: 'First 30 Min Bore kotttadhi.... Prabhas scenes and Shiva Shiva Shankar song and climax baguntadhi ante...Inka em ledu cheppadaniki....',
+    positives: 'Prabhas,shiva shiva shankara song..climax',
+    negatives: 'ilogical scenes and songs..artficial drama and emotions..dilogue delivery what not everthing',
+    overall: "it's Below Average",
+    rating: '2.8 STARS'
+  },
+  {
     id: 'kubera',
     title: 'KUBERA',
     image: 'https://www.pinkvilla.com/images/2024-09/1594720010_kubera-poster.jpg',
