@@ -51,8 +51,11 @@ export const MovieCard: React.FC<MovieCardProps> = ({
 
       <CardContent className="space-y-4">
         <h5 className="text-center font-bold" style={{
-          background: linear-gradient(45deg, #ff7e5f, #feb47b);
-          width: 100%;
+          background: 'linear-gradient(45deg, #ff7e5f, #feb47b)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
+          margin: '10px'
         }}>
           REVIEW
         </h5>
