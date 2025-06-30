@@ -58,23 +58,32 @@ export const MovieCard: React.FC<MovieCardProps> = ({
         }}>
           REVIEW
         </h5>
-        <p className="text-pink-700 font-bold text-sm">{review.review}</p>
-        
+
+        <p className="font-bold text-base" style={{
+          background: 'linear-gradient(45deg, #ff7e5f, #feb47b)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
+          color: 'transparent'
+        }}>
+          {review.review}
+        </p>
+
         <div className="space-y-2">
           <h6 className="text-red-500 font-semibold">First Half:</h6>
-          <p className="text-lightpink-700 font-bold text-sm">{review.firstHalf}</p>
-          
+          <p className="text-pink-500 font-bold text-base">{review.firstHalf}</p>
+
           <h6 className="text-red-500 font-semibold">Second Half:</h6>
-          <p className="text-lightpink-700 font-bold text-sm">{review.secondHalf}</p>
-          
+          <p className="text-pink-500 font-bold text-base">{review.secondHalf}</p>
+
           <h6 className="text-red-500 font-semibold">Positives:</h6>
-          <p className="text-lightpink-700 font-bold text-sm">{review.positives}</p>
-          
+          <p className="text-pink-500 font-bold text-base">{review.positives}</p>
+
           <h6 className="text-red-500 font-semibold">Negatives:</h6>
-          <p className="text-lightpink-700 font-bold text-sm">{review.negatives}</p>
-          
+          <p className="text-pink-500 font-bold text-base">{review.negatives}</p>
+
           <h6 className="text-red-500 font-semibold">Overall Movie:</h6>
-          <p className="text-lightpink-700 font-bold text-sm">{review.overall}</p>
+          <p className="text-pink-500 font-bold text-base">{review.overall}</p>
         </div>
 
         <InteractionButtons
@@ -86,12 +95,39 @@ export const MovieCard: React.FC<MovieCardProps> = ({
         />
 
         {showComments && (
-          <CommentSection
-            review={review}
-            newComment={newComment}
-            onCommentChange={(value) => onCommentChange(review.id, value)}
-            onCommentSubmit={() => onCommentSubmit(review.id)}
-          />
+          <div className="mt-4 space-y-2">
+            <h4 className="text-pink-400 font-bold">User Comments</h4>
+            {review.comments.map((comment, index) => (
+              <div
+                key={index}
+                className={`mb-2 px-3 py-2 rounded-lg text-sm font-semibold ${
+                  comment.isUser
+                    ? 'bg-pink-100 text-pink-800 border border-pink-400'
+                    : 'bg-gray-100 text-black'
+                }`}
+              >
+                {comment.text}
+                {comment.isUser && (
+                  <span className="ml-2 text-xs text-pink-600 font-bold">You</span>
+                )}
+              </div>
+            ))}
+
+            {/* Comment Input */}
+            <input
+              type="text"
+              value={newComment}
+              onChange={(e) => onCommentChange(review.id, e.target.value)}
+              className="w-full p-2 text-sm rounded-md text-black border"
+              placeholder="Add a comment..."
+            />
+            <button
+              onClick={() => onCommentSubmit(review.id)}
+              className="mt-2 bg-pink-600 hover:bg-pink-700 text-white px-3 py-1 rounded-md text-sm font-bold"
+            >
+              Submit
+            </button>
+          </div>
         )}
       </CardContent>
 
@@ -105,10 +141,9 @@ export const MovieCard: React.FC<MovieCardProps> = ({
           <h1 className="text-lg font-bold text-black mb-2 mt-1">SM RATING</h1>
           <div className="flex justify-center">
             <div
-              className="px-4 py-2 rounded-md font-bold text-black"
+              className="px-4 py-2 rounded-md font-bold text-black animate-pulse-rating"
               style={{
-                background: 'linear-gradient(135deg, #FFD700, #FFA500)', // Gold gradient
-                boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+                background: 'linear-gradient(135deg, #FFD700, #FFA500)',
                 minWidth: '60px',
                 textAlign: 'center'
               }}
