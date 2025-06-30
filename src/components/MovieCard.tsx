@@ -62,19 +62,19 @@ export const MovieCard: React.FC<MovieCardProps> = ({
         
         <div className="space-y-2">
           <h6 className="text-red-500 font-semibold">First Half:</h6>
-          <p className="text-pink-400 font-bold text-sm">{review.firstHalf}</p>
+          <p className="text-orange-700 font-bold text-sm">{review.firstHalf}</p>
           
           <h6 className="text-red-500 font-semibold">Second Half:</h6>
-          <p className="text-pink-400 font-bold text-sm">{review.secondHalf}</p>
+          <p className="text-orange-700 font-bold text-sm">{review.secondHalf}</p>
           
           <h6 className="text-red-500 font-semibold">Positives:</h6>
-          <p className="text-pink-400 font-bold text-sm">{review.positives}</p>
+          <p className="text-orange-700 font-bold text-sm">{review.positives}</p>
           
           <h6 className="text-red-500 font-semibold">Negatives:</h6>
-          <p className="text-pink-400 font-bold text-sm">{review.negatives}</p>
+          <p className="text-orange-700 font-bold text-sm">{review.negatives}</p>
           
           <h6 className="text-red-500 font-semibold">Overall Movie:</h6>
-          <p className="text-pink-400 font-bold text-sm">{review.overall}</p>
+          <p className="text-orange-700 font-bold text-sm">{review.overall}</p>
         </div>
 
         <InteractionButtons
@@ -102,10 +102,10 @@ export const MovieCard: React.FC<MovieCardProps> = ({
         }}
       >
         <div className="w-full">
-          <h1 className="text-lg font-bold text-black mb-2">SM RATING</h1>
+          <h1 className="text-lg font-bold text-black mb-2 mt-1 text-pink">SM RATING</h1>
           <div className="flex justify-center">
             <div className="text-center">
-              <p className="p-2 mt-2 font-bold text-black">
+              <p className="p-2 mt-2 font-bold text-gold">
                 {review.rating}
               </p>
             </div>
