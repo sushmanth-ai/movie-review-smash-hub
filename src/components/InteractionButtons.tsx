@@ -1,7 +1,20 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Heart, MessageCircle, Share2 } from 'lucide-react';
 import { MovieReview } from '@/data/movieReviews';
+import {
+  getFirestore,
+  doc,
+  updateDoc,
+  increment,
+  getDoc,
+  setDoc,
+  deleteDoc,
+} from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
+
+const db = getFirestore();
+const auth = getAuth();
 
 interface InteractionButtonsProps {
   review: MovieReview;
@@ -66,19 +79,64 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
   const [likes, setLikes] = useState(review.likes);
   const [liked, setLiked] = useState(false);
 
-  const handleLike = (reviewId: string) => {
-    if (liked) {
-      setLikes(likes - 1);
-    } else {
-      setLikes(likes + 1);
+  useEffect(() => {
+    const fetchLikedStatus = async () => {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const likeDocRef = doc(db, `reviews/${review.id}/likes`, user.uid);
+      const likeSnap = await getDoc(likeDocRef);
+      if (likeSnap.exists()) {
+        setLiked(true);
+      }
+    };
+
+    fetchLikedStatus();
+  }, [review.id]);
+
+  const handleLike = async (reviewId: string) => {
+    const user = auth.currentUser;
+    if (!user) return alert('Please log in to like reviews');
+
+    const likeDocRef = doc(db, `reviews/${reviewId}/likes`, user.uid);
+    const reviewDocRef = doc(db, 'reviews', reviewId);
+
+    const likeSnap = await getDoc(likeDocRef);
+    const alreadyLiked = likeSnap.exists();
+
+    try {
+      if (alreadyLiked) {
+        await deleteDoc(likeDocRef);
+        await updateDoc(reviewDocRef, {
+          likes: increment(-1),
+        });
+        setLiked(false);
+        setLikes((prev) => prev - 1);
+      } else {
+        await setDoc(likeDocRef, {
+          liked: true,
+          userId: user.uid,
+          timestamp: Date.now(),
+        });
+        await updateDoc(reviewDocRef, {
+          likes: increment(1),
+        });
+        setLiked(true);
+        setLikes((prev) => prev + 1);
+      }
+    } catch (error) {
+      console.error('Error updating like:', error);
     }
-    setLiked(!liked);
   };
 
   return (
     <div className="bg-gray-800 p-4 rounded-xl shadow-md text-white mb-4">
       <h2 className="text-xl font-bold mb-2">{review.title}</h2>
-      <img src={review.image} alt={review.title} className="w-full h-48 object-cover rounded-md mb-4" />
+      <img
+        src={review.image}
+        alt={review.title}
+        className="w-full h-48 object-cover rounded-md mb-4"
+      />
       <p className="mb-2">{review.review}</p>
       <p className="text-sm text-gray-300">Rating: {review.rating}</p>
 
