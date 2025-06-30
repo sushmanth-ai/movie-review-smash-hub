@@ -1,6 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { MovieReview, movieReviewsData } from '@/data/movieReviews';
 import { useFirebaseOperations } from '@/hooks/useFirebaseOperations';
 import { MovieCard } from '@/components/MovieCard';
@@ -11,7 +11,15 @@ const Index = () => {
   const [newComment, setNewComment] = useState<{ [key: string]: string }>({});
   const [showComments, setShowComments] = useState<{ [key: string]: boolean }>({});
   
-  const { loadLikes, loadComments, handleLike, handleComment, handleShare } = useFirebaseOperations();
+  const { 
+    loadLikes, 
+    loadComments, 
+    handleLike, 
+    handleComment, 
+    handleShare, 
+    likedReviews,
+    clearLikedReviews 
+  } = useFirebaseOperations();
 
   useEffect(() => {
     initializeReviews();
@@ -58,17 +66,32 @@ const Index = () => {
         }}>
           WELCOME TO SM REVIEW 2.0
         </h1>
-        <Input
-          type="text"
-          placeholder="Search for movie Reviews..."
-          className="w-full bg-gray-100"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+        <div className="flex gap-2 mb-4">
+          <Input
+            type="text"
+            placeholder="Search for movie Reviews..."
+            className="flex-1 bg-gray-100"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <Button 
+            onClick={clearLikedReviews}
+            variant="outline"
+            size="sm"
+            className="whitespace-nowrap"
+          >
+            Clear Likes
+          </Button>
+        </div>
+        {likedReviews.size > 0 && (
+          <p className="text-sm text-gray-600 text-center">
+            You have liked {likedReviews.size} review{likedReviews.size !== 1 ? 's' : ''}
+          </p>
+        )}
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 pt-32 pb-8">
+      <div className="container mx-auto px-4 pt-40 pb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredReviews.map((review) => (
             <MovieCard
@@ -81,6 +104,7 @@ const Index = () => {
               onShare={handleShare}
               onCommentChange={handleCommentChange}
               onCommentSubmit={handleCommentSubmit}
+              isLiked={likedReviews.has(review.id)}
             />
           ))}
         </div>

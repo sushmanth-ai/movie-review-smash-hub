@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { collection, addDoc, query, orderBy, onSnapshot, updateDoc, doc, increment, getDocs, Timestamp, setDoc } from 'firebase/firestore';
 import { db } from '@/utils/firebase';
@@ -8,6 +7,28 @@ import { useToast } from '@/hooks/use-toast';
 export const useFirebaseOperations = () => {
   const { toast } = useToast();
   const [likedReviews, setLikedReviews] = useState<Set<string>>(new Set());
+
+  // Load liked reviews from localStorage on component mount
+  useEffect(() => {
+    const savedLikedReviews = localStorage.getItem('likedReviews');
+    if (savedLikedReviews) {
+      try {
+        const likedArray = JSON.parse(savedLikedReviews);
+        setLikedReviews(new Set(likedArray));
+      } catch (error) {
+        console.error('Error parsing liked reviews from localStorage:', error);
+      }
+    }
+  }, []);
+
+  // Save liked reviews to localStorage whenever it changes
+  const saveLikedReviewsToStorage = (newLikedReviews: Set<string>) => {
+    try {
+      localStorage.setItem('likedReviews', JSON.stringify(Array.from(newLikedReviews)));
+    } catch (error) {
+      console.error('Error saving liked reviews to localStorage:', error);
+    }
+  };
 
   const loadLikes = async (setReviews: React.Dispatch<React.SetStateAction<MovieReview[]>>) => {
     if (!db) return;
@@ -78,12 +99,17 @@ export const useFirebaseOperations = () => {
       toast({
         title: "Already Liked",
         description: "You have already liked this review.",
+        variant: "destructive"
       });
       return;
     }
 
     // Add to liked reviews set
-    setLikedReviews(prev => new Set([...prev, reviewId]));
+    const newLikedReviews = new Set([...likedReviews, reviewId]);
+    setLikedReviews(newLikedReviews);
+    
+    // Save to localStorage immediately
+    saveLikedReviewsToStorage(newLikedReviews);
     
     // Update local state immediately for instant feedback
     setReviews(prev => prev.map(review => 
@@ -138,6 +164,7 @@ export const useFirebaseOperations = () => {
       toast({
         title: "Error",
         description: "Please enter a comment before submitting.",
+        variant: "destructive"
       });
       return;
     }
@@ -148,6 +175,7 @@ export const useFirebaseOperations = () => {
       toast({
         title: "Error",
         description: "Please enter your name to post a comment.",
+        variant: "destructive"
       });
       return;
     }
@@ -250,11 +278,23 @@ export const useFirebaseOperations = () => {
     }
   };
 
+  // Function to clear all liked reviews (for testing purposes)
+  const clearLikedReviews = () => {
+    setLikedReviews(new Set());
+    localStorage.removeItem('likedReviews');
+    toast({
+      title: "Cleared",
+      description: "All liked reviews have been cleared.",
+    });
+  };
+
   return {
     loadLikes,
     loadComments,
     handleLike,
     handleComment,
-    handleShare
+    handleShare,
+    likedReviews,
+    clearLikedReviews
   };
 };

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { MovieReview } from '@/data/movieReviews';
@@ -14,6 +13,7 @@ interface MovieCardProps {
   onShare: (review: MovieReview) => void;
   onCommentChange: (reviewId: string, value: string) => void;
   onCommentSubmit: (reviewId: string) => void;
+  isLiked?: boolean;
 }
 
 export const MovieCard: React.FC<MovieCardProps> = ({
@@ -24,7 +24,8 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   onToggleComments,
   onShare,
   onCommentChange,
-  onCommentSubmit
+  onCommentSubmit,
+  isLiked = false
 }) => {
   return (
     <Card className="bg-black text-white border-none shadow-xl h-full">
@@ -81,6 +82,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
           onLike={onLike}
           onToggleComments={onToggleComments}
           onShare={onShare}
+          isLiked={isLiked}
         />
 
         {showComments && (
