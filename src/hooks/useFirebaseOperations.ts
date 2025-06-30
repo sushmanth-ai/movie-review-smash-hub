@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { collection, addDoc, query, orderBy, onSnapshot, updateDoc, doc, increment, getDocs, Timestamp, setDoc } from 'firebase/firestore';
 import { db } from '@/utils/firebase';
@@ -6,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export const useFirebaseOperations = () => {
   const { toast } = useToast();
+  const [likedReviews, setLikedReviews] = useState<Set<string>>(new Set());
 
   const loadLikes = async (setReviews: React.Dispatch<React.SetStateAction<MovieReview[]>>) => {
     if (!db) return;
@@ -71,6 +73,18 @@ export const useFirebaseOperations = () => {
   const handleLike = async (reviewId: string, setReviews: React.Dispatch<React.SetStateAction<MovieReview[]>>) => {
     console.log('Like button clicked for:', reviewId);
     
+    // Check if user already liked this review
+    if (likedReviews.has(reviewId)) {
+      toast({
+        title: "Already Liked",
+        description: "You have already liked this review.",
+      });
+      return;
+    }
+
+    // Add to liked reviews set
+    setLikedReviews(prev => new Set([...prev, reviewId]));
+    
     // Update local state immediately for instant feedback
     setReviews(prev => prev.map(review => 
       review.id === reviewId 
@@ -128,13 +142,23 @@ export const useFirebaseOperations = () => {
       return;
     }
 
-    console.log('Comment submitted for:', reviewId, 'Text:', commentText);
+    // Ask for user name
+    const userName = prompt("Please enter your name:");
+    if (!userName?.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter your name to post a comment.",
+      });
+      return;
+    }
+
+    console.log('Comment submitted for:', reviewId, 'Text:', commentText, 'Author:', userName);
 
     const comment: Comment = {
       id: Date.now().toString(),
       text: commentText,
       timestamp: new Date(),
-      author: 'Anonymous User'
+      author: userName.trim()
     };
 
     // Clear the input immediately
