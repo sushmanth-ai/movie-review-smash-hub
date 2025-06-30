@@ -59,23 +59,23 @@ export const MovieCard: React.FC<MovieCardProps> = ({
           REVIEW
         </h5>
 
-        <p className="text-pink-500 font-bold text-sm">{review.review}</p>
+        <p className="text-white-500 font-bold text-sm">{review.review}</p>
 
         <div className="space-y-2">
-          <h6 className="text-red-500 font-semibold">First Half:</h6>
-          <p className="text-pink-500 font-bold text-sm">{review.firstHalf}</p>
+          <h6 className="text-red-500 font-bold">First Half:</h6>
+          <p className="text-white-500 font-semibold text-sm">{review.firstHalf}</p>
 
-          <h6 className="text-red-500 font-semibold">Second Half:</h6>
-          <p className="text-pink-500 font-bold text-sm">{review.secondHalf}</p>
+          <h6 className="text-red-500 font-bold">Second Half:</h6>
+          <p className="text-white-500 font-semibold text-sm">{review.secondHalf}</p>
 
-          <h6 className="text-red-500 font-semibold">Positives:</h6>
-          <p className="text-pink-500 font-bold text-sm">{review.positives}</p>
+          <h6 className="text-red-500 font-bold">Positives:</h6>
+          <p className="text-white-500 font-semibold text-sm">{review.positives}</p>
 
-          <h6 className="text-red-500 font-semibold">Negatives:</h6>
-          <p className="text-pink-500 font-bold text-sm">{review.negatives}</p>
+          <h6 className="text-red-500 font-bold">Negatives:</h6>
+          <p className="text-white-500 font-semibold text-sm">{review.negatives}</p>
 
-          <h6 className="text-red-500 font-semibold">Overall Movie:</h6>
-          <p className="text-pink-500 font-bold text-sm">{review.overall}</p>
+          <h6 className="text-red-500 font-bold">Overall Movie:</h6>
+          <p className="text-white-500 font-semibold text-sm">{review.overall}</p>
         </div>
 
         <InteractionButtons
