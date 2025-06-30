@@ -59,7 +59,9 @@ const Index = () => {
       {/* Fixed Header */}
       <div className="fixed top-0 left-0 w-full bg-white z-50 p-4 shadow-lg border-b">
         <h1 className="text-center text-2xl font-bold mb-4" style={{
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+         
+          background: #E589A9;
+          background: linear-gradient(135deg, #E589A9, #E52042);
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text'
