@@ -23,18 +23,7 @@ export interface Comment {
 
 export const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [
   // ...existing reviews
-  {
-    id: 'honeymoonhorror',
-    title: 'HONEYMOON HORROR',
-    image: 'https://example.com/honeymoon-horror.jpg',
-    review: 'Honeymoon Horror ela undho detail review lo chudham.',
-    firstHalf: 'Movie starting lo fun and romance unde scenes tho start avutundhi... slow gaa mystery build avutundhi...',
-    secondHalf: 'Second half lo horror elements baga pick avutayi... thrilling climax and emotional twist...',
-    positives: 'Background Score, Concept, Lead Performances',
-    negatives: 'Slow start, predictable jump scares',
-    overall: 'Good attempt in horror genre. Worth one-time watch.',
-    rating: '3.2 STARS'
-  },
+ 
 
   {
     id: 'kannappa',
