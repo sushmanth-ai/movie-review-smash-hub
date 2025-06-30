@@ -23,7 +23,7 @@ export interface Comment {
 
 export const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [
   {
-    id: 'kannappa',
+    id: 'kanna',
     title: 'KANNAPPA',
     image: 'https://moviemonarch.in/wp-content/uploads/2025/06/Kannappa-Movie-Review.jpg',
     review: 'kannappa Movie ela vundho detail review lo chudham',
