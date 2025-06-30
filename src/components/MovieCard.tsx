@@ -51,10 +51,8 @@ export const MovieCard: React.FC<MovieCardProps> = ({
 
       <CardContent className="space-y-4">
         <h5 className="text-center font-bold" style={{
-          background: 'linear-gradient(45deg, #ff7e5f, #feb47b)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text'
+          background: linear-gradient(45deg, #ff7e5f, #feb47b);
+          width: 100%;
         }}>
           REVIEW
         </h5>
@@ -63,19 +61,19 @@ export const MovieCard: React.FC<MovieCardProps> = ({
 
         <div className="space-y-2">
           <h6 className="text-red-500 font-bold">First Half:</h6>
-          <p className="text-white-500 font-semibold text-sm">{review.firstHalf}</p>
+          <p className="text-white-500 font-bold text-sm">{review.firstHalf}</p>
 
           <h6 className="text-red-500 font-bold">Second Half:</h6>
-          <p className="text-white-500 font-semibold text-sm">{review.secondHalf}</p>
+          <p className="text-white-500 font-bold text-sm">{review.secondHalf}</p>
 
           <h6 className="text-red-500 font-bold">Positives:</h6>
-          <p className="text-white-500 font-semibold text-sm">{review.positives}</p>
+          <p className="text-white-500 font-bold text-sm">{review.positives}</p>
 
           <h6 className="text-red-500 font-bold">Negatives:</h6>
-          <p className="text-white-500 font-semibold text-sm">{review.negatives}</p>
+          <p className="text-white-500 font-bold text-sm">{review.negatives}</p>
 
           <h6 className="text-red-500 font-bold">Overall Movie:</h6>
-          <p className="text-white-500 font-semibold text-sm">{review.overall}</p>
+          <p className="text-white-500 font-bold text-sm">{review.overall}</p>
         </div>
 
         <InteractionButtons
