@@ -94,34 +94,52 @@ export const useFirebaseOperations = () => {
   const handleLike = async (reviewId: string, setReviews: React.Dispatch<React.SetStateAction<MovieReview[]>>) => {
     console.log('Like button clicked for:', reviewId);
     
-    // Check if user already liked this review
-    if (likedReviews.has(reviewId)) {
+    const isCurrentlyLiked = likedReviews.has(reviewId);
+    const newLikedReviews = new Set(likedReviews);
+    
+    if (isCurrentlyLiked) {
+      // Unlike the review
+      newLikedReviews.delete(reviewId);
+      setLikedReviews(newLikedReviews);
+      
+      // Update local state immediately for instant feedback
+      setReviews(prev => prev.map(review => 
+        review.id === reviewId 
+          ? { ...review, likes: Math.max(0, review.likes - 1) }
+          : review
+      ));
+      
       toast({
-        title: "Already Liked",
-        description: "You have already liked this review.",
-        variant: "destructive"
+        title: "Unliked!",
+        description: "You have removed your like from this review.",
       });
-      return;
+    } else {
+      // Like the review
+      newLikedReviews.add(reviewId);
+      setLikedReviews(newLikedReviews);
+      
+      // Update local state immediately for instant feedback
+      setReviews(prev => prev.map(review => 
+        review.id === reviewId 
+          ? { ...review, likes: review.likes + 1 }
+          : review
+      ));
+      
+      toast({
+        title: "Liked!",
+        description: "Your like has been recorded.",
+      });
     }
-
-    // Add to liked reviews set
-    const newLikedReviews = new Set([...likedReviews, reviewId]);
-    setLikedReviews(newLikedReviews);
     
     // Save to localStorage immediately
     saveLikedReviewsToStorage(newLikedReviews);
-    
-    // Update local state immediately for instant feedback
-    setReviews(prev => prev.map(review => 
-      review.id === reviewId 
-        ? { ...review, likes: review.likes + 1 }
-        : review
-    ));
 
     if (!db) {
       toast({
-        title: "Liked! (Demo Mode)",
-        description: "Like recorded locally - Firebase not available.",
+        title: isCurrentlyLiked ? "Unliked! (Demo Mode)" : "Liked! (Demo Mode)",
+        description: isCurrentlyLiked 
+          ? "Unlike recorded locally - Firebase not available."
+          : "Like recorded locally - Firebase not available.",
       });
       return;
     }
@@ -129,27 +147,38 @@ export const useFirebaseOperations = () => {
     try {
       const reviewRef = doc(db, 'likes', reviewId);
       
-      // Always increment by 1, don't toggle
-      await updateDoc(reviewRef, {
-        count: increment(1)
-      }).catch(async () => {
-        // If document doesn't exist, create it with count 1
-        await setDoc(reviewRef, {
-          reviewId: reviewId,
-          count: 1
+      if (isCurrentlyLiked) {
+        // Decrement like count
+        await updateDoc(reviewRef, {
+          count: increment(-1)
+        }).catch(async () => {
+          // If document doesn't exist, create it with count 0
+          await setDoc(reviewRef, {
+            reviewId: reviewId,
+            count: 0
+          });
         });
-      });
-      
-      console.log('Like incremented successfully');
-      toast({
-        title: "Liked!",
-        description: "Your like has been recorded.",
-      });
+        console.log('Like decremented successfully');
+      } else {
+        // Increment like count
+        await updateDoc(reviewRef, {
+          count: increment(1)
+        }).catch(async () => {
+          // If document doesn't exist, create it with count 1
+          await setDoc(reviewRef, {
+            reviewId: reviewId,
+            count: 1
+          });
+        });
+        console.log('Like incremented successfully');
+      }
     } catch (error) {
-      console.error('Error liking post:', error);
+      console.error('Error updating like:', error);
       toast({
-        title: "Liked! (Demo Mode)",
-        description: "Like recorded locally - Firebase connection issue.",
+        title: isCurrentlyLiked ? "Unliked! (Demo Mode)" : "Liked! (Demo Mode)",
+        description: isCurrentlyLiked
+          ? "Unlike recorded locally - Firebase connection issue."
+          : "Like recorded locally - Firebase connection issue.",
       });
     }
   };

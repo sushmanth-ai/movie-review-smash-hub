@@ -26,10 +26,9 @@ export const InteractionButtons: React.FC<InteractionButtonsProps> = ({
         onClick={() => onLike(review.id)}
         className={`flex items-center gap-2 text-white transition-colors ${
           isLiked 
-            ? 'text-red-500 cursor-not-allowed opacity-70' 
+            ? 'text-red-500 hover:text-red-400' 
             : 'hover:text-red-500'
         }`}
-        disabled={isLiked}
       >
         <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
         {review.likes}
