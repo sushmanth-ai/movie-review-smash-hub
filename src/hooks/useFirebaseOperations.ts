@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { collection, addDoc, query, orderBy, onSnapshot, updateDoc, doc, increment, getDocs, Timestamp, setDoc } from 'firebase/firestore';
 import { db } from '@/utils/firebase';
@@ -72,7 +71,7 @@ export const useFirebaseOperations = () => {
   const handleLike = async (reviewId: string, setReviews: React.Dispatch<React.SetStateAction<MovieReview[]>>) => {
     console.log('Like button clicked for:', reviewId);
     
-    // Always update local state first for immediate feedback
+    // Update local state immediately for instant feedback
     setReviews(prev => prev.map(review => 
       review.id === reviewId 
         ? { ...review, likes: review.likes + 1 }
@@ -90,19 +89,18 @@ export const useFirebaseOperations = () => {
     try {
       const reviewRef = doc(db, 'likes', reviewId);
       
-      try {
-        await updateDoc(reviewRef, {
-          count: increment(1)
-        });
-        console.log('Like updated successfully');
-      } catch (updateError) {
+      // Always increment by 1, don't toggle
+      await updateDoc(reviewRef, {
+        count: increment(1)
+      }).catch(async () => {
+        // If document doesn't exist, create it with count 1
         await setDoc(reviewRef, {
           reviewId: reviewId,
           count: 1
         });
-        console.log('Like document created successfully');
-      }
+      });
       
+      console.log('Like incremented successfully');
       toast({
         title: "Liked!",
         description: "Your like has been recorded.",
