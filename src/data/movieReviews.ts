@@ -23,7 +23,18 @@ export interface Comment {
 
 export const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [
   // ...existing reviews
- 
+ {
+    id: 'oh bhama ayyo rama',
+    title: 'OH BHAMA AYYO RAMA',
+    image: 'https://filmyfocus.com/wp-content/uploads/2025/04/Profile1-46.png',
+    review: 'inka Movie ela vundho detail review lo chudham',
+    firstHalf: 'First Half vishiyaniki vaste Asalu Director em chepalli anukuntunado em ardham kaala.. Movie lo expect songs and bgm...Inka em ledu eppudo Old movie chustunna feeling vachindhi naaku aite...',
+    secondHalf: 'coming to the second half edo ala ala velipotha vuntadhi...okka engaging scene vundadu.emotions and scenes emi workout kaadu..predictable gaa vuntundhi max story',
+    positives: 'Songs, Cinematography, Malavika Manoj.. Parthi Frame chaala grander gaa kanapadutindhi...',
+    negatives: 'Anni negatives eyy moive loo..inka em cheppali',
+    overall: "it's Below Average movie",
+    rating: '2.8 STARS'
+  },
 
   {
     id: 'kannappa',
