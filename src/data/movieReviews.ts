@@ -23,6 +23,19 @@ export interface Comment {
 
 export const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [
   // ...existing reviews
+
+  {
+    id: 'junior',
+    title: 'JUNIOR',
+    image: 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fin.bookmyshow.com%2Fmovies%2Fbengaluru%2Fjunior%2FET00448285&psig=AOvVaw1uxkI1SbwaGz2KcvI6Bjqy&ust=1752931232210000&source=images&cd=vfe&opi=89978449&ved=0CBUQjRxqFwoTCNjwsOu_xo4DFQAAAAAdAAAAABAE',
+    review: 'inka Movie ela vundho detail review lo chudham',
+    firstHalf: 'Em cheppali... Story antha kotha gaa em ledu.. edo velipothu vuntadhi... conflict Execution lo tedha kottindhi.. correct gaa present chesunte intervel loo cheppina point connect ayyindi vundedhi..But didn't..',
+    secondHalf: 'Second half kk parledhu it's better than first Half..konni Flaws vunna kuda kk anipinchela Vuntadhi..Inka Heroine ni Enduku pettero teledu, movie loo chala Charcters complete cheykunda finish chestaru..',
+    positives: 'Kireeti Performance,dance and fights ,Viral vyari song..',
+    negatives: 'Execution, Routine scenes, improper endings of The characters',
+    overall: "it's a Average movie",
+    rating: '3 STARS'
+  },
  {
     id: 'oh bhama ayyo rama',
     title: 'OH BHAMA AYYO RAMA',
