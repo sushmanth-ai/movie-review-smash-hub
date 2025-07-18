@@ -27,9 +27,9 @@ export const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [
   {
     id: 'junior',
     title: 'JUNIOR',
-    image: 'https://thetelugufilmnagar.com/wp-content/uploads/2023/04/junior-1.webp',
+    image: 'https://assets-in.bmscdn.com/iedb/movies/images/mobile/listing/medium/junior-et00448285-1748861990.jpg',
     review: 'inka Movie ela vundho detail review lo chudham',
-    firstHalf: 'Em cheppali... Story antha kotha gaa em ledu.. edo velipothu vuntadhi... conflict Execution lo tedha kottindhi.. correct gaa present chesunte intervel loo cheppina point connect ayyindi vundedhi..But didn't..',
+    firstHalf: 'Em cheppali... Story antha kotha gaa em ledu.. edo velipothu vuntadhi... conflict Execution lo tedha kottindhi.. correct gaa present chesunte intervel loo cheppina point connect ayyindi vundedhi..But didnt..',
     secondHalf: 'Second half kk parledhu its better than first Half..konni Flaws vunna kuda kk anipinchela Vuntadhi..Inka Heroine ni Enduku pettero teledu.. movie loo chala Charcters complete cheykunda finish chestaru..',
     positives: 'Kireeti Performance,dance and fights ,Viral vyari song..',
     negatives: 'Execution, Routine scenes, improper endings of The characters',
