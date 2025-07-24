@@ -26,7 +26,7 @@ export const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [
   {
     id: 'HHVM',
     title: 'HARI HARA VEERA MALLU',
-    image: 'https://assets-in.bmscdn.com/iedb/movies/images/mobile/listing/medium/junior-et00448285-1748861990.jpg',
+    image: 'https://images.filmibeat.com/img/2022/11/1-1653556615-1667553644.jpg',
     review: 'inka Movie ela vundho detail review lo chudham',
     firstHalf: 'First Half Starts very well..Hero Introduction Scene..aa Tarvata Proceedings kuda baguntai...Madhyaloo akkada akkada kk anipinchela vuntadhi...Pre intervel Twist bagundhi.. Intervel Kuda baguntadhi.. overall First Half Bagundhi..',
     secondHalf: 'Second half Asalu Story Gurinchi kasepu pakkana pedethe.. Recent Times lo worst VFX Chusenu eee Movie loo..entha bad Graphics ante easy gaa Telesi pothundi...Inka story vishyaniki vaste edo chustanamu ante chustunam anatu vuntadhi...',
