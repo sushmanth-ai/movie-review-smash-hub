@@ -23,7 +23,19 @@ export interface Comment {
 
 export const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [
   // ...existing reviews
-
+  {
+    id: 'HHVM',
+    title: 'HARI HARA VEERA MALLU',
+    image: 'https://assets-in.bmscdn.com/iedb/movies/images/mobile/listing/medium/junior-et00448285-1748861990.jpg',
+    review: 'inka Movie ela vundho detail review lo chudham',
+    firstHalf: 'First Half Starts very well..Hero Introduction Scene..aa Tarvata Proceedings kuda baguntai...Madhyaloo akkada akkada kk anipinchela vuntadhi...Pre intervel Twist bagundhi.. Intervel Kuda baguntadhi.. overall First Half Bagundhi..',
+    secondHalf: 'Second half Asalu Story Gurinchi kasepu pakkana pedethe.. Recent Times lo worst VFX Chusenu eee Movie loo..entha bad Graphics ante easy gaa Telesi pothundi...Inka story vishyaniki vaste edo chustanamu ante chustunam anatu vuntadhi...',
+    positives: 'Keeravani soul pettedu Movie ki..thana BGM chaala Normal scenes ki kuda High icche laa kottedu.. Pawan Kalyan as usual did well..',
+    negatives: '2nd half,boring scenes..bad vfx..konni scenes aite idhi Ai tho generate chesaru Anni easy gaa telisi pothundi...',
+    overall: "it's a Average movie",
+    rating: '3 STARS'
+  },
+  
   {
     id: 'junior',
     title: 'JUNIOR',
