@@ -23,6 +23,19 @@ export interface Comment {
 
 export const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [
   // ...existing reviews
+{
+    id: 'mahavtara narsimha',
+    title: 'MAHAVATARA NARSIMHA',
+    image: 'https://boxofficeindex.in/wp-content/uploads/2025/07/Mahavatar-Narsimha-1-768x432.webp',
+    review: 'inka Movie ela vundho detail review lo chudham',
+    firstHalf: 'First half Lag cheyakunda direct Story lo ki velthadu...Okka sequence vuntadhi..aa sequence Graphics are Top Notch..aa tarvata Story  based gaa veltuntadhi Movie antha..decent First Half..',
+    secondHalf: 'Coming to the second Half...antha okka lekka Last climax portion okka lekka.. literally Goesubmps vachayi...that visuals,Bgm vere level..waiting For the next Movie From this universe...',
+    positives: 'All positives visuals, making, BGM super 💥 Naaku teyiani points enno telsukunna..',
+    negatives: 'NO Negatives',
+    overall: "idhi prathi okkaru chudalsina cinema..super ante..",
+    rating: '4 STARS'
+  },
+  
   {
     id: 'HHVM',
     title: 'HARI HARA VEERA MALLU',
