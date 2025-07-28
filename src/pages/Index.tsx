@@ -34,7 +34,7 @@ const Index = () => {
     const reviewsWithInteractions: MovieReview[] = movieReviewsData.map(review => ({
       ...review,
       likes: 0,
-      views: 0, // Start with zero views
+      views: 0, // Will be updated by loadViews from Firebase
       comments: []
     }));
     setReviews(reviewsWithInteractions);
