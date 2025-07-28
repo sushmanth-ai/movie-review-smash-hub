@@ -11,7 +11,6 @@ export interface MovieReview {
   overall: string;
   rating: string;
   likes: number;
-  views: number;
   comments: Comment[];
 }
 
@@ -22,58 +21,19 @@ export interface Comment {
   author: string;
 }
 
-export const movieReviewsData: Omit<MovieReview, 'likes' | 'views' | 'comments'>[] = [
+export const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [
   // ...existing reviews
-{
-    id: 'mahavtara narsimha',
-    title: 'MAHAVATARA NARSIMHA',
-    image: 'https://boxofficeindex.in/wp-content/uploads/2025/07/Mahavatar-Narsimha-1-768x432.webp',
-    review: 'inka Movie ela vundho detail review lo chudham',
-    firstHalf: 'First half Lag cheyakunda direct Story lo ki velthadu...Okka sequence vuntadhi..aa sequence Graphics are Top Notch..aa tarvata Story  based gaa veltuntadhi Movie antha..decent First Half..',
-    secondHalf: 'Coming to the second Half...antha okka lekka Last climax portion okka lekka.. literally Gooesubmps vachayi...that visuals,Bgm vere level..waiting For the next Movie From this universe...',
-    positives: 'All positives visuals, making, BGM super 💥 Naaku teliyiani points enno telsukunna..',
-    negatives: 'NO Negatives',
-    overall: "idhi prathi okkaru chudalsina cinema..super ante..",
-    rating: '4 STARS'
-  },
-  
-  {
-    id: 'HHVM',
-    title: 'HARI HARA VEERA MALLU',
-    image: 'https://images.filmibeat.com/img/2022/11/1-1653556615-1667553644.jpg',
-    review: 'inka Movie ela vundho detail review lo chudham',
-    firstHalf: 'First Half Starts very well..Hero Introduction Scene..aa Tarvata Proceedings kuda baguntai...Madhyaloo akkada akkada kk anipinchela vuntadhi...Pre intervel Twist bagundhi.. Intervel Kuda baguntadhi.. overall First Half Bagundhi..',
-    secondHalf: 'Second half Asalu Story Gurinchi kasepu pakkana pedethe.. Recent Times lo worst VFX Chusenu eee Movie loo..entha bad Graphics ante easy gaa Telesi pothundi...Inka story vishyaniki vaste edo chustanamu ante chustunam anatu vuntadhi...',
-    positives: 'Keeravani soul pettedu Movie ki..thana BGM chaala Normal scenes ki kuda High icche laa kottedu.. Pawan Kalyan as usual did well..',
-    negatives: '2nd half,boring scenes..bad vfx..konni scenes aite idhi Ai tho generate chesaru Anni easy gaa telisi pothundi...',
-    overall: "it's a Average movie",
-    rating: '3 STARS'
-  },
-  
-  {
-    id: 'junior',
-    title: 'JUNIOR',
-    image: 'https://assets-in.bmscdn.com/iedb/movies/images/mobile/listing/medium/junior-et00448285-1748861990.jpg',
-    review: 'inka Movie ela vundho detail review lo chudham',
-    firstHalf: 'Em cheppali... Story antha kotha gaa em ledu.. edo velipothu vuntadhi... conflict Execution lo tedha kottindhi.. correct gaa present chesunte intervel loo cheppina point connect ayyi vundedhi..But didnt..',
-    secondHalf: 'Second half kk parledhu its better than first Half..konni Flaws vunna kuda kk anipinchela Vuntadhi..Inka Heroine ni Enduku pettero teledu.. movie loo chala Charcters complete cheykunda finish chestaru..',
-    positives: 'Kireeti Performance,dance and fights ,Viral vyari song..',
-    negatives: 'Execution, Routine scenes, improper endings of The characters',
-    overall: "it's a Average movie",
-    rating: '3 STARS'
-  },
-
  {
-    id: 'oh bhama ayyo rama',
-    title: 'OH BHAMA AYYO RAMA',
-    image: 'https://filmyfocus.com/wp-content/uploads/2025/04/Profile1-46.png',
-    review: 'inka Movie ela vundho detail review lo chudham',
-    firstHalf: 'First Half vishiyaniki vaste Asalu Director em chepalli anukuntunado em ardham kaala.. Movie lo expect songs and bgm...Inka em ledu eppudo Old movie chustunna feeling vachindhi naaku aite...',
-    secondHalf: 'coming to the second half edo ala ala velipotha vuntadhi...okka engaging scene vundadu.emotions and scenes emi workout kaadu..predictable gaa vuntundhi max story',
-    positives: 'Songs, Cinematography, Malavika Manoj.. Parthi Frame chaala grander gaa kanapadutindhi...',
-    negatives: 'Anni negatives eyy moive loo..inka em cheppali',
-    overall: "it's Below Average movie",
-    rating: '2.8 STARS'
+    id: 'honeymoonhorror',
+    title: 'HONEYMOON HORROR',
+    image: 'https://example.com/honeymoon-horror.jpg',
+    review: 'Honeymoon Horror ela undho detail review lo chudham.',
+    firstHalf: 'Movie starting lo fun and romance unde scenes tho start avutundhi... slow gaa mystery build avutundhi...',
+    secondHalf: 'Second half lo horror elements baga pick avutayi... thrilling climax and emotional twist...',
+    positives: 'Background Score, Concept, Lead Performances',
+    negatives: 'Slow start, predictable jump scares',
+    overall: 'Good attempt in horror genre. Worth one-time watch.',
+    rating: '3.2 STARS'
   },
 
   {
