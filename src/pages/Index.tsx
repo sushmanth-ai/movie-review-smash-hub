@@ -13,10 +13,8 @@ const Index = () => {
   
   const { 
     loadLikes, 
-    loadViews,
     loadComments, 
     handleLike, 
-    handleView,
     handleComment, 
     handleShare, 
     likedReviews,
@@ -26,7 +24,6 @@ const Index = () => {
   useEffect(() => {
     initializeReviews();
     loadLikes(setReviews);
-    loadViews(setReviews);
     loadComments(setReviews);
   }, []);
 
@@ -34,7 +31,7 @@ const Index = () => {
     const reviewsWithInteractions: MovieReview[] = movieReviewsData.map(review => ({
       ...review,
       likes: 0,
-      views: 0, // Will be updated by loadViews from Firebase
+      views: Math.floor(Math.random() * 500) + 50, // Random initial views between 50-549
       comments: []
     }));
     setReviews(reviewsWithInteractions);
@@ -92,7 +89,6 @@ const Index = () => {
               showComments={showComments[review.id] || false}
               newComment={newComment[review.id] || ''}
               onLike={(reviewId) => handleLike(reviewId, setReviews)}
-              onView={(reviewId) => handleView(reviewId, setReviews)}
               onToggleComments={handleToggleComments}
               onShare={handleShare}
               onCommentChange={handleCommentChange}
