@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { collection, addDoc, query, orderBy, onSnapshot, updateDoc, doc, increment, getDocs, Timestamp, setDoc } from 'firebase/firestore';
 import { db } from '@/utils/firebase';
@@ -8,6 +7,28 @@ import { useToast } from '@/hooks/use-toast';
 export const useFirebaseOperations = () => {
   const { toast } = useToast();
   const [likedReviews, setLikedReviews] = useState<Set<string>>(new Set());
+
+  // Load liked reviews from localStorage on component mount
+  useEffect(() => {
+    const savedLikedReviews = localStorage.getItem('likedReviews');
+    if (savedLikedReviews) {
+      try {
+        const likedArray = JSON.parse(savedLikedReviews);
+        setLikedReviews(new Set(likedArray));
+      } catch (error) {
+        console.error('Error parsing liked reviews from localStorage:', error);
+      }
+    }
+  }, []);
+
+  // Save liked reviews to localStorage whenever it changes
+  const saveLikedReviewsToStorage = (newLikedReviews: Set<string>) => {
+    try {
+      localStorage.setItem('likedReviews', JSON.stringify(Array.from(newLikedReviews)));
+    } catch (error) {
+      console.error('Error saving liked reviews to localStorage:', error);
+    }
+  };
 
   const loadLikes = async (setReviews: React.Dispatch<React.SetStateAction<MovieReview[]>>) => {
     if (!db) return;
@@ -29,6 +50,29 @@ export const useFirebaseOperations = () => {
       console.log('Likes loaded successfully');
     } catch (error) {
       console.error('Error loading likes:', error);
+    }
+  };
+
+  const loadViews = async (setReviews: React.Dispatch<React.SetStateAction<MovieReview[]>>) => {
+    if (!db) return;
+    
+    try {
+      const viewsQuery = query(collection(db, 'views'));
+      const viewsSnapshot = await getDocs(viewsQuery);
+      const viewsData: { [key: string]: number } = {};
+      
+      viewsSnapshot.forEach((doc) => {
+        viewsData[doc.id] = doc.data().count || 0;
+      });
+
+      setReviews(prev => prev.map(review => ({
+        ...review,
+        views: viewsData[review.id] || review.views || 0
+      })));
+      
+      console.log('Views loaded successfully');
+    } catch (error) {
+      console.error('Error loading views:', error);
     }
   };
 
@@ -73,29 +117,52 @@ export const useFirebaseOperations = () => {
   const handleLike = async (reviewId: string, setReviews: React.Dispatch<React.SetStateAction<MovieReview[]>>) => {
     console.log('Like button clicked for:', reviewId);
     
-    // Check if user already liked this review
-    if (likedReviews.has(reviewId)) {
-      toast({
-        title: "Already Liked",
-        description: "You have already liked this review.",
-      });
-      return;
-    }
-
-    // Add to liked reviews set
-    setLikedReviews(prev => new Set([...prev, reviewId]));
+    const isCurrentlyLiked = likedReviews.has(reviewId);
+    const newLikedReviews = new Set(likedReviews);
     
-    // Update local state immediately for instant feedback
-    setReviews(prev => prev.map(review => 
-      review.id === reviewId 
-        ? { ...review, likes: review.likes + 1 }
-        : review
-    ));
+    if (isCurrentlyLiked) {
+      // Unlike the review
+      newLikedReviews.delete(reviewId);
+      setLikedReviews(newLikedReviews);
+      
+      // Update local state immediately for instant feedback
+      setReviews(prev => prev.map(review => 
+        review.id === reviewId 
+          ? { ...review, likes: Math.max(0, review.likes - 1) }
+          : review
+      ));
+      
+      toast({
+        title: "Unliked!",
+        description: "You have removed your like from this review.",
+      });
+    } else {
+      // Like the review
+      newLikedReviews.add(reviewId);
+      setLikedReviews(newLikedReviews);
+      
+      // Update local state immediately for instant feedback
+      setReviews(prev => prev.map(review => 
+        review.id === reviewId 
+          ? { ...review, likes: review.likes + 1 }
+          : review
+      ));
+      
+      toast({
+        title: "Liked!",
+        description: "Your like has been recorded.",
+      });
+    }
+    
+    // Save to localStorage immediately
+    saveLikedReviewsToStorage(newLikedReviews);
 
     if (!db) {
       toast({
-        title: "Liked! (Demo Mode)",
-        description: "Like recorded locally - Firebase not available.",
+        title: isCurrentlyLiked ? "Unliked! (Demo Mode)" : "Liked! (Demo Mode)",
+        description: isCurrentlyLiked 
+          ? "Unlike recorded locally - Firebase not available."
+          : "Like recorded locally - Firebase not available.",
       });
       return;
     }
@@ -103,27 +170,38 @@ export const useFirebaseOperations = () => {
     try {
       const reviewRef = doc(db, 'likes', reviewId);
       
-      // Always increment by 1, don't toggle
-      await updateDoc(reviewRef, {
-        count: increment(1)
-      }).catch(async () => {
-        // If document doesn't exist, create it with count 1
-        await setDoc(reviewRef, {
-          reviewId: reviewId,
-          count: 1
+      if (isCurrentlyLiked) {
+        // Decrement like count
+        await updateDoc(reviewRef, {
+          count: increment(-1)
+        }).catch(async () => {
+          // If document doesn't exist, create it with count 0
+          await setDoc(reviewRef, {
+            reviewId: reviewId,
+            count: 0
+          });
         });
-      });
-      
-      console.log('Like incremented successfully');
-      toast({
-        title: "Liked!",
-        description: "Your like has been recorded.",
-      });
+        console.log('Like decremented successfully');
+      } else {
+        // Increment like count
+        await updateDoc(reviewRef, {
+          count: increment(1)
+        }).catch(async () => {
+          // If document doesn't exist, create it with count 1
+          await setDoc(reviewRef, {
+            reviewId: reviewId,
+            count: 1
+          });
+        });
+        console.log('Like incremented successfully');
+      }
     } catch (error) {
-      console.error('Error liking post:', error);
+      console.error('Error updating like:', error);
       toast({
-        title: "Liked! (Demo Mode)",
-        description: "Like recorded locally - Firebase connection issue.",
+        title: isCurrentlyLiked ? "Unliked! (Demo Mode)" : "Liked! (Demo Mode)",
+        description: isCurrentlyLiked
+          ? "Unlike recorded locally - Firebase connection issue."
+          : "Like recorded locally - Firebase connection issue.",
       });
     }
   };
@@ -138,6 +216,7 @@ export const useFirebaseOperations = () => {
       toast({
         title: "Error",
         description: "Please enter a comment before submitting.",
+        variant: "destructive"
       });
       return;
     }
@@ -148,6 +227,7 @@ export const useFirebaseOperations = () => {
       toast({
         title: "Error",
         description: "Please enter your name to post a comment.",
+        variant: "destructive"
       });
       return;
     }
@@ -250,11 +330,58 @@ export const useFirebaseOperations = () => {
     }
   };
 
+  const handleView = async (reviewId: string, setReviews: React.Dispatch<React.SetStateAction<MovieReview[]>>) => {
+    console.log('View recorded for:', reviewId);
+    
+    // Update local state immediately for instant feedback
+    setReviews(prev => prev.map(review => 
+      review.id === reviewId 
+        ? { ...review, views: review.views + 1 }
+        : review
+    ));
+
+    if (!db) {
+      console.log('View recorded locally - Firebase not available');
+      return;
+    }
+
+    try {
+      const reviewRef = doc(db, 'views', reviewId);
+      
+      await updateDoc(reviewRef, {
+        count: increment(1)
+      }).catch(async () => {
+        // If document doesn't exist, create it with count 1
+        await setDoc(reviewRef, {
+          reviewId: reviewId,
+          count: 1
+        });
+      });
+      console.log('View incremented successfully in Firebase');
+    } catch (error) {
+      console.error('Error updating view:', error);
+    }
+  };
+
+  // Function to clear all liked reviews (for testing purposes)
+  const clearLikedReviews = () => {
+    setLikedReviews(new Set());
+    localStorage.removeItem('likedReviews');
+    toast({
+      title: "Cleared",
+      description: "All liked reviews have been cleared.",
+    });
+  };
+
   return {
     loadLikes,
+    loadViews,
     loadComments,
     handleLike,
+    handleView,
     handleComment,
-    handleShare
+    handleShare,
+    likedReviews,
+    clearLikedReviews
   };
 };
