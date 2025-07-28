@@ -11,6 +11,7 @@ export interface MovieReview {
   overall: string;
   rating: string;
   likes: number;
+  views: number;
   comments: Comment[];
 }
 
@@ -21,7 +22,7 @@ export interface Comment {
   author: string;
 }
 
-export const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [
+export const movieReviewsData: Omit<MovieReview, 'likes' | 'views' | 'comments'>[] = [
   // ...existing reviews
 {
     id: 'mahavtara narsimha',
