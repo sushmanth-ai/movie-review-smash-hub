@@ -53,6 +53,29 @@ export const useFirebaseOperations = () => {
     }
   };
 
+  const loadViews = async (setReviews: React.Dispatch<React.SetStateAction<MovieReview[]>>) => {
+    if (!db) return;
+    
+    try {
+      const viewsQuery = query(collection(db, 'views'));
+      const viewsSnapshot = await getDocs(viewsQuery);
+      const viewsData: { [key: string]: number } = {};
+      
+      viewsSnapshot.forEach((doc) => {
+        viewsData[doc.id] = doc.data().count || 0;
+      });
+
+      setReviews(prev => prev.map(review => ({
+        ...review,
+        views: viewsData[review.id] || review.views || 0
+      })));
+      
+      console.log('Views loaded successfully');
+    } catch (error) {
+      console.error('Error loading views:', error);
+    }
+  };
+
   const loadComments = (setReviews: React.Dispatch<React.SetStateAction<MovieReview[]>>) => {
     if (!db) return;
     
@@ -307,6 +330,39 @@ export const useFirebaseOperations = () => {
     }
   };
 
+  const handleView = async (reviewId: string, setReviews: React.Dispatch<React.SetStateAction<MovieReview[]>>) => {
+    console.log('View recorded for:', reviewId);
+    
+    // Update local state immediately for instant feedback
+    setReviews(prev => prev.map(review => 
+      review.id === reviewId 
+        ? { ...review, views: review.views + 1 }
+        : review
+    ));
+
+    if (!db) {
+      console.log('View recorded locally - Firebase not available');
+      return;
+    }
+
+    try {
+      const reviewRef = doc(db, 'views', reviewId);
+      
+      await updateDoc(reviewRef, {
+        count: increment(1)
+      }).catch(async () => {
+        // If document doesn't exist, create it with count 1
+        await setDoc(reviewRef, {
+          reviewId: reviewId,
+          count: 1
+        });
+      });
+      console.log('View incremented successfully in Firebase');
+    } catch (error) {
+      console.error('Error updating view:', error);
+    }
+  };
+
   // Function to clear all liked reviews (for testing purposes)
   const clearLikedReviews = () => {
     setLikedReviews(new Set());
@@ -319,8 +375,10 @@ export const useFirebaseOperations = () => {
 
   return {
     loadLikes,
+    loadViews,
     loadComments,
     handleLike,
+    handleView,
     handleComment,
     handleShare,
     likedReviews,

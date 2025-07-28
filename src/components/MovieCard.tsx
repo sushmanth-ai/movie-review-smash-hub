@@ -9,6 +9,7 @@ interface MovieCardProps {
   showComments: boolean;
   newComment: string;
   onLike: (reviewId: string) => void;
+  onView: (reviewId: string) => void;
   onToggleComments: (reviewId: string) => void;
   onShare: (review: MovieReview) => void;
   onCommentChange: (reviewId: string, value: string) => void;
@@ -21,12 +22,17 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   showComments,
   newComment,
   onLike,
+  onView,
   onToggleComments,
   onShare,
   onCommentChange,
   onCommentSubmit,
   isLiked = false
 }) => {
+  // Track view when component mounts
+  React.useEffect(() => {
+    onView(review.id);
+  }, [review.id, onView]);
   return (
     <Card className="bg-black text-white border-none shadow-xl h-full">
       <CardHeader className="text-center">

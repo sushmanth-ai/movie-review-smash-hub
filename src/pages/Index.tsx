@@ -13,8 +13,10 @@ const Index = () => {
   
   const { 
     loadLikes, 
+    loadViews,
     loadComments, 
     handleLike, 
+    handleView,
     handleComment, 
     handleShare, 
     likedReviews,
@@ -24,6 +26,7 @@ const Index = () => {
   useEffect(() => {
     initializeReviews();
     loadLikes(setReviews);
+    loadViews(setReviews);
     loadComments(setReviews);
   }, []);
 
@@ -89,6 +92,7 @@ const Index = () => {
               showComments={showComments[review.id] || false}
               newComment={newComment[review.id] || ''}
               onLike={(reviewId) => handleLike(reviewId, setReviews)}
+              onView={(reviewId) => handleView(reviewId, setReviews)}
               onToggleComments={handleToggleComments}
               onShare={handleShare}
               onCommentChange={handleCommentChange}
