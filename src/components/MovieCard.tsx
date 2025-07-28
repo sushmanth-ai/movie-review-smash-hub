@@ -29,12 +29,33 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   onCommentSubmit,
   isLiked = false
 }) => {
-  // Track view when component mounts
+  const cardRef = React.useRef<HTMLDivElement>(null);
+  const [hasBeenViewed, setHasBeenViewed] = React.useState(false);
+
+  // Track view when card enters viewport
   React.useEffect(() => {
-    onView(review.id);
-  }, [review.id, onView]);
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasBeenViewed) {
+          onView(review.id);
+          setHasBeenViewed(true);
+        }
+      },
+      { threshold: 0.5 } // Trigger when 50% of the card is visible
+    );
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+
+    return () => {
+      if (cardRef.current) {
+        observer.unobserve(cardRef.current);
+      }
+    };
+  }, [review.id, onView, hasBeenViewed]);
   return (
-    <Card className="bg-black text-white border-none shadow-xl h-full">
+    <Card ref={cardRef} className="bg-black text-white border-none shadow-xl h-full">
       <CardHeader className="text-center">
         <h3 className="text-xl font-bold" style={{
           background: 'linear-gradient(45deg, #ff7e5f, #feb47b)',
