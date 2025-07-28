@@ -31,7 +31,6 @@ const Index = () => {
     const reviewsWithInteractions: MovieReview[] = movieReviewsData.map(review => ({
       ...review,
       likes: 0,
-      views: Math.floor(Math.random() * 500) + 50, // Random initial views between 50-549
       comments: []
     }));
     setReviews(reviewsWithInteractions);

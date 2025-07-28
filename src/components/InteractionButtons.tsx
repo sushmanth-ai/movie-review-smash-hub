@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Heart, MessageCircle, Share2, Eye } from 'lucide-react';
+import { Heart, MessageCircle, Share2 } from 'lucide-react';
 import { MovieReview } from '@/data/movieReviews';
 
 interface InteractionButtonsProps {
@@ -32,15 +32,6 @@ export const InteractionButtons: React.FC<InteractionButtonsProps> = ({
       >
         <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
         {review.likes}
-      </Button>
-      
-      <Button
-        variant="ghost"
-        size="sm"
-        className="flex items-center gap-2 text-white cursor-default"
-      >
-        <Eye className="w-4 h-4" />
-        {review.views}
       </Button>
       
       <Button
