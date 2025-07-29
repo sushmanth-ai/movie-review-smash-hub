@@ -81,12 +81,15 @@ const Index = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        
+      </div>
+
+      {/* Today Views Card - Outside Header */}
+      <div className="container mx-auto px-4 pt-32">
         <TodayViews viewCount={todayViews} />
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 pt-40 pb-8">
+      <div className="container mx-auto px-4 pt-0 pb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredReviews.map((review) => (
             <MovieCard
