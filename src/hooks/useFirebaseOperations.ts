@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 export const useFirebaseOperations = () => {
   const { toast } = useToast();
   const [likedReviews, setLikedReviews] = useState<Set<string>>(new Set());
+  const [todayViews, setTodayViews] = useState<number>(0);
 
   // Load liked reviews from localStorage on component mount
   useEffect(() => {
@@ -307,6 +308,73 @@ export const useFirebaseOperations = () => {
     }
   };
 
+  // Load today's views
+  const loadTodayViews = async () => {
+    if (!db) return;
+    
+    try {
+      const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+      const viewsRef = doc(db, 'dailyViews', today);
+      const viewsSnapshot = await getDocs(query(collection(db, 'dailyViews')));
+      
+      let todayCount = 0;
+      viewsSnapshot.forEach((doc) => {
+        if (doc.id === today) {
+          todayCount = doc.data().count || 0;
+        }
+      });
+      
+      setTodayViews(todayCount);
+      console.log('Today views loaded successfully:', todayCount);
+    } catch (error) {
+      console.error('Error loading today views:', error);
+    }
+  };
+
+  // Track daily view for current user
+  const trackDailyView = async () => {
+    const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+    const userViewKey = `dailyView_${today}`;
+    
+    // Check if user has already been counted today
+    const hasViewedToday = localStorage.getItem(userViewKey);
+    if (hasViewedToday) {
+      console.log('User already counted for today');
+      return;
+    }
+    
+    // Mark user as viewed today
+    localStorage.setItem(userViewKey, 'true');
+    
+    // Update local state immediately
+    setTodayViews(prev => prev + 1);
+
+    if (!db) {
+      console.log('Daily view tracked locally - Firebase not available');
+      return;
+    }
+
+    try {
+      const viewsRef = doc(db, 'dailyViews', today);
+      
+      // Increment view count for today
+      await updateDoc(viewsRef, {
+        count: increment(1),
+        date: today
+      }).catch(async () => {
+        // If document doesn't exist, create it with count 1
+        await setDoc(viewsRef, {
+          count: 1,
+          date: today
+        });
+      });
+      
+      console.log('Daily view tracked successfully');
+    } catch (error) {
+      console.error('Error tracking daily view:', error);
+    }
+  };
+
   // Function to clear all liked reviews (for testing purposes)
   const clearLikedReviews = () => {
     setLikedReviews(new Set());
@@ -324,6 +392,9 @@ export const useFirebaseOperations = () => {
     handleComment,
     handleShare,
     likedReviews,
-    clearLikedReviews
+    clearLikedReviews,
+    todayViews,
+    loadTodayViews,
+    trackDailyView
   };
 };

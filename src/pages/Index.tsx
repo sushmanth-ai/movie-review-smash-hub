@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { MovieReview, movieReviewsData } from '@/data/movieReviews';
 import { useFirebaseOperations } from '@/hooks/useFirebaseOperations';
 import { MovieCard } from '@/components/MovieCard';
+import { TodayViews } from '@/components/TodayViews';
 
 const Index = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -18,13 +19,18 @@ const Index = () => {
     handleComment, 
     handleShare, 
     likedReviews,
-    clearLikedReviews 
+    clearLikedReviews,
+    todayViews,
+    loadTodayViews,
+    trackDailyView
   } = useFirebaseOperations();
 
   useEffect(() => {
     initializeReviews();
     loadLikes(setReviews);
     loadComments(setReviews);
+    loadTodayViews();
+    trackDailyView();
   }, []);
 
   const initializeReviews = async () => {
@@ -76,6 +82,7 @@ const Index = () => {
           />
         </div>
         
+        <TodayViews viewCount={todayViews} />
       </div>
 
       {/* Main Content */}
