@@ -9,14 +9,15 @@ interface TodayViewsProps {
 export const TodayViews: React.FC<TodayViewsProps> = ({ viewCount }) => {
   return (
     <div className="max-w-md mx-auto mb-6">
-      <Card className="bg-gradient-to-r from-purple-600/90 to-blue-600/90 border-purple-300/30 backdrop-blur-md shadow-2xl hover:shadow-purple-500/25 transition-all duration-300 hover:scale-105">
-        <CardContent className="flex items-center justify-center gap-4 p-6">
-          <div className="bg-white/20 p-3 rounded-full">
-            <Eye className="h-6 w-6 text-white drop-shadow-md" />
+      <Card className="bg-gradient-to-br from-emerald-500/95 via-teal-600/95 to-cyan-600/95 border-emerald-300/40 backdrop-blur-lg shadow-2xl hover:shadow-emerald-500/30 transition-all duration-500 hover:scale-110 hover:rotate-1 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent"></div>
+        <CardContent className="relative flex items-center justify-center gap-4 p-6">
+          <div className="bg-white/25 p-4 rounded-full shadow-lg backdrop-blur-sm">
+            <Eye className="h-7 w-7 text-white drop-shadow-lg" />
           </div>
           <div className="text-center">
-            <p className="text-white font-bold text-2xl drop-shadow-md">{viewCount.toLocaleString()}</p>
-            <p className="text-white/90 text-sm font-medium tracking-wide">Today's Views</p>
+            <p className="text-white font-bold text-3xl drop-shadow-lg tracking-tight">{viewCount.toLocaleString()}</p>
+            <p className="text-white/95 text-sm font-semibold tracking-widest uppercase">Today's Views</p>
           </div>
         </CardContent>
       </Card>
