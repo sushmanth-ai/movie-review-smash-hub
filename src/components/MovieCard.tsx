@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { MovieReview } from '@/data/movieReviews';
 import { InteractionButtons } from './InteractionButtons';
@@ -25,6 +25,30 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   onCommentSubmit,
   isLiked = false
 }) => {
+  const [displayRating, setDisplayRating] = useState(0);
+  
+  useEffect(() => {
+    const targetRating = parseFloat(review.rating);
+    const duration = 2000; // 2 seconds
+    const steps = 60; // 60 steps for smooth animation
+    const increment = targetRating / steps;
+    const stepDuration = duration / steps;
+    
+    let currentStep = 0;
+    const timer = setInterval(() => {
+      currentStep++;
+      const newRating = increment * currentStep;
+      
+      if (currentStep >= steps) {
+        setDisplayRating(targetRating);
+        clearInterval(timer);
+      } else {
+        setDisplayRating(newRating);
+      }
+    }, stepDuration);
+    
+    return () => clearInterval(timer);
+  }, [review.rating]);
   return <Card className="bg-black text-white border-none shadow-xl h-full">
       <CardHeader className="text-center">
         <h3 className="text-xl font-bold" style={{
@@ -89,7 +113,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
             minWidth: '60px',
             textAlign: 'center'
           }}>
-              {review.rating}
+              {displayRating.toFixed(1)}
             </div>
           </div>
         </div>
