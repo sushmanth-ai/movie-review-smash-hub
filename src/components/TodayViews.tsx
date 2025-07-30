@@ -22,7 +22,7 @@ export const TodayViews: React.FC<TodayViewsProps> = ({ viewCount }) => {
           </div>
           <div className="text-center">
             <p className="text-white font-black text-2xl drop-shadow-xl tracking-tight bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">{viewCount.toLocaleString()}</p>
-            <p className="text-purple-200/95 text-xs font-bold tracking-[0.2em] uppercase drop-shadow-lg">Live Views</p>
+            <p className="text-purple-200/95 text-xs font-bold tracking-[0.2em] uppercase drop-shadow-lg">Today Live Views</p>
           </div>
         </CardContent>
       </Card>

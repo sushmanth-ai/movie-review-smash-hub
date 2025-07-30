@@ -61,7 +61,7 @@ const Index = () => {
   );
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #533483 100%)' }}>
+    <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #1a1a1a 0%, #2d1b69 25%, #8b5cf6 50%, #ec4899 75%, #f97316 100%)' }}>
       {/* Fixed Header with Gradient Background */}
       <div
         className="fixed top-0 left-0 w-full z-50 p-2 shadow-lg border-b"
@@ -84,7 +84,7 @@ const Index = () => {
       </div>
 
       {/* Today Views Card - Outside Header */}
-      <div className="container mx-auto px-4 pt-20">
+      <div className="container mx-auto px-4 pt-24">
         <TodayViews viewCount={todayViews} />
       </div>
 
