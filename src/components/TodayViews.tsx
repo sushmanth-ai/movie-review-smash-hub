@@ -8,7 +8,7 @@ interface TodayViewsProps {
 
 export const TodayViews: React.FC<TodayViewsProps> = ({ viewCount }) => {
   return (
-    <div className="max-w-sm mx-auto mb-4">
+    <div className="max-w-sm mx-auto mb-4 mt-6">
       <Card className="bg-gradient-to-br from-black via-red-900 to-red-600 border-red-500/50 backdrop-blur-xl shadow-xl relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-red-600/20 via-transparent to-black/30"></div>
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-red-300"></div>
