@@ -61,7 +61,7 @@ const Index = () => {
   );
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #1a1a1a 0%, #2d1b69 25%, #8b5cf6 50%, #ec4899 75%, #f97316 100%)' }}>
+    <div className="min-h-screen" style={{ background: 'linear-gradient(90deg, hsla(333, 100%, 53%, 1) 0%, hsla(33, 94%, 57%, 1) 100%)' }}>
       {/* Fixed Header with Gradient Background */}
       <div
         className="fixed top-0 left-0 w-full z-50 p-2 shadow-lg border-b"
