@@ -16,7 +16,7 @@ export const InteractionButtons: React.FC<InteractionButtonsProps> = ({
   onShare,
   isLiked = false
 }) => {
-  return <div className="flex justify-around items-center pt-4 border-t border-gray-700 bg-red-300 rounded-xl">
+  return <div className="flex justify-around items-center pt-4 border-t border-gray-700 rounded-xl bg-zinc-950">
       <Button variant="ghost" size="sm" onClick={() => onLike(review.id)} className={`flex items-center gap-2 text-white transition-colors ${isLiked ? 'text-red-500 hover:text-red-400' : 'hover:text-red-500'}`}>
         <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
         {review.likes}
