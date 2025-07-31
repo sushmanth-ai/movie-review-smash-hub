@@ -352,33 +352,22 @@ export const useFirebaseOperations = () => {
 
   // Track daily view for current user
   const trackDailyView = async () => {
-    console.log('trackDailyView called');
-    console.log('Current hostname:', window.location.hostname);
-    console.log('Current port:', window.location.port);
-    console.log('Current href:', window.location.href);
+    // Only track views in production to prevent development changes from affecting count
+    const isProduction = window.location.hostname !== 'localhost' && 
+                        !window.location.hostname.includes('127.0.0.1') &&
+                        !window.location.hostname.includes('.local') &&
+                        !window.location.hostname.includes('lovable.app');
     
-    // Only exclude localhost and local development, allow all other domains
-    const isLocalDevelopment = window.location.hostname === 'localhost' || 
-                              window.location.hostname.includes('127.0.0.1') ||
-                              window.location.hostname.includes('.local');
-    
-    console.log('Is local development:', isLocalDevelopment);
-    
-    if (isLocalDevelopment) {
-      console.log('Local development detected, skipping view tracking');
+    if (!isProduction) {
+      console.log('Development mode detected, skipping view tracking');
       return;
     }
 
     const today = new Date().toISOString().split('T')[0];
     const sessionKey = 'currentSessionViewed';
     
-    console.log('Today date:', today);
-    console.log('Session key:', sessionKey);
-    
     // Check if user has already been counted in this session
     const hasViewedInSession = sessionStorage.getItem(sessionKey);
-    console.log('Has viewed in session:', hasViewedInSession);
-    
     if (hasViewedInSession) {
       console.log('User already counted in this session');
       return;
@@ -386,68 +375,28 @@ export const useFirebaseOperations = () => {
     
     // Mark user as viewed in this session
     sessionStorage.setItem(sessionKey, 'true');
-    console.log('Marked user as viewed in session');
 
     if (!db) {
       console.log('Daily view tracked locally - Firebase not available');
       return;
     }
 
-    console.log('Starting Firebase transaction for view tracking');
     try {
       const viewsRef = doc(db, 'dailyViews', today);
       
       await runTransaction(db, async (transaction) => {
         const viewsDoc = await transaction.get(viewsRef);
         const currentCount = viewsDoc.exists() ? viewsDoc.data().count || 0 : 0;
-        console.log('Current count before increment:', currentCount);
-        
         transaction.set(viewsRef, { 
           count: currentCount + 1,
           date: today,
           lastUpdated: new Date().toISOString()
         }, { merge: true });
-        
-        console.log('Transaction completed, new count will be:', currentCount + 1);
       });
       
       console.log('Daily view tracked successfully');
     } catch (error) {
       console.error('Error tracking daily view:', error);
-    }
-  };
-
-  // Reset today's view count to zero
-  const resetTodayViews = async () => {
-    if (!db) {
-      console.log('Cannot reset views - Firebase not available');
-      return;
-    }
-
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      const viewsRef = doc(db, 'dailyViews', today);
-      
-      await setDoc(viewsRef, { 
-        count: 0,
-        date: today,
-        lastUpdated: new Date().toISOString()
-      });
-      
-      setTodayViews(0);
-      console.log('Today views reset to 0');
-      
-      toast({
-        title: "Views Reset",
-        description: "Today's view count has been reset to 0.",
-      });
-    } catch (error) {
-      console.error('Error resetting today views:', error);
-      toast({
-        title: "Error",
-        description: "Failed to reset view count.",
-        variant: "destructive"
-      });
     }
   };
 
@@ -472,7 +421,6 @@ export const useFirebaseOperations = () => {
     todayViews,
     loadTodayViews,
     trackDailyView,
-    setupRealTimeViewListener,
-    resetTodayViews
+    setupRealTimeViewListener
   };
 };
