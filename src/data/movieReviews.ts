@@ -23,6 +23,19 @@ export interface Comment {
 
 export const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [
   // ...existing reviews
+
+{
+    id: 'kingdom',
+    title: 'KINGDOM',
+    image: 'https://boxofficeindex.in/wp-content/uploads/2025/07/Mahavatar-Narsimha-1-768x432.webp',
+    review: 'inka Movie ela vundho detail review lo chudham',
+    firstHalf: '',
+    secondHalf: '',
+    positives: '',
+    negatives: '',
+    overall: "",
+    rating: ''
+  },
 {
     id: 'mahavtara narsimha',
     title: 'MAHAVATARA NARSIMHA',
