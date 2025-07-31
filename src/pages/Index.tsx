@@ -25,16 +25,10 @@ const Index = () => {
     todayViews,
     loadTodayViews,
     trackDailyView,
-    setupRealTimeViewListener,
-    resetTodayViews
+    setupRealTimeViewListener
   } = useFirebaseOperations();
 
   const [realTimeViewCount, setRealTimeViewCount] = useState(todayViews);
-
-  // Reset view count on component mount
-  useEffect(() => {
-    resetTodayViews();
-  }, []);
   useEffect(() => {
     initializeReviews();
     loadLikes(setReviews);
