@@ -28,7 +28,7 @@ export const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [
     id: 'kingdom',
     title: 'KINGDOM',
     image: 'https://cdn.123telugu.com/content/wp-content/uploads/2025/07/kingdom-14.jpg',
-    review: 'inka Kingdom Movie ela vundho detail review lo chudham',
+    review: 'inka Movie ela vundho detail review lo chudham',
     firstHalf: '',
     secondHalf: '',
     positives: '',
