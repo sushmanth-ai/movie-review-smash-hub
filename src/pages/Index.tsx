@@ -24,15 +24,32 @@ const Index = () => {
     clearLikedReviews,
     todayViews,
     loadTodayViews,
-    trackDailyView
+    trackDailyView,
+    setupRealTimeViewListener
   } = useFirebaseOperations();
+
+  const [realTimeViewCount, setRealTimeViewCount] = useState(todayViews);
   useEffect(() => {
     initializeReviews();
     loadLikes(setReviews);
     loadComments(setReviews);
     loadTodayViews();
     trackDailyView();
+
+    // Setup real-time listener for view count
+    const unsubscribe = setupRealTimeViewListener(setRealTimeViewCount);
+    
+    return () => {
+      if (typeof unsubscribe === 'function') {
+        unsubscribe();
+      }
+    };
   }, []);
+
+  // Update realTimeViewCount when todayViews changes
+  useEffect(() => {
+    setRealTimeViewCount(todayViews);
+  }, [todayViews]);
   const initializeReviews = async () => {
     const reviewsWithInteractions: MovieReview[] = movieReviewsData.map(review => ({
       ...review,
@@ -75,7 +92,7 @@ const Index = () => {
 
       {/* Today Views Card - Outside Header */}
       <div className="container mx-auto px-4 pt-24">
-        <TodayViews viewCount={todayViews} />
+        <TodayViews viewCount={realTimeViewCount} />
       </div>
 
       {/* Main Content */}

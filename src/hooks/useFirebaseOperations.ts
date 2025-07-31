@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, addDoc, query, orderBy, onSnapshot, updateDoc, doc, increment, getDocs, Timestamp, setDoc } from 'firebase/firestore';
+import { collection, addDoc, query, orderBy, onSnapshot, updateDoc, doc, increment, getDocs, Timestamp, setDoc, getDoc, runTransaction } from 'firebase/firestore';
 import { db } from '@/utils/firebase';
 import { MovieReview, Comment } from '@/data/movieReviews';
 import { useToast } from '@/hooks/use-toast';
@@ -308,24 +308,43 @@ export const useFirebaseOperations = () => {
     }
   };
 
+  // Setup real-time listener for today's views
+  const setupRealTimeViewListener = (setViewCount: React.Dispatch<React.SetStateAction<number>>) => {
+    if (!db) return () => {};
+
+    const today = new Date().toISOString().split('T')[0];
+    const viewsRef = doc(db, 'dailyViews', today);
+
+    const unsubscribe = onSnapshot(viewsRef, (doc) => {
+      if (doc.exists()) {
+        const count = doc.data().count || 0;
+        setViewCount(count);
+      } else {
+        setViewCount(0);
+      }
+    }, (error) => {
+      console.error('Error listening to view updates:', error);
+    });
+
+    return unsubscribe;
+  };
+
   // Load today's views
   const loadTodayViews = async () => {
     if (!db) return;
     
     try {
-      const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+      const today = new Date().toISOString().split('T')[0];
       const viewsRef = doc(db, 'dailyViews', today);
-      const viewsSnapshot = await getDocs(query(collection(db, 'dailyViews')));
+      const viewsSnap = await getDoc(viewsRef);
       
-      let todayCount = 0;
-      viewsSnapshot.forEach((doc) => {
-        if (doc.id === today) {
-          todayCount = doc.data().count || 0;
-        }
-      });
-      
-      setTodayViews(todayCount);
-      console.log('Today views loaded successfully:', todayCount);
+      if (viewsSnap.exists()) {
+        const count = viewsSnap.data().count || 0;
+        setTodayViews(count);
+        console.log('Today views loaded successfully:', count);
+      } else {
+        setTodayViews(0);
+      }
     } catch (error) {
       console.error('Error loading today views:', error);
     }
@@ -333,21 +352,29 @@ export const useFirebaseOperations = () => {
 
   // Track daily view for current user
   const trackDailyView = async () => {
-    const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
-    const userViewKey = `dailyView_${today}`;
+    // Only track views in production to prevent development changes from affecting count
+    const isProduction = window.location.hostname !== 'localhost' && 
+                        !window.location.hostname.includes('127.0.0.1') &&
+                        !window.location.hostname.includes('.local') &&
+                        !window.location.hostname.includes('lovable.app');
     
-    // Check if user has already been counted today
-    const hasViewedToday = localStorage.getItem(userViewKey);
-    if (hasViewedToday) {
-      console.log('User already counted for today');
+    if (!isProduction) {
+      console.log('Development mode detected, skipping view tracking');
+      return;
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+    const sessionKey = 'currentSessionViewed';
+    
+    // Check if user has already been counted in this session
+    const hasViewedInSession = sessionStorage.getItem(sessionKey);
+    if (hasViewedInSession) {
+      console.log('User already counted in this session');
       return;
     }
     
-    // Mark user as viewed today
-    localStorage.setItem(userViewKey, 'true');
-    
-    // Update local state immediately
-    setTodayViews(prev => prev + 1);
+    // Mark user as viewed in this session
+    sessionStorage.setItem(sessionKey, 'true');
 
     if (!db) {
       console.log('Daily view tracked locally - Firebase not available');
@@ -357,16 +384,14 @@ export const useFirebaseOperations = () => {
     try {
       const viewsRef = doc(db, 'dailyViews', today);
       
-      // Increment view count for today
-      await updateDoc(viewsRef, {
-        count: increment(1),
-        date: today
-      }).catch(async () => {
-        // If document doesn't exist, create it with count 1
-        await setDoc(viewsRef, {
-          count: 1,
-          date: today
-        });
+      await runTransaction(db, async (transaction) => {
+        const viewsDoc = await transaction.get(viewsRef);
+        const currentCount = viewsDoc.exists() ? viewsDoc.data().count || 0 : 0;
+        transaction.set(viewsRef, { 
+          count: currentCount + 1,
+          date: today,
+          lastUpdated: new Date().toISOString()
+        }, { merge: true });
       });
       
       console.log('Daily view tracked successfully');
@@ -395,6 +420,7 @@ export const useFirebaseOperations = () => {
     clearLikedReviews,
     todayViews,
     loadTodayViews,
-    trackDailyView
+    trackDailyView,
+    setupRealTimeViewListener
   };
 };
