@@ -352,14 +352,14 @@ export const useFirebaseOperations = () => {
 
   // Track daily view for current user
   const trackDailyView = async () => {
-    // Only track views in production - exclude localhost and local development
-    const isLocalDevelopment = window.location.hostname === 'localhost' || 
-                              window.location.hostname.includes('127.0.0.1') ||
-                              window.location.hostname.includes('.local') ||
-                              window.location.port !== '';
+    // Only track views in production to prevent development changes from affecting count
+    const isProduction = window.location.hostname !== 'localhost' && 
+                        !window.location.hostname.includes('127.0.0.1') &&
+                        !window.location.hostname.includes('.local') &&
+                        !window.location.hostname.includes('lovable.app');
     
-    if (isLocalDevelopment) {
-      console.log('Local development detected, skipping view tracking');
+    if (!isProduction) {
+      console.log('Development mode detected, skipping view tracking');
       return;
     }
 
