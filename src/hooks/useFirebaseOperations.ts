@@ -352,17 +352,11 @@ export const useFirebaseOperations = () => {
 
   // Track daily view for current user
   const trackDailyView = async () => {
-    console.log('trackDailyView called');
-    console.log('Current hostname:', window.location.hostname);
-    console.log('Current port:', window.location.port);
-    console.log('Current href:', window.location.href);
-    
-    // Only exclude localhost and local development, allow all other domains
+    // Only track views in production - exclude localhost and local development
     const isLocalDevelopment = window.location.hostname === 'localhost' || 
                               window.location.hostname.includes('127.0.0.1') ||
-                              window.location.hostname.includes('.local');
-    
-    console.log('Is local development:', isLocalDevelopment);
+                              window.location.hostname.includes('.local') ||
+                              window.location.port !== '';
     
     if (isLocalDevelopment) {
       console.log('Local development detected, skipping view tracking');
@@ -372,13 +366,8 @@ export const useFirebaseOperations = () => {
     const today = new Date().toISOString().split('T')[0];
     const sessionKey = 'currentSessionViewed';
     
-    console.log('Today date:', today);
-    console.log('Session key:', sessionKey);
-    
     // Check if user has already been counted in this session
     const hasViewedInSession = sessionStorage.getItem(sessionKey);
-    console.log('Has viewed in session:', hasViewedInSession);
-    
     if (hasViewedInSession) {
       console.log('User already counted in this session');
       return;
@@ -386,29 +375,23 @@ export const useFirebaseOperations = () => {
     
     // Mark user as viewed in this session
     sessionStorage.setItem(sessionKey, 'true');
-    console.log('Marked user as viewed in session');
 
     if (!db) {
       console.log('Daily view tracked locally - Firebase not available');
       return;
     }
 
-    console.log('Starting Firebase transaction for view tracking');
     try {
       const viewsRef = doc(db, 'dailyViews', today);
       
       await runTransaction(db, async (transaction) => {
         const viewsDoc = await transaction.get(viewsRef);
         const currentCount = viewsDoc.exists() ? viewsDoc.data().count || 0 : 0;
-        console.log('Current count before increment:', currentCount);
-        
         transaction.set(viewsRef, { 
           count: currentCount + 1,
           date: today,
           lastUpdated: new Date().toISOString()
         }, { merge: true });
-        
-        console.log('Transaction completed, new count will be:', currentCount + 1);
       });
       
       console.log('Daily view tracked successfully');
