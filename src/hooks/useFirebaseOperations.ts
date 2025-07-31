@@ -400,6 +400,40 @@ export const useFirebaseOperations = () => {
     }
   };
 
+  // Reset today's view count to zero
+  const resetTodayViews = async () => {
+    if (!db) {
+      console.log('Cannot reset views - Firebase not available');
+      return;
+    }
+
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const viewsRef = doc(db, 'dailyViews', today);
+      
+      await setDoc(viewsRef, { 
+        count: 0,
+        date: today,
+        lastUpdated: new Date().toISOString()
+      });
+      
+      setTodayViews(0);
+      console.log('Today views reset to 0');
+      
+      toast({
+        title: "Views Reset",
+        description: "Today's view count has been reset to 0.",
+      });
+    } catch (error) {
+      console.error('Error resetting today views:', error);
+      toast({
+        title: "Error",
+        description: "Failed to reset view count.",
+        variant: "destructive"
+      });
+    }
+  };
+
   // Function to clear all liked reviews (for testing purposes)
   const clearLikedReviews = () => {
     setLikedReviews(new Set());
@@ -421,6 +455,7 @@ export const useFirebaseOperations = () => {
     todayViews,
     loadTodayViews,
     trackDailyView,
-    setupRealTimeViewListener
+    setupRealTimeViewListener,
+    resetTodayViews
   };
 };
