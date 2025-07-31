@@ -29,12 +29,12 @@ export const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [
     title: 'KINGDOM',
     image: 'https://cdn.123telugu.com/content/wp-content/uploads/2025/07/kingdom-14.jpg',
     review: 'inka Movie ela vundho detail review lo chudham',
-    firstHalf: '',
-    secondHalf: '',
-    positives: '',
-    negatives: '',
-    overall: "",
-    rating: ''
+    firstHalf: 'First Half..chaala intresting gaa vuntundi.. conflicts, intresting scenes tho engage Chestaru.. vaalu create chesina World building chaala baguntadhi manki kuda chaala twarga connect avvudhi.. without spoken any dialogue..just Hand gesture intervel elevation padutundi Top notch 🔥🔥',
+    secondHalf: 'Asalu Movie Eyy etu etho podhi..chaala slow gaa veltu vuntadhi.. Emotions workout kaavu...last minute varaku post production work complete chestu vunte elaghe vuntadhi...okka manchi song ni lepeseru.. aa climax ento😌😌',
+    positives: 'Gautham Direction in First Half,VD Acting....',
+    negatives: 'Second half.. incompleteness feeling in last..Anirudh music kk but dhani ki taggatu scenes padaledu second half loo..',
+    overall: "it was Average",
+    rating: '3 STARS'
   },
 {
     id: 'mahavtara narsimha',
