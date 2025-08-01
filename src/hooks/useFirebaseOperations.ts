@@ -61,23 +61,43 @@ export const useFirebaseOperations = () => {
       const commentsQuery = query(collection(db, 'comments'), orderBy('timestamp', 'desc'));
       onSnapshot(commentsQuery, (snapshot) => {
         const commentsData: { [key: string]: Comment[] } = {};
+        const repliesData: { [key: string]: Comment[] } = {};
         
+        // First pass: collect all comments and replies
         snapshot.forEach((doc) => {
           const commentData = doc.data();
-          const comment: Comment & { reviewId: string } = {
+          const comment: Comment & { reviewId: string; parentCommentId?: string } = {
             id: doc.id,
             text: commentData.text,
             timestamp: commentData.timestamp instanceof Timestamp 
               ? commentData.timestamp.toDate() 
               : new Date(commentData.timestamp),
             author: commentData.author,
-            reviewId: commentData.reviewId
+            reviewId: commentData.reviewId,
+            replies: []
           };
           
-          if (!commentsData[comment.reviewId]) {
-            commentsData[comment.reviewId] = [];
+          if (commentData.parentCommentId) {
+            // This is a reply
+            if (!repliesData[commentData.parentCommentId]) {
+              repliesData[commentData.parentCommentId] = [];
+            }
+            repliesData[commentData.parentCommentId].push(comment);
+          } else {
+            // This is a main comment
+            if (!commentsData[comment.reviewId]) {
+              commentsData[comment.reviewId] = [];
+            }
+            commentsData[comment.reviewId].push(comment);
           }
-          commentsData[comment.reviewId].push(comment);
+        });
+
+        // Second pass: attach replies to their parent comments
+        Object.keys(commentsData).forEach(reviewId => {
+          commentsData[reviewId] = commentsData[reviewId].map(comment => ({
+            ...comment,
+            replies: repliesData[comment.id] || []
+          }));
         });
 
         setReviews(prev => prev.map(review => ({
@@ -85,7 +105,7 @@ export const useFirebaseOperations = () => {
           comments: commentsData[review.id] || []
         })));
         
-        console.log('Comments loaded successfully');
+        console.log('Comments and replies loaded successfully');
       });
     } catch (error) {
       console.error('Error loading comments:', error);
@@ -259,6 +279,89 @@ export const useFirebaseOperations = () => {
     }
   };
 
+  const handleReply = async (
+    reviewId: string,
+    parentCommentId: string,
+    replyText: string,
+    setReviews: React.Dispatch<React.SetStateAction<MovieReview[]>>
+  ) => {
+    if (!replyText?.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a reply before submitting.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Ask for user name
+    const userName = prompt("Please enter your name:");
+    if (!userName?.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter your name to post a reply.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    console.log('Reply submitted for comment:', parentCommentId, 'Text:', replyText, 'Author:', userName);
+
+    const reply: Comment = {
+      id: Date.now().toString(),
+      text: replyText,
+      timestamp: new Date(),
+      author: userName.trim()
+    };
+
+    // Update local state first for immediate feedback
+    setReviews(prev => prev.map(review => {
+      if (review.id === reviewId) {
+        const updatedComments = review.comments.map(comment => {
+          if (comment.id === parentCommentId) {
+            return {
+              ...comment,
+              replies: [reply, ...(comment.replies || [])]
+            };
+          }
+          return comment;
+        });
+        return { ...review, comments: updatedComments };
+      }
+      return review;
+    }));
+
+    if (!db) {
+      toast({
+        title: "Reply added! (Demo Mode)",
+        description: "Reply saved locally - Firebase not available.",
+      });
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, 'comments'), {
+        reviewId,
+        parentCommentId,
+        text: reply.text,
+        timestamp: reply.timestamp,
+        author: reply.author
+      });
+
+      console.log('Reply saved to Firebase successfully');
+      toast({
+        title: "Reply added!",
+        description: "Your reply has been posted.",
+      });
+    } catch (error) {
+      console.error('Error adding reply:', error);
+      toast({
+        title: "Reply added! (Demo Mode)",
+        description: "Reply saved locally - Firebase connection issue.",
+      });
+    }
+  };
+
   const handleShare = async (review: MovieReview) => {
     console.log('Share button clicked for:', review.title);
     
@@ -416,6 +519,7 @@ export const useFirebaseOperations = () => {
     loadComments,
     handleLike,
     handleComment,
+    handleReply,
     handleShare,
     likedReviews,
     clearLikedReviews,

@@ -19,6 +19,7 @@ const Index = () => {
     loadComments,
     handleLike,
     handleComment,
+    handleReply,
     handleShare,
     likedReviews,
     clearLikedReviews,
@@ -76,29 +77,7 @@ const Index = () => {
   };
 
   const handleReplySubmit = (reviewId: string, commentId: string, replyText: string) => {
-    setReviews(prevReviews => 
-      prevReviews.map(review => {
-        if (review.id === reviewId) {
-          const updatedComments = review.comments.map(comment => {
-            if (comment.id === commentId) {
-              const newReply = {
-                id: `${commentId}-reply-${Date.now()}`,
-                text: replyText,
-                timestamp: new Date(),
-                author: 'You'
-              };
-              return {
-                ...comment,
-                replies: comment.replies ? [...comment.replies, newReply] : [newReply]
-              };
-            }
-            return comment;
-          });
-          return { ...review, comments: updatedComments };
-        }
-        return review;
-      })
-    );
+    handleReply(reviewId, commentId, replyText, setReviews);
   };
   const filteredReviews = reviews.filter(review => review.title.toLowerCase().includes(searchTerm.toLowerCase()) || review.review.toLowerCase().includes(searchTerm.toLowerCase()));
   return <div className="min-h-screen" style={{
