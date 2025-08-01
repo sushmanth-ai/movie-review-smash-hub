@@ -352,29 +352,31 @@ export const useFirebaseOperations = () => {
 
   // Track daily view for current user
   const trackDailyView = async () => {
-    // Only track views in production to prevent development changes from affecting count
-    const isProduction = window.location.hostname !== 'localhost' && 
-                        !window.location.hostname.includes('127.0.0.1') &&
-                        !window.location.hostname.includes('.local') &&
-                        !window.location.hostname.includes('lovable.app');
+    // Only track views on the actual production domain
+    const isProduction = window.location.hostname.includes('lovable.app') || 
+                        window.location.hostname.includes('lovable.dev') ||
+                        (window.location.hostname !== 'localhost' && 
+                         !window.location.hostname.includes('127.0.0.1') &&
+                         !window.location.hostname.includes('.local') &&
+                         !window.location.hostname.includes('preview'));
     
     if (!isProduction) {
-      console.log('Development mode detected, skipping view tracking');
+      console.log('Development/preview mode detected, skipping view tracking');
       return;
     }
 
     const today = new Date().toISOString().split('T')[0];
-    const sessionKey = 'currentSessionViewed';
+    const dailyViewKey = `dailyView_${today}`;
     
-    // Check if user has already been counted in this session
-    const hasViewedInSession = sessionStorage.getItem(sessionKey);
-    if (hasViewedInSession) {
-      console.log('User already counted in this session');
+    // Check if user has already been counted today (not just session)
+    const hasViewedToday = localStorage.getItem(dailyViewKey);
+    if (hasViewedToday) {
+      console.log('User already counted today');
       return;
     }
     
-    // Mark user as viewed in this session
-    sessionStorage.setItem(sessionKey, 'true');
+    // Mark user as viewed today
+    localStorage.setItem(dailyViewKey, 'true');
 
     if (!db) {
       console.log('Daily view tracked locally - Firebase not available');
