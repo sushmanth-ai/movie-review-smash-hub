@@ -19,6 +19,7 @@ export interface Comment {
   text: string;
   timestamp: Date;
   author: string;
+  replies?: Comment[];
 }
 
 export const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [

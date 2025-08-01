@@ -12,6 +12,7 @@ interface MovieCardProps {
   onShare: (review: MovieReview) => void;
   onCommentChange: (reviewId: string, value: string) => void;
   onCommentSubmit: (reviewId: string) => void;
+  onReplySubmit: (reviewId: string, commentId: string, replyText: string) => void;
   isLiked?: boolean;
 }
 export const MovieCard: React.FC<MovieCardProps> = ({
@@ -23,6 +24,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   onShare,
   onCommentChange,
   onCommentSubmit,
+  onReplySubmit,
   isLiked = false
 }) => {
   return <Card className="bg-black text-white border-none shadow-xl h-full">
@@ -74,7 +76,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
 
         <InteractionButtons review={review} onLike={onLike} onToggleComments={onToggleComments} onShare={onShare} isLiked={isLiked} />
 
-        {showComments && <CommentSection review={review} newComment={newComment} onCommentChange={value => onCommentChange(review.id, value)} onCommentSubmit={() => onCommentSubmit(review.id)} />}
+        {showComments && <CommentSection review={review} newComment={newComment} onCommentChange={value => onCommentChange(review.id, value)} onCommentSubmit={() => onCommentSubmit(review.id)} onReplySubmit={(commentId, replyText) => onReplySubmit(review.id, commentId, replyText)} />}
       </CardContent>
 
       <CardFooter style={{

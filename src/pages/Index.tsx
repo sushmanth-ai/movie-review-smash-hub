@@ -74,6 +74,32 @@ const Index = () => {
     const commentText = newComment[reviewId];
     handleComment(reviewId, commentText, setReviews, setNewComment);
   };
+
+  const handleReplySubmit = (reviewId: string, commentId: string, replyText: string) => {
+    setReviews(prevReviews => 
+      prevReviews.map(review => {
+        if (review.id === reviewId) {
+          const updatedComments = review.comments.map(comment => {
+            if (comment.id === commentId) {
+              const newReply = {
+                id: `${commentId}-reply-${Date.now()}`,
+                text: replyText,
+                timestamp: new Date(),
+                author: 'You'
+              };
+              return {
+                ...comment,
+                replies: comment.replies ? [...comment.replies, newReply] : [newReply]
+              };
+            }
+            return comment;
+          });
+          return { ...review, comments: updatedComments };
+        }
+        return review;
+      })
+    );
+  };
   const filteredReviews = reviews.filter(review => review.title.toLowerCase().includes(searchTerm.toLowerCase()) || review.review.toLowerCase().includes(searchTerm.toLowerCase()));
   return <div className="min-h-screen" style={{
     background: 'linear-gradient(90deg, hsla(333, 100%, 53%, 1) 0%, hsla(33, 94%, 57%, 1) 100%)'
@@ -98,7 +124,7 @@ const Index = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 pt-0 pb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredReviews.map(review => <MovieCard key={review.id} review={review} showComments={showComments[review.id] || false} newComment={newComment[review.id] || ''} onLike={reviewId => handleLike(reviewId, setReviews)} onToggleComments={handleToggleComments} onShare={handleShare} onCommentChange={handleCommentChange} onCommentSubmit={handleCommentSubmit} isLiked={likedReviews.has(review.id)} />)}
+          {filteredReviews.map(review => <MovieCard key={review.id} review={review} showComments={showComments[review.id] || false} newComment={newComment[review.id] || ''} onLike={reviewId => handleLike(reviewId, setReviews)} onToggleComments={handleToggleComments} onShare={handleShare} onCommentChange={handleCommentChange} onCommentSubmit={handleCommentSubmit} onReplySubmit={handleReplySubmit} isLiked={likedReviews.has(review.id)} />)}
         </div>
       </div>
     </div>;
