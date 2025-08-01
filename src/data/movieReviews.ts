@@ -23,7 +23,18 @@ export interface Comment {
 
 export const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [
   // ...existing reviews
-
+{
+    id: 'sir Madam',
+    title: 'SIR MADAM',
+    image: 'https://assetscdn1.paytm.com/images/cinema/sir-madam-cover-b8268b50-5e4a-11f0-955e-b3a7ddd74d55.jpg',
+    review: 'inka Movie ela vundho detail review lo chudham',
+    firstHalf: 'First half..chaala Fun gaa velipoindhi.. First nunchi last daakaa Fun gaa velthu vuntadhi.Hero characterization picha picha gaa vuntadhi.. okka fast screenplay tho run avvutu Vuntadhi overall Decent First half...',
+    secondHalf: 'Chala Relastic situations ni screen midha present cheseru..emotions chaala baga blend cheseru.. comedy Matram Next Level especially climax part is hilarious 😂😂...post credit scene too good...',
+    positives: 'Vijay Sethupathi Acting, Heroine performance, Story, screenplay,Fun, Direction 👌',
+    negatives: 'No Negatives ',
+    overall: "Chaala Bagundhi.. Family tho vellandi Nuvvu kuntu baithaki vastaru...",
+    rating: '4 STARS'
+  },
 {
     id: 'kingdom',
     title: 'KINGDOM',
