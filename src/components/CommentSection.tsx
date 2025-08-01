@@ -50,23 +50,21 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
         <p className="text-xs text-gray-500">
           {comment.author} • {comment.timestamp.toLocaleString()}
         </p>
-        {!isReply && (
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-6 px-2 text-xs text-gray-400 hover:text-white"
-            onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-          >
-            <Reply className="w-3 h-3 mr-1" />
-            Reply
-          </Button>
-        )}
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-6 px-2 text-xs text-gray-400 hover:text-white"
+          onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
+        >
+          <Reply className="w-3 h-3 mr-1" />
+          Reply
+        </Button>
       </div>
       
       {replyingTo === comment.id && (
         <div className="flex gap-2 mt-2">
           <Input
-            placeholder="Write a reply..."
+            placeholder={`Reply to ${comment.author}...`}
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}
             className="flex-1 bg-gray-700 border-gray-600 text-white text-xs h-8"
