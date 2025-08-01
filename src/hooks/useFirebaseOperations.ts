@@ -352,16 +352,15 @@ export const useFirebaseOperations = () => {
 
   // Track daily view for current user
   const trackDailyView = async () => {
-    // Only track views on the actual production domain
-    const isProduction = window.location.hostname.includes('lovable.app') || 
-                        window.location.hostname.includes('lovable.dev') ||
-                        (window.location.hostname !== 'localhost' && 
-                         !window.location.hostname.includes('127.0.0.1') &&
-                         !window.location.hostname.includes('.local') &&
-                         !window.location.hostname.includes('preview'));
+    // ONLY track views on your actual published domain - replace with your domain
+    const publishedDomain = 'your-published-domain.com'; // Replace this with your actual domain
+    const isActualProduction = window.location.hostname === publishedDomain;
     
-    if (!isProduction) {
-      console.log('Development/preview mode detected, skipping view tracking');
+    console.log('Current hostname:', window.location.hostname);
+    console.log('Is actual production:', isActualProduction);
+    
+    if (!isActualProduction) {
+      console.log('Not on published domain, skipping view tracking');
       return;
     }
 
