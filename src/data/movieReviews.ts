@@ -33,7 +33,7 @@ export const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [
     firstHalf: 'Starting story setup ni establish chestadu..aaa Tarvata vachhe characters...Rajini entry..Monica song Main Innervel scene high high ante... Anirudh okka Range loo kottedu BGM..Okka okka scene lepedu..',
     secondHalf: 'Second half chaala baaga start avuthadhi..Characters Shifts baaga Raasukunnaru... Madhyalo konchem Track Tappidhi..aa tarvata Pre climax ki set aidhi..Climax High istadhi... Anirudh BGM tho Movie ni Next Level ki  tisukuveledu...',
     positives: 'Aniruddh BGM💥💥,Loki Direction,Rajini Swag 😎...',
-    negatives: 'Second Half middle Portion loo konchem Baaga Excute cheatunte bagundedhI..',
+    negatives: 'Second Half middle Portion loo konchem Baaga Excute chesi vunte bagundedhI..',
     overall: "except some portions nakku aite nachindhi guys",
     rating: '3.8 STARS'
   },
