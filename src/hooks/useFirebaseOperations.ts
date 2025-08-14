@@ -470,15 +470,34 @@ export const useFirebaseOperations = () => {
     const today = new Date().toISOString().split('T')[0];
     const dailyViewKey = `dailyView_${today}`;
     
-    // Check if user has already been counted today (not just session)
-    const hasViewedToday = localStorage.getItem(dailyViewKey);
-    if (hasViewedToday) {
-      console.log('User already counted today');
-      return;
+    // Check if user has already been counted today
+    const viewData = localStorage.getItem(dailyViewKey);
+    if (viewData) {
+      try {
+        const { timestamp } = JSON.parse(viewData);
+        const timeDiff = Date.now() - timestamp;
+        const twentyFourHours = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+        
+        if (timeDiff < twentyFourHours) {
+          console.log('User already counted today');
+          return;
+        } else {
+          // More than 24 hours passed, remove old entry
+          localStorage.removeItem(dailyViewKey);
+          console.log('24 hours passed, resetting view tracking');
+        }
+      } catch (error) {
+        // Invalid data, remove it
+        localStorage.removeItem(dailyViewKey);
+        console.log('Invalid view data, clearing');
+      }
     }
     
-    // Mark user as viewed today
-    localStorage.setItem(dailyViewKey, 'true');
+    // Mark user as viewed today with timestamp
+    localStorage.setItem(dailyViewKey, JSON.stringify({ 
+      viewed: true, 
+      timestamp: Date.now() 
+    }));
 
     if (!db) {
       console.log('Daily view tracked locally - Firebase not available');
