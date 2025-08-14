@@ -569,6 +569,51 @@ export const useFirebaseOperations = () => {
     }
   };
 
+  // Function to reset live views to zero
+  const resetLiveViews = async () => {
+    try {
+      // Clear all localStorage view tracking data
+      const keys = Object.keys(localStorage);
+      const viewKeys = keys.filter(key => key.startsWith('dailyView_') || key === 'persistentUserId');
+      viewKeys.forEach(key => {
+        localStorage.removeItem(key);
+        console.log('Removed localStorage key:', key);
+      });
+      
+      // Reset Firebase daily views to 0
+      if (db) {
+        const today = new Date().toISOString().split('T')[0];
+        const viewsRef = doc(db, 'dailyViews', today);
+        
+        await setDoc(viewsRef, { 
+          count: 0,
+          date: today,
+          lastUpdated: new Date().toISOString(),
+          resetAt: new Date().toISOString()
+        });
+        
+        console.log('Firebase daily views reset to 0');
+      }
+      
+      // Reset local state
+      setTodayViews(0);
+      
+      toast({
+        title: "Reset Complete",
+        description: "Live views have been reset to zero. Fresh start!",
+      });
+      
+      console.log('Live views reset successfully');
+    } catch (error) {
+      console.error('Error resetting live views:', error);
+      toast({
+        title: "Error",
+        description: "Failed to reset live views. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   // Function to clear all liked reviews (for testing purposes)
   const clearLikedReviews = () => {
     setLikedReviews(new Set());
@@ -591,6 +636,7 @@ export const useFirebaseOperations = () => {
     todayViews,
     loadTodayViews,
     trackDailyView,
-    setupRealTimeViewListener
+    setupRealTimeViewListener,
+    resetLiveViews
   };
 };
