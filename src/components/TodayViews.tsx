@@ -15,15 +15,7 @@ export const TodayViews: React.FC<TodayViewsProps> = ({
           <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
           <span className="text-emerald-400 text-xs font-medium">LIVE</span>
         </div>
-        <CardContent className="relative flex items-center justify-center gap-3 p-4 pt-6 bg-[#a25252]/[0.73]">
-          <div className="bg-gradient-to-br from-purple-500/40 to-pink-600/60 p-3 rounded-full shadow-xl backdrop-blur-md border border-purple-400/30">
-            <Eye className="h-5 w-5 text-purple-200 drop-shadow-xl" strokeWidth={2.5} />
-          </div>
-          <div className="text-center">
-            <p className="text-white font-black text-2xl drop-shadow-xl tracking-tight bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">{viewCount.toLocaleString()}</p>
-            <p className="text-purple-200/95 text-xs font-bold tracking-[0.2em] uppercase drop-shadow-lg">Today Live Views</p>
-          </div>
-        </CardContent>
+        
       </Card>
     </div>;
 };
