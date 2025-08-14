@@ -26,8 +26,7 @@ const Index = () => {
     todayViews,
     loadTodayViews,
     trackDailyView,
-    setupRealTimeViewListener,
-    resetLiveViews
+    setupRealTimeViewListener
   } = useFirebaseOperations();
 
   const [realTimeViewCount, setRealTimeViewCount] = useState(todayViews);
@@ -93,14 +92,6 @@ const Index = () => {
         </h1>
         <div className="flex gap-2 mb-2">
           <Input type="text" placeholder="Search for movie Reviews..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="flex-1 bg-pink-100" />
-          <Button 
-            onClick={resetLiveViews}
-            variant="outline" 
-            size="sm"
-            className="bg-white/20 text-white border-white/30 hover:bg-white/30 text-xs px-3"
-          >
-            Reset Views
-          </Button>
         </div>
       </div>
 

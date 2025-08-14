@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { collection, addDoc, query, orderBy, onSnapshot, updateDoc, doc, increment, getDocs, Timestamp, setDoc, getDoc, runTransaction } from 'firebase/firestore';
 import { db } from '@/utils/firebase';
@@ -454,71 +453,24 @@ export const useFirebaseOperations = () => {
     }
   };
 
-  // Generate or get persistent user ID
-  const getPersistentUserId = () => {
-    let userId = localStorage.getItem('persistentUserId');
-    if (!userId) {
-      // Create a more unique user ID using browser fingerprinting elements
-      const browserInfo = {
-        userAgent: navigator.userAgent,
-        language: navigator.language,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        screen: `${screen.width}x${screen.height}`,
-        timestamp: Date.now(),
-        random: Math.random().toString(36).substr(2, 9)
-      };
-      
-      // Create a hash-like ID from browser info
-      const hashCode = JSON.stringify(browserInfo).split('').reduce((a, b) => {
-        a = ((a << 5) - a) + b.charCodeAt(0);
-        return a & a;
-      }, 0);
-      
-      userId = `user_${Math.abs(hashCode)}_${browserInfo.random}`;
-      localStorage.setItem('persistentUserId', userId);
-      console.log('Generated new persistent user ID:', userId);
-    }
-    return userId;
-  };
-
-  // Clean up old view entries from localStorage
-  const cleanupOldViewEntries = () => {
-    const keys = Object.keys(localStorage);
-    const viewKeys = keys.filter(key => key.startsWith('dailyView_'));
-    const twentyFourHours = 24 * 60 * 60 * 1000;
-    
-    viewKeys.forEach(key => {
-      try {
-        const data = localStorage.getItem(key);
-        if (data) {
-          const { timestamp } = JSON.parse(data);
-          const timeDiff = Date.now() - timestamp;
-          
-          if (timeDiff >= twentyFourHours) {
-            localStorage.removeItem(key);
-            console.log('Removed old view entry:', key);
-          }
-        }
-      } catch (error) {
-        // Invalid data, remove it
-        localStorage.removeItem(key);
-        console.log('Removed invalid view entry:', key);
-      }
-    });
-  };
-
   // Track daily view for current user
   const trackDailyView = async () => {
-    console.log('Tracking daily view for hostname:', window.location.hostname);
+    // ONLY track views on your actual published domain - replace with your domain
+    const publishedDomain = 'your-published-domain.com'; // Replace this with your actual domain
+    const isActualProduction = window.location.hostname === publishedDomain;
     
-    // Clean up old entries first
-    cleanupOldViewEntries();
+    console.log('Current hostname:', window.location.hostname);
+    console.log('Is actual production:', isActualProduction);
+    
+    if (!isActualProduction) {
+      console.log('Not on published domain, skipping view tracking');
+      return;
+    }
 
-    // Use persistent user ID that doesn't change on page reload
-    const userId = getPersistentUserId();
-    const dailyViewKey = `dailyView_${userId}`;
+    const today = new Date().toISOString().split('T')[0];
+    const dailyViewKey = `dailyView_${today}`;
     
-    // Check if user has already been counted in the last 24 hours
+    // Check if user has already been counted today
     const viewData = localStorage.getItem(dailyViewKey);
     if (viewData) {
       try {
@@ -527,21 +479,24 @@ export const useFirebaseOperations = () => {
         const twentyFourHours = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
         
         if (timeDiff < twentyFourHours) {
-          console.log('User already counted in last 24 hours, skipping view increment');
+          console.log('User already counted today');
           return;
         } else {
-          console.log('24+ hours passed, allowing new view count');
+          // More than 24 hours passed, remove old entry
+          localStorage.removeItem(dailyViewKey);
+          console.log('24 hours passed, resetting view tracking');
         }
       } catch (error) {
+        // Invalid data, remove it
+        localStorage.removeItem(dailyViewKey);
         console.log('Invalid view data, clearing');
       }
     }
     
-    // Mark user as viewed with current timestamp
+    // Mark user as viewed today with timestamp
     localStorage.setItem(dailyViewKey, JSON.stringify({ 
       viewed: true, 
-      timestamp: Date.now(),
-      userId: userId
+      timestamp: Date.now() 
     }));
 
     if (!db) {
@@ -550,7 +505,6 @@ export const useFirebaseOperations = () => {
     }
 
     try {
-      const today = new Date().toISOString().split('T')[0];
       const viewsRef = doc(db, 'dailyViews', today);
       
       await runTransaction(db, async (transaction) => {
@@ -563,54 +517,9 @@ export const useFirebaseOperations = () => {
         }, { merge: true });
       });
       
-      console.log('Daily view tracked successfully for user:', userId);
+      console.log('Daily view tracked successfully');
     } catch (error) {
       console.error('Error tracking daily view:', error);
-    }
-  };
-
-  // Function to reset live views to zero
-  const resetLiveViews = async () => {
-    try {
-      // Clear all localStorage view tracking data
-      const keys = Object.keys(localStorage);
-      const viewKeys = keys.filter(key => key.startsWith('dailyView_') || key === 'persistentUserId');
-      viewKeys.forEach(key => {
-        localStorage.removeItem(key);
-        console.log('Removed localStorage key:', key);
-      });
-      
-      // Reset Firebase daily views to 0
-      if (db) {
-        const today = new Date().toISOString().split('T')[0];
-        const viewsRef = doc(db, 'dailyViews', today);
-        
-        await setDoc(viewsRef, { 
-          count: 0,
-          date: today,
-          lastUpdated: new Date().toISOString(),
-          resetAt: new Date().toISOString()
-        });
-        
-        console.log('Firebase daily views reset to 0');
-      }
-      
-      // Reset local state
-      setTodayViews(0);
-      
-      toast({
-        title: "Reset Complete",
-        description: "Live views have been reset to zero. Fresh start!",
-      });
-      
-      console.log('Live views reset successfully');
-    } catch (error) {
-      console.error('Error resetting live views:', error);
-      toast({
-        title: "Error",
-        description: "Failed to reset live views. Please try again.",
-        variant: "destructive"
-      });
     }
   };
 
@@ -636,7 +545,6 @@ export const useFirebaseOperations = () => {
     todayViews,
     loadTodayViews,
     trackDailyView,
-    setupRealTimeViewListener,
-    resetLiveViews
+    setupRealTimeViewListener
   };
 };
