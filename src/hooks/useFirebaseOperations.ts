@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { collection, addDoc, query, orderBy, onSnapshot, updateDoc, doc, increment, getDocs, Timestamp, setDoc, getDoc, runTransaction } from 'firebase/firestore';
 import { db } from '@/utils/firebase';
@@ -453,6 +454,33 @@ export const useFirebaseOperations = () => {
     }
   };
 
+  // Generate or get persistent user ID
+  const getPersistentUserId = () => {
+    let userId = localStorage.getItem('persistentUserId');
+    if (!userId) {
+      // Create a more unique user ID using browser fingerprinting elements
+      const browserInfo = {
+        userAgent: navigator.userAgent,
+        language: navigator.language,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        screen: `${screen.width}x${screen.height}`,
+        timestamp: Date.now(),
+        random: Math.random().toString(36).substr(2, 9)
+      };
+      
+      // Create a hash-like ID from browser info
+      const hashCode = JSON.stringify(browserInfo).split('').reduce((a, b) => {
+        a = ((a << 5) - a) + b.charCodeAt(0);
+        return a & a;
+      }, 0);
+      
+      userId = `user_${Math.abs(hashCode)}_${browserInfo.random}`;
+      localStorage.setItem('persistentUserId', userId);
+      console.log('Generated new persistent user ID:', userId);
+    }
+    return userId;
+  };
+
   // Clean up old view entries from localStorage
   const cleanupOldViewEntries = () => {
     const keys = Object.keys(localStorage);
@@ -486,12 +514,8 @@ export const useFirebaseOperations = () => {
     // Clean up old entries first
     cleanupOldViewEntries();
 
-    // Use a more specific key that includes user session info
-    const userId = localStorage.getItem('userId') || `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    if (!localStorage.getItem('userId')) {
-      localStorage.setItem('userId', userId);
-    }
-    
+    // Use persistent user ID that doesn't change on page reload
+    const userId = getPersistentUserId();
     const dailyViewKey = `dailyView_${userId}`;
     
     // Check if user has already been counted in the last 24 hours
@@ -503,7 +527,7 @@ export const useFirebaseOperations = () => {
         const twentyFourHours = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
         
         if (timeDiff < twentyFourHours) {
-          console.log('User already counted in last 24 hours');
+          console.log('User already counted in last 24 hours, skipping view increment');
           return;
         } else {
           console.log('24+ hours passed, allowing new view count');
@@ -516,7 +540,8 @@ export const useFirebaseOperations = () => {
     // Mark user as viewed with current timestamp
     localStorage.setItem(dailyViewKey, JSON.stringify({ 
       viewed: true, 
-      timestamp: Date.now() 
+      timestamp: Date.now(),
+      userId: userId
     }));
 
     if (!db) {
@@ -538,7 +563,7 @@ export const useFirebaseOperations = () => {
         }, { merge: true });
       });
       
-      console.log('Daily view tracked successfully');
+      console.log('Daily view tracked successfully for user:', userId);
     } catch (error) {
       console.error('Error tracking daily view:', error);
     }
