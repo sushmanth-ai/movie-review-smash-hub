@@ -453,24 +453,48 @@ export const useFirebaseOperations = () => {
     }
   };
 
+  // Clean up old view entries from localStorage
+  const cleanupOldViewEntries = () => {
+    const keys = Object.keys(localStorage);
+    const viewKeys = keys.filter(key => key.startsWith('dailyView_'));
+    const twentyFourHours = 24 * 60 * 60 * 1000;
+    
+    viewKeys.forEach(key => {
+      try {
+        const data = localStorage.getItem(key);
+        if (data) {
+          const { timestamp } = JSON.parse(data);
+          const timeDiff = Date.now() - timestamp;
+          
+          if (timeDiff >= twentyFourHours) {
+            localStorage.removeItem(key);
+            console.log('Removed old view entry:', key);
+          }
+        }
+      } catch (error) {
+        // Invalid data, remove it
+        localStorage.removeItem(key);
+        console.log('Removed invalid view entry:', key);
+      }
+    });
+  };
+
   // Track daily view for current user
   const trackDailyView = async () => {
-    // ONLY track views on your actual published domain - replace with your domain
-    const publishedDomain = 'your-published-domain.com'; // Replace this with your actual domain
-    const isActualProduction = window.location.hostname === publishedDomain;
+    console.log('Tracking daily view for hostname:', window.location.hostname);
     
-    console.log('Current hostname:', window.location.hostname);
-    console.log('Is actual production:', isActualProduction);
-    
-    if (!isActualProduction) {
-      console.log('Not on published domain, skipping view tracking');
-      return;
-    }
+    // Clean up old entries first
+    cleanupOldViewEntries();
 
-    const today = new Date().toISOString().split('T')[0];
-    const dailyViewKey = `dailyView_${today}`;
+    // Use a more specific key that includes user session info
+    const userId = localStorage.getItem('userId') || `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    if (!localStorage.getItem('userId')) {
+      localStorage.setItem('userId', userId);
+    }
     
-    // Check if user has already been counted today
+    const dailyViewKey = `dailyView_${userId}`;
+    
+    // Check if user has already been counted in the last 24 hours
     const viewData = localStorage.getItem(dailyViewKey);
     if (viewData) {
       try {
@@ -479,21 +503,17 @@ export const useFirebaseOperations = () => {
         const twentyFourHours = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
         
         if (timeDiff < twentyFourHours) {
-          console.log('User already counted today');
+          console.log('User already counted in last 24 hours');
           return;
         } else {
-          // More than 24 hours passed, remove old entry
-          localStorage.removeItem(dailyViewKey);
-          console.log('24 hours passed, resetting view tracking');
+          console.log('24+ hours passed, allowing new view count');
         }
       } catch (error) {
-        // Invalid data, remove it
-        localStorage.removeItem(dailyViewKey);
         console.log('Invalid view data, clearing');
       }
     }
     
-    // Mark user as viewed today with timestamp
+    // Mark user as viewed with current timestamp
     localStorage.setItem(dailyViewKey, JSON.stringify({ 
       viewed: true, 
       timestamp: Date.now() 
@@ -505,6 +525,7 @@ export const useFirebaseOperations = () => {
     }
 
     try {
+      const today = new Date().toISOString().split('T')[0];
       const viewsRef = doc(db, 'dailyViews', today);
       
       await runTransaction(db, async (transaction) => {
