@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { MovieReview, movieReviewsData } from '@/data/movieReviews';
 import { useFirebaseOperations } from '@/hooks/useFirebaseOperations';
 import { MovieCard } from '@/components/MovieCard';
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { db } from '@/utils/firebase';
 import { TodayViews } from '@/components/TodayViews';
 const Index = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -30,10 +32,59 @@ const Index = () => {
   } = useFirebaseOperations();
 
   const [realTimeViewCount, setRealTimeViewCount] = useState(todayViews);
+
+  // Load reviews from Firebase and merge with static data
   useEffect(() => {
-    initializeReviews();
-    loadLikes(setReviews);
-    loadComments(setReviews);
+    if (!db) {
+      // If Firebase not available, use static data
+      initializeReviews();
+      return;
+    }
+
+    // Listen to Firebase reviews in real-time
+    const reviewsQuery = query(collection(db, 'reviews'), orderBy('createdAt', 'desc'));
+    
+    const unsubscribe = onSnapshot(reviewsQuery, (snapshot) => {
+      const firebaseReviews: MovieReview[] = [];
+      
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        firebaseReviews.push({
+          id: doc.id,
+          title: data.title,
+          image: data.image,
+          review: data.review,
+          firstHalf: data.firstHalf,
+          secondHalf: data.secondHalf,
+          positives: data.positives,
+          negatives: data.negatives,
+          overall: data.overall,
+          rating: data.rating,
+          likes: 0,
+          comments: []
+        });
+      });
+
+      // Combine Firebase reviews with static reviews
+      const staticReviews: MovieReview[] = movieReviewsData.map(review => ({
+        ...review,
+        likes: 0,
+        comments: []
+      }));
+
+      // Firebase reviews first, then static reviews
+      const allReviews = [...firebaseReviews, ...staticReviews];
+      setReviews(allReviews);
+      
+      // Load likes and comments for all reviews
+      loadLikes(setReviews);
+      loadComments(setReviews);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
     loadTodayViews();
     trackDailyView();
 
@@ -51,6 +102,7 @@ const Index = () => {
   useEffect(() => {
     setRealTimeViewCount(todayViews);
   }, [todayViews]);
+
   const initializeReviews = async () => {
     const reviewsWithInteractions: MovieReview[] = movieReviewsData.map(review => ({
       ...review,
