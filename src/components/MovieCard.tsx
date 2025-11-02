@@ -86,7 +86,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
             </div>
           </div>
 
-          <InteractionButtons review={review} onLike={onLike} onToggleComments={onToggleComments} onShare={onShare} isLiked={isLiked} className="bg-inherit" />
+          <InteractionButtons review={review} onLike={onLike} onToggleComments={onToggleComments} onShare={onShare} isLiked={isLiked} />
 
           {showComments && <CommentSection review={review} newComment={newComment} onCommentChange={value => onCommentChange(review.id, value)} onCommentSubmit={() => onCommentSubmit(review.id)} onReplySubmit={(commentId, replyText) => onReplySubmit(review.id, commentId, replyText)} />}
         </CardContent>}
