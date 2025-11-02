@@ -49,7 +49,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
             {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </div>
 
-          {!isExpanded && <p className="text-muted-foreground text-sm line-clamp-3 text-center">{review.review}</p>}
+          {!isExpanded && <p className="text-muted-foreground text-sm line-clamp-3">{review.review}</p>}
         </CardContent>
       </div>
 
