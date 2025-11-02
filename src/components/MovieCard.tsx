@@ -56,7 +56,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
       {isExpanded && <CardContent className="space-y-4 pt-0" onClick={e => e.stopPropagation()}>
           <div className="border-t border-primary/30 pt-4">
             <h5 className="text-center font-bold text-primary mb-3">REVIEW</h5>
-            <p className="text-card-foreground font-medium text-sm">{review.review}</p>
+            <p className="text-sm text-slate-50 font-bold">{review.review}</p>
           </div>
 
           <div className="space-y-3">
