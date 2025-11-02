@@ -62,7 +62,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
           <div className="space-y-3">
             <div className="border-l-2 border-primary pl-3">
               <h6 className="text-primary font-bold mb-1">First Half:</h6>
-              <p className="text-card-foreground text-sm">{review.firstHalf}</p>
+              <p className="text-sm font-bold text-slate-50">{review.firstHalf}</p>
             </div>
 
             <div className="border-l-2 border-primary pl-3">
