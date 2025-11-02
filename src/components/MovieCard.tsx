@@ -4,7 +4,6 @@ import { MovieReview } from '@/data/movieReviews';
 import { InteractionButtons } from './InteractionButtons';
 import { CommentSection } from './CommentSection';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-
 interface MovieCardProps {
   review: MovieReview;
   showComments: boolean;
@@ -17,7 +16,6 @@ interface MovieCardProps {
   onReplySubmit: (reviewId: string, commentId: string, replyText: string) => void;
   isLiked?: boolean;
 }
-
 export const MovieCard: React.FC<MovieCardProps> = ({
   review,
   showComments,
@@ -31,9 +29,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   isLiked = false
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-
-  return (
-    <Card className="bg-card border-2 border-primary shadow-[0_0_20px_rgba(255,215,0,0.3)] h-full transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,215,0,0.5)] cursor-pointer">
+  return <Card className="bg-card border-2 border-primary shadow-[0_0_20px_rgba(255,215,0,0.3)] h-full transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,215,0,0.5)] cursor-pointer">
       <div onClick={() => setIsExpanded(!isExpanded)}>
         <CardHeader className="text-center">
           <h3 className="text-xl font-bold text-primary">
@@ -42,11 +38,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
         </CardHeader>
 
         <div className="px-4">
-          <img 
-            src={review.image} 
-            alt={review.title} 
-            className="w-full h-48 object-cover rounded-lg mb-4 border-2 border-primary/30" 
-          />
+          <img src={review.image} alt={review.title} className="w-full h-48 object-cover rounded-lg mb-4 border-2 border-primary/30" />
         </div>
 
         <CardContent className="space-y-2">
@@ -57,14 +49,11 @@ export const MovieCard: React.FC<MovieCardProps> = ({
             {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </div>
 
-          {!isExpanded && (
-            <p className="text-muted-foreground text-sm line-clamp-3">{review.review}</p>
-          )}
+          {!isExpanded && <p className="text-muted-foreground text-sm line-clamp-3">{review.review}</p>}
         </CardContent>
       </div>
 
-      {isExpanded && (
-        <CardContent className="space-y-4 pt-0" onClick={(e) => e.stopPropagation()}>
+      {isExpanded && <CardContent className="space-y-4 pt-0" onClick={e => e.stopPropagation()}>
           <div className="border-t border-primary/30 pt-4">
             <h5 className="text-center font-bold text-primary mb-3">REVIEW</h5>
             <p className="text-card-foreground font-medium text-sm">{review.review}</p>
@@ -97,29 +86,14 @@ export const MovieCard: React.FC<MovieCardProps> = ({
             </div>
           </div>
 
-          <InteractionButtons 
-            review={review} 
-            onLike={onLike} 
-            onToggleComments={onToggleComments} 
-            onShare={onShare} 
-            isLiked={isLiked} 
-          />
+          <InteractionButtons review={review} onLike={onLike} onToggleComments={onToggleComments} onShare={onShare} isLiked={isLiked} />
 
-          {showComments && (
-            <CommentSection 
-              review={review} 
-              newComment={newComment} 
-              onCommentChange={value => onCommentChange(review.id, value)} 
-              onCommentSubmit={() => onCommentSubmit(review.id)} 
-              onReplySubmit={(commentId, replyText) => onReplySubmit(review.id, commentId, replyText)} 
-            />
-          )}
-        </CardContent>
-      )}
+          {showComments && <CommentSection review={review} newComment={newComment} onCommentChange={value => onCommentChange(review.id, value)} onCommentSubmit={() => onCommentSubmit(review.id)} onReplySubmit={(commentId, replyText) => onReplySubmit(review.id, commentId, replyText)} />}
+        </CardContent>}
 
       <CardFooter className="bg-primary text-primary-foreground rounded-b-lg">
         <div className="w-full">
-          <h1 className="text-lg font-bold mb-2 mt-1">SM RATING</h1>
+          <h1 className="text-lg font-bold mb-2 mt-1 text-center">SM RATING</h1>
           <div className="flex justify-center">
             <div className="px-4 py-2 rounded-md font-bold bg-background text-primary border-2 border-primary min-w-[60px] text-center">
               {review.rating}
@@ -127,6 +101,5 @@ export const MovieCard: React.FC<MovieCardProps> = ({
           </div>
         </div>
       </CardFooter>
-    </Card>
-  );
+    </Card>;
 };
