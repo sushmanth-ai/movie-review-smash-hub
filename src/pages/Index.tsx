@@ -132,18 +132,20 @@ const Index = () => {
     handleReply(reviewId, commentId, replyText, setReviews);
   };
   const filteredReviews = reviews.filter(review => review.title.toLowerCase().includes(searchTerm.toLowerCase()) || review.review.toLowerCase().includes(searchTerm.toLowerCase()));
-  return <div className="min-h-screen" style={{
-    background: 'linear-gradient(90deg, hsla(333, 100%, 53%, 1) 0%, hsla(33, 94%, 57%, 1) 100%)'
-  }}>
-      {/* Fixed Header with Gradient Background */}
-      <div className="fixed top-0 left-0 w-full z-50 p-2 shadow-lg border-b" style={{
-      background: 'linear-gradient(135deg, #E589A9, #E52042)'
-    }}>
-        <h1 className="text-center text-lg font-bold mb-2 text-white">
+  return <div className="min-h-screen bg-background">
+      {/* Fixed Header with Black and Gold Theme */}
+      <div className="fixed top-0 left-0 w-full z-50 p-2 shadow-[0_4px_20px_rgba(255,215,0,0.3)] border-b-2 border-primary bg-background">
+        <h1 className="text-center text-lg font-bold mb-2 text-primary">
           WELCOME TO SM REVIEW 2.0
         </h1>
         <div className="flex gap-2 mb-2">
-          <Input type="text" placeholder="Search for movie Reviews..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="flex-1 bg-pink-100" />
+          <Input 
+            type="text" 
+            placeholder="Search for movie Reviews..." 
+            value={searchTerm} 
+            onChange={e => setSearchTerm(e.target.value)} 
+            className="flex-1 bg-input text-foreground border-primary focus:ring-primary" 
+          />
         </div>
       </div>
 
