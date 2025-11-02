@@ -82,7 +82,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
 
             <div className="border-l-2 border-primary pl-3">
               <h6 className="text-primary font-bold mb-1">Overall Movie:</h6>
-              <p className="text-card-foreground text-sm">{review.overall}</p>
+              <p className="text-sm text-slate-50 font-bold">{review.overall}</p>
             </div>
           </div>
 
