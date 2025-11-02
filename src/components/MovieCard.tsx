@@ -49,49 +49,49 @@ export const MovieCard: React.FC<MovieCardProps> = ({
             {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </div>
 
-          {!isExpanded && <p className="text-muted-foreground text-sm line-clamp-3 text-center">{review.review}</p>}
+          {!isExpanded && <p className="text-muted-foreground text-sm line-clamp-3">{review.review}</p>}
         </CardContent>
       </div>
 
       {isExpanded && <CardContent className="space-y-4 pt-0" onClick={e => e.stopPropagation()}>
           <div className="border-t border-primary/30 pt-4">
             <h5 className="text-center font-bold text-primary mb-3">REVIEW</h5>
-            <p className="text-card-foreground font-medium text-sm">{review.review}</p>
+            <p className="text-sm text-slate-50 font-bold">{review.review}</p>
           </div>
 
           <div className="space-y-3">
             <div className="border-l-2 border-primary pl-3">
               <h6 className="text-primary font-bold mb-1">First Half:</h6>
-              <p className="text-card-foreground text-sm">{review.firstHalf}</p>
+              <p className="text-sm font-bold text-slate-50">{review.firstHalf}</p>
             </div>
 
             <div className="border-l-2 border-primary pl-3">
               <h6 className="text-primary font-bold mb-1">Second Half:</h6>
-              <p className="text-card-foreground text-sm">{review.secondHalf}</p>
+              <p className="text-sm text-slate-50 font-bold">{review.secondHalf}</p>
             </div>
 
             <div className="border-l-2 border-primary pl-3">
               <h6 className="text-primary font-bold mb-1">Positives:</h6>
-              <p className="text-card-foreground text-sm">{review.positives}</p>
+              <p className="text-sm text-slate-50 font-bold">{review.positives}</p>
             </div>
 
             <div className="border-l-2 border-primary pl-3">
               <h6 className="text-primary font-bold mb-1">Negatives:</h6>
-              <p className="text-card-foreground text-sm">{review.negatives}</p>
+              <p className="text-sm font-bold text-slate-50">{review.negatives}</p>
             </div>
 
             <div className="border-l-2 border-primary pl-3">
               <h6 className="text-primary font-bold mb-1">Overall Movie:</h6>
-              <p className="text-card-foreground text-sm">{review.overall}</p>
+              <p className="text-sm text-slate-50 font-bold">{review.overall}</p>
             </div>
           </div>
 
-          <InteractionButtons review={review} onLike={onLike} onToggleComments={onToggleComments} onShare={onShare} isLiked={isLiked} className="bg-inherit" />
+          <InteractionButtons review={review} onLike={onLike} onToggleComments={onToggleComments} onShare={onShare} isLiked={isLiked} />
 
           {showComments && <CommentSection review={review} newComment={newComment} onCommentChange={value => onCommentChange(review.id, value)} onCommentSubmit={() => onCommentSubmit(review.id)} onReplySubmit={(commentId, replyText) => onReplySubmit(review.id, commentId, replyText)} />}
         </CardContent>}
 
-      <CardFooter className="text-primary-foreground rounded-b-lg bg-orange-200">
+      <CardFooter className="bg-primary text-primary-foreground rounded-b-lg">
         <div className="w-full">
           <h1 className="text-lg font-bold mb-2 mt-1 text-center">SM RATING</h1>
           <div className="flex justify-center">
