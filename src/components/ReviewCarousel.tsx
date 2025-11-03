@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { MovieReview } from "@/data/movieReviews";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { MovieReview } from '@/data/movieReviews';
 
 interface ReviewCarouselProps {
   reviews: MovieReview[];
@@ -8,113 +8,97 @@ interface ReviewCarouselProps {
 
 export const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews }) => {
   const navigate = useNavigate();
-  const carouselRef = useRef<HTMLDivElement | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState(2); // Start with middle item
+  
+  // Take first 5 reviews for carousel
+  const carouselReviews = reviews.slice(0, 5);
 
-  // Take first 9 reviews for rotation
-  const carouselReviews = reviews.slice(0, 9);
-
-  // Inject keyframes dynamically
+  // Auto-adjust selectedIndex when reviews change
   useEffect(() => {
-    const style = document.createElement("style");
-    style.innerHTML = `
-      @keyframes rotate360 {
-        from { transform: rotateY(0deg); }
-        to { transform: rotateY(-360deg); }
-      }
-    `;
-    document.head.appendChild(style);
-    return () => {
-      document.head.removeChild(style);
-    };
-  }, []);
+    if (carouselReviews.length > 0 && selectedIndex >= carouselReviews.length) {
+      setSelectedIndex(Math.min(2, carouselReviews.length - 1));
+    }
+  }, [carouselReviews.length, selectedIndex]);
 
-  // Pause rotation on hover
-  useEffect(() => {
-    const carousel = carouselRef.current;
-    if (!carousel) return;
-
-    const handleMouseEnter = () => (carousel.style.animationPlayState = "paused");
-    const handleMouseLeave = () => (carousel.style.animationPlayState = "running");
-
-    carousel.addEventListener("mouseenter", handleMouseEnter);
-    carousel.addEventListener("mouseleave", handleMouseLeave);
-    return () => {
-      carousel.removeEventListener("mouseenter", handleMouseEnter);
-      carousel.removeEventListener("mouseleave", handleMouseLeave);
-    };
-  }, []);
-
-  // Responsive depth
-  const getTranslateZ = () => {
-    if (window.innerWidth < 480) return 180;
-    if (window.innerWidth < 768) return 280;
-    return 430;
-  };
-
-  const translateZ = getTranslateZ();
-
-  return (
-    <div
-      className="flex flex-col items-center justify-center min-h-[400px] py-12 overflow-hidden"
-      style={{
-        background: "transparent",
-        color: "#fff",
-        fontFamily: "sans-serif",
-      }}
-    >
-      <div
-        className="relative mx-auto w-[85vw] max-w-[320px]"
-        style={{ perspective: "1000px" }}
-      >
-        <div
-          ref={carouselRef}
-          className="absolute w-full h-full"
-          style={{
-            transformStyle: "preserve-3d",
-            animation: "rotate360 55s linear infinite",
-          }}
-        >
-          {carouselReviews.map((review, index) => {
-            const angle = index * 40; // 360/9
-            return (
-              <div
-                key={review.id}
-                className="absolute w-[85vw] max-w-[280px] h-[180px] sm:w-[300px] sm:h-[187px] rounded-xl overflow-hidden cursor-pointer flex transition-transform duration-500"
-                style={{
-                  backgroundImage: `url(${review.image})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  transform: `rotateY(${angle}deg) translateZ(${translateZ}px)`,
-                  boxShadow: "inset 0 0 0 2000px rgba(0,0,0,0.45)",
-                }}
-                onClick={() => navigate(`/review/${review.id}`)}
-              >
-                <div
-                  className="m-auto text-center px-2"
-                  style={{
-                    textShadow: "1px 1px 4px rgba(0,0,0,0.9)",
-                  }}
-                >
-                  <h3 className="text-base sm:text-lg font-bold mb-1">
-                    {review.title}
-                  </h3>
-                  <div className="flex justify-center gap-1 text-yellow-400 text-sm sm:text-base">
-                    {[...Array(5)].map((_, i) => (
-                      <span key={i}>
-                        {i < Number(review.rating) ? "★" : "☆"}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+  // Return early if no reviews
+  if (carouselReviews.length === 0) {
+    return (
+      <div className="w-full py-12 px-4">
+        <div className="text-center text-muted-foreground">
+          <p className="text-lg">No reviews available yet</p>
         </div>
       </div>
+    );
+  }
 
-      <p className="mt-6 text-gray-300 text-xs sm:text-sm">
-        (Tap or hover to pause • Tap image to open review)
-      </p>
+  const getTransformClass = (index: number) => {
+    const diff = (index - selectedIndex + 5) % 5;
+    
+    if (diff === 0) {
+      return 'translate-x-0 translate-z-0 z-30 scale-100 opacity-100';
+    } else if (diff === 1 || diff === -4) {
+      return 'translate-x-[15%] -translate-z-[100px] z-20 scale-90 opacity-90';
+    } else if (diff === 4 || diff === -1) {
+      return 'translate-x-[-15%] -translate-z-[100px] z-20 scale-90 opacity-90';
+    } else if (diff === 2 || diff === -3) {
+      return 'translate-x-[30%] -translate-z-[200px] z-10 scale-75 opacity-60';
+    } else {
+      return 'translate-x-[-30%] -translate-z-[200px] z-10 scale-75 opacity-60';
+    }
+  };
+
+  return (
+    <div className="w-full py-12 px-4">
+      <div className="relative h-[35vw] max-h-[500px] min-h-[300px]" style={{ perspective: '1000px', transformStyle: 'preserve-3d' }}>
+        {carouselReviews.map((review, index) => (
+          <div
+            key={review.id}
+            className={`absolute left-0 right-0 mx-auto w-[60%] h-full rounded-lg cursor-pointer transition-all duration-500 ease-out ${getTransformClass(index)}`}
+            style={{
+              transformStyle: 'preserve-3d',
+              boxShadow: index === selectedIndex 
+                ? '0 13px 25px 0 rgba(255, 215, 0, 0.3), 0 11px 7px 0 rgba(0, 0, 0, 0.19)'
+                : '0 6px 10px 0 rgba(0, 0, 0, 0.3), 0 2px 2px 0 rgba(0, 0, 0, 0.2)'
+            }}
+            onClick={() => {
+              setSelectedIndex(index);
+              navigate(`/review/${review.id}`);
+            }}
+          >
+            <div className="relative w-full h-full overflow-hidden rounded-lg border-2 border-primary">
+              <img
+                src={review.image}
+                alt={review.title}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background via-background/90 to-transparent p-4">
+                <h3 className="text-primary font-bold text-xl line-clamp-2">{review.title}</h3>
+                <div className="flex items-center gap-1 mt-1">
+                  {[...Array(5)].map((_, i) => (
+                    <span key={i} className={i < Number(review.rating) ? 'text-primary' : 'text-muted'}>★</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      {/* Navigation dots */}
+      <div className="flex justify-center gap-3 mt-8">
+        {carouselReviews.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setSelectedIndex(index)}
+            className={`w-3 h-3 rounded-full transition-all duration-300 ${
+              index === selectedIndex 
+                ? 'bg-primary w-8' 
+                : 'bg-muted hover:bg-primary/50'
+            }`}
+            aria-label={`Go to slide ${index + 1}`}
+          />
+        ))}
+      </div>
     </div>
   );
 };
