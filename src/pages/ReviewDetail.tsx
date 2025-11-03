@@ -287,7 +287,7 @@ const ReviewDetail = () => {
             {showComments && <CommentSection review={review} newComment={newComment} onCommentChange={setNewComment} onCommentSubmit={handleCommentSubmit} onReplySubmit={handleReplySubmit} />}
           </CardContent>
 
-          <CardFooter className="bg-slate-100 text-slate-900 rounded-b-lg py-6">
+          <CardFooter className="bg-slate-100 text-slate-900 rounded-b-lg py-6 my-0 mx-[230px]">
             <div className="w-full flex flex-col items-center gap-4">
               <h3 className="text-2xl font-bold text-center">SM RATING</h3>
               <ThreeDRatingMeter rating={parseFloat(review.rating)} size={160} />
