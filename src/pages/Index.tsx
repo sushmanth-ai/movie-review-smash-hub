@@ -140,7 +140,7 @@ const Index = () => {
   return <div className="min-h-screen bg-background">
       {/* Fixed Header with Black and Gold Theme */}
       <div className="fixed top-0 left-0 w-full z-50 p-2 shadow-[0_4px_20px_rgba(255,215,0,0.3)] border-b-2 border-primary bg-background">
-        <h1 className="text-center mb-2 text-primary font-extrabold text-3xl">SM REVIEWS 3.0</h1>
+        <h1 className="text-center mb-2 text-primary font-extrabold text-3xl px-[20px] mx-[10px] my-[10px]">SM REVIEWS 3.0</h1>
         <div className="flex gap-2 mb-2">
           <Input type="text" placeholder="Search for movie Reviews..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="flex-1 bg-input text-foreground border-primary focus:ring-primary" />
         </div>
