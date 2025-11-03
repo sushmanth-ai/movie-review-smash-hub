@@ -456,18 +456,6 @@ export const useFirebaseOperations = () => {
 
   // Track daily view for current user
   const trackDailyView = async () => {
-    // ONLY track views on your actual published domain - replace with your domain
-    const publishedDomain = 'your-published-domain.com'; // Replace this with your actual domain
-    const isActualProduction = window.location.hostname === publishedDomain;
-    
-    console.log('Current hostname:', window.location.hostname);
-    console.log('Is actual production:', isActualProduction);
-    
-    if (!isActualProduction) {
-      console.log('Not on published domain, skipping view tracking');
-      return;
-    }
-
     const today = new Date().toISOString().split('T')[0];
     const dailyViewKey = `dailyView_${today}`;
     
@@ -477,24 +465,21 @@ export const useFirebaseOperations = () => {
       try {
         const { timestamp } = JSON.parse(viewData);
         const timeDiff = Date.now() - timestamp;
-        const twentyFourHours = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+        const twentyFourHours = 24 * 60 * 60 * 1000;
         
         if (timeDiff < twentyFourHours) {
           console.log('User already counted today');
           return;
         } else {
-          // More than 24 hours passed, remove old entry
           localStorage.removeItem(dailyViewKey);
           console.log('24 hours passed, resetting view tracking');
         }
       } catch (error) {
-        // Invalid data, remove it
         localStorage.removeItem(dailyViewKey);
         console.log('Invalid view data, clearing');
       }
     }
     
-    // Mark user as viewed today with timestamp
     localStorage.setItem(dailyViewKey, JSON.stringify({ 
       viewed: true, 
       timestamp: Date.now() 
@@ -524,6 +509,54 @@ export const useFirebaseOperations = () => {
     }
   };
 
+  // Track individual review view
+  const trackReviewView = async (reviewId: string) => {
+    if (!db) return;
+
+    try {
+      const viewsRef = doc(db, 'reviewViews', reviewId);
+      
+      await runTransaction(db, async (transaction) => {
+        const viewsDoc = await transaction.get(viewsRef);
+        const currentCount = viewsDoc.exists() ? viewsDoc.data().count || 0 : 0;
+        transaction.set(viewsRef, { 
+          count: currentCount + 1,
+          reviewId: reviewId,
+          lastUpdated: new Date().toISOString()
+        }, { merge: true });
+      });
+      
+      console.log('Review view tracked successfully');
+    } catch (error) {
+      console.error('Error tracking review view:', error);
+    }
+  };
+
+  // Load review views
+  const loadReviewViews = async (setReviews: React.Dispatch<React.SetStateAction<MovieReview[]>>) => {
+    if (!db) return;
+
+    try {
+      const viewsSnapshot = await getDocs(collection(db, 'reviewViews'));
+      const viewsMap: { [key: string]: number } = {};
+      
+      viewsSnapshot.forEach((doc) => {
+        viewsMap[doc.id] = doc.data().count || 0;
+      });
+
+      setReviews(prevReviews => 
+        prevReviews.map(review => ({
+          ...review,
+          views: viewsMap[review.id] || 0
+        }))
+      );
+
+      console.log('Review views loaded successfully');
+    } catch (error) {
+      console.error('Error loading review views:', error);
+    }
+  };
+
   // Function to clear all liked reviews (for testing purposes)
   const clearLikedReviews = () => {
     setLikedReviews(new Set());
@@ -546,6 +579,8 @@ export const useFirebaseOperations = () => {
     todayViews,
     loadTodayViews,
     trackDailyView,
-    setupRealTimeViewListener
+    setupRealTimeViewListener,
+    trackReviewView,
+    loadReviewViews
   };
 };

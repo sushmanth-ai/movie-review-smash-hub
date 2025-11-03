@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { MovieReview } from '@/data/movieReviews';
 import { ChevronRight, Eye } from 'lucide-react';
+import { useFirebaseOperations } from '@/hooks/useFirebaseOperations';
 
 interface MovieCardProps {
   review: MovieReview;
@@ -10,8 +11,10 @@ interface MovieCardProps {
 
 export const MovieCard: React.FC<MovieCardProps> = ({ review }) => {
   const navigate = useNavigate();
+  const { trackReviewView } = useFirebaseOperations();
 
   const handleCardClick = () => {
+    trackReviewView(review.id);
     navigate(`/review/${review.id}`);
   };
 

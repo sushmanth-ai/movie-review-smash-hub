@@ -30,7 +30,8 @@ const Index = () => {
     todayViews,
     loadTodayViews,
     trackDailyView,
-    setupRealTimeViewListener
+    setupRealTimeViewListener,
+    loadReviewViews
   } = useFirebaseOperations();
 
   const [realTimeViewCount, setRealTimeViewCount] = useState(todayViews);
@@ -78,9 +79,10 @@ const Index = () => {
       const allReviews = [...firebaseReviews, ...staticReviews];
       setReviews(allReviews);
       
-      // Load likes and comments for all reviews
+      // Load likes, comments, and views for all reviews
       loadLikes(setReviews);
       loadComments(setReviews);
+      loadReviewViews(setReviews);
     });
 
     return () => unsubscribe();
