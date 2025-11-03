@@ -10,10 +10,10 @@ export const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews }) => {
   const navigate = useNavigate();
   const carouselRef = useRef<HTMLDivElement | null>(null);
 
-  // Take first 9 reviews for the 3D rotation
+  // Take first 9 reviews for rotation
   const carouselReviews = reviews.slice(0, 9);
 
-  // Add CSS animation directly in component
+  // Inject keyframes dynamically
   useEffect(() => {
     const style = document.createElement("style");
     style.innerHTML = `
@@ -23,7 +23,6 @@ export const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews }) => {
       }
     `;
     document.head.appendChild(style);
-
     return () => {
       document.head.removeChild(style);
     };
@@ -34,64 +33,72 @@ export const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews }) => {
     const carousel = carouselRef.current;
     if (!carousel) return;
 
-    const handleMouseEnter = () => {
-      carousel.style.animationPlayState = "paused";
-    };
-    const handleMouseLeave = () => {
-      carousel.style.animationPlayState = "running";
-    };
+    const handleMouseEnter = () => (carousel.style.animationPlayState = "paused");
+    const handleMouseLeave = () => (carousel.style.animationPlayState = "running");
 
     carousel.addEventListener("mouseenter", handleMouseEnter);
     carousel.addEventListener("mouseleave", handleMouseLeave);
-
     return () => {
       carousel.removeEventListener("mouseenter", handleMouseEnter);
       carousel.removeEventListener("mouseleave", handleMouseLeave);
     };
   }, []);
 
+  // Responsive depth
+  const getTranslateZ = () => {
+    if (window.innerWidth < 480) return 180;
+    if (window.innerWidth < 768) return 280;
+    return 430;
+  };
+
+  const translateZ = getTranslateZ();
+
   return (
     <div
-      className="flex flex-col items-center justify-center min-h-[500px] py-16 bg-gray-100 text-white"
+      className="flex flex-col items-center justify-center min-h-[400px] py-12 overflow-hidden"
       style={{
-        fontFamily: "sans-serif",
-        background: "lightgray",
+        background: "transparent",
         color: "#fff",
+        fontFamily: "sans-serif",
       }}
     >
       <div
-        className="relative w-[320px]"
-        style={{ perspective: "1000px", margin: "100px auto" }}
+        className="relative mx-auto w-[85vw] max-w-[320px]"
+        style={{ perspective: "1000px" }}
       >
         <div
           ref={carouselRef}
           className="absolute w-full h-full"
           style={{
             transformStyle: "preserve-3d",
-            animation: "rotate360 60s linear infinite",
+            animation: "rotate360 55s linear infinite",
           }}
         >
           {carouselReviews.map((review, index) => {
-            const angle = index * 40; // 360 / 9 faces
+            const angle = index * 40; // 360/9
             return (
               <div
                 key={review.id}
-                className="absolute w-[300px] h-[187px] top-[20px] left-[10px] rounded-xl overflow-hidden shadow-lg cursor-pointer flex"
+                className="absolute w-[85vw] max-w-[280px] h-[180px] sm:w-[300px] sm:h-[187px] rounded-xl overflow-hidden cursor-pointer flex transition-transform duration-500"
                 style={{
                   backgroundImage: `url(${review.image})`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
-                  transform: `rotateY(${angle}deg) translateZ(430px)`,
+                  transform: `rotateY(${angle}deg) translateZ(${translateZ}px)`,
                   boxShadow: "inset 0 0 0 2000px rgba(0,0,0,0.45)",
                 }}
                 onClick={() => navigate(`/review/${review.id}`)}
               >
                 <div
                   className="m-auto text-center px-2"
-                  style={{ textShadow: "1px 1px 4px rgba(0,0,0,0.8)" }}
+                  style={{
+                    textShadow: "1px 1px 4px rgba(0,0,0,0.9)",
+                  }}
                 >
-                  <h3 className="text-lg font-bold mb-1">{review.title}</h3>
-                  <div className="flex justify-center gap-1 text-yellow-400">
+                  <h3 className="text-base sm:text-lg font-bold mb-1">
+                    {review.title}
+                  </h3>
+                  <div className="flex justify-center gap-1 text-yellow-400 text-sm sm:text-base">
                     {[...Array(5)].map((_, i) => (
                       <span key={i}>
                         {i < Number(review.rating) ? "★" : "☆"}
@@ -105,8 +112,8 @@ export const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews }) => {
         </div>
       </div>
 
-      <p className="mt-8 text-black text-sm">
-        (Hover to pause — click on a review to open)
+      <p className="mt-6 text-gray-300 text-xs sm:text-sm">
+        (Tap or hover to pause • Tap image to open review)
       </p>
     </div>
   );
