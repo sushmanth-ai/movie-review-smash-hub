@@ -40,7 +40,7 @@ function AnimatedText() {
 
 export const Title3D: React.FC = () => {
   return (
-    <div className="w-full h-20">
+    <div className="w-full h-48 mb-4">
       <Canvas camera={{ position: [0, 0, 8], fov: 75 }}>
         <ambientLight intensity={0.3} />
         <pointLight position={[10, 10, 10]} intensity={2} color="#ffd700" />
