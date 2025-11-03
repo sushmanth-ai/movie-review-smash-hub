@@ -7,6 +7,8 @@ import { MovieCard } from '@/components/MovieCard';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '@/utils/firebase';
 import { TodayViews } from '@/components/TodayViews';
+import { ReviewCarousel } from '@/components/ReviewCarousel';
+
 const Index = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [reviews, setReviews] = useState<MovieReview[]>([]);
@@ -154,10 +156,25 @@ const Index = () => {
         <TodayViews viewCount={realTimeViewCount} />
       </div>
 
+      {/* 3D Carousel */}
+      <div className="container mx-auto px-4 pt-4">
+        <ReviewCarousel 
+          reviews={filteredReviews} 
+          onReviewClick={(review) => {
+            handleToggleComments(review.id);
+            // Scroll to the review card
+            const element = document.getElementById(`review-${review.id}`);
+            if (element) {
+              element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }}
+        />
+      </div>
+
       {/* Main Content */}
       <div className="container mx-auto px-4 pt-0 pb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredReviews.map(review => <MovieCard key={review.id} review={review} showComments={showComments[review.id] || false} newComment={newComment[review.id] || ''} onLike={reviewId => handleLike(reviewId, setReviews)} onToggleComments={handleToggleComments} onShare={handleShare} onCommentChange={handleCommentChange} onCommentSubmit={handleCommentSubmit} onReplySubmit={handleReplySubmit} isLiked={likedReviews.has(review.id)} />)}
+          {filteredReviews.map(review => <div key={review.id} id={`review-${review.id}`}><MovieCard review={review} showComments={showComments[review.id] || false} newComment={newComment[review.id] || ''} onLike={reviewId => handleLike(reviewId, setReviews)} onToggleComments={handleToggleComments} onShare={handleShare} onCommentChange={handleCommentChange} onCommentSubmit={handleCommentSubmit} onReplySubmit={handleReplySubmit} isLiked={likedReviews.has(review.id)} /></div>)}
         </div>
       </div>
     </div>;
