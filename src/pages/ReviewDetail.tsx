@@ -241,8 +241,9 @@ const ReviewDetail = () => {
       <div className="container mx-auto px-4 pt-24 pb-8">
         <Card className="bg-card border-2 border-primary shadow-[0_0_30px_rgba(255,215,0,0.5)] max-w-4xl mx-auto">
           <CardHeader className="text-center space-y-4">
-            <h2 className="text-3xl font-bold text-primary mb-4 bg-cyan-50">{review.title}</h2>
-            
+            <div className="bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-lg p-4 border-2 border-primary/50 shadow-[0_0_20px_rgba(255,215,0,0.3)]">
+              <h2 className="text-3xl font-bold text-primary">{review.title}</h2>
+            </div>
           </CardHeader>
 
           <div className="px-6">
@@ -251,7 +252,9 @@ const ReviewDetail = () => {
 
           <CardContent className="space-y-6">
             <div className="border-t border-primary/30 pt-4">
-              <h3 className="text-center font-bold text-primary text-xl mb-4">REVIEW</h3>
+              <div className="bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-lg p-4 mb-4 border-2 border-primary/50 shadow-[0_0_20px_rgba(255,215,0,0.3)]">
+                <h3 className="text-center font-bold text-primary text-xl">REVIEW</h3>
+              </div>
               <p className="text-base text-slate-50 font-bold leading-relaxed">{review.review}</p>
             </div>
 
