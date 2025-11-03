@@ -8,6 +8,7 @@ import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '@/utils/firebase';
 import { TodayViews } from '@/components/TodayViews';
 import { ReviewCarousel } from '@/components/ReviewCarousel';
+import { CurtainAnimation } from '@/components/CurtainAnimation';
 const Index = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [reviews, setReviews] = useState<MovieReview[]>([]);
@@ -137,7 +138,9 @@ const Index = () => {
     handleComment(reviewId, commentText, setReviews, () => {});
   };
   const filteredReviews = reviews.filter(review => review.title.toLowerCase().includes(searchTerm.toLowerCase()) || review.review.toLowerCase().includes(searchTerm.toLowerCase()));
-  return <div className="min-h-screen bg-background">
+  return <>
+      <CurtainAnimation />
+      <div className="min-h-screen bg-background">
       {/* Fixed Header with Black and Gold Theme */}
       <div className="fixed top-0 left-0 w-full z-50 p-2 shadow-[0_4px_20px_rgba(255,215,0,0.3)] border-b-2 border-primary bg-background">
         <h1 className="text-center mb-2 text-primary text-3xl font-extrabold px-[20px] mx-[10px]">SM REVIEWS 3.0</h1>
@@ -164,6 +167,8 @@ const Index = () => {
             </div>)}
         </div>
       </div>
-    </div>;
+    </div>
+  </>;
 };
+
 export default Index;
