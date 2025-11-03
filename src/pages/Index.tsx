@@ -8,7 +8,6 @@ import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '@/utils/firebase';
 import { TodayViews } from '@/components/TodayViews';
 import { ReviewCarousel } from '@/components/ReviewCarousel';
-
 const Index = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [reviews, setReviews] = useState<MovieReview[]>([]);
@@ -33,7 +32,6 @@ const Index = () => {
     setupRealTimeViewListener,
     loadReviewViews
   } = useFirebaseOperations();
-
   const [realTimeViewCount, setRealTimeViewCount] = useState(todayViews);
 
   // Load reviews from Firebase and merge with static data
@@ -46,11 +44,9 @@ const Index = () => {
 
     // Listen to Firebase reviews in real-time
     const reviewsQuery = query(collection(db, 'reviews'), orderBy('createdAt', 'desc'));
-    
-    const unsubscribe = onSnapshot(reviewsQuery, (snapshot) => {
+    const unsubscribe = onSnapshot(reviewsQuery, snapshot => {
       const firebaseReviews: MovieReview[] = [];
-      
-      snapshot.forEach((doc) => {
+      snapshot.forEach(doc => {
         const data = doc.data();
         firebaseReviews.push({
           id: doc.id,
@@ -78,23 +74,20 @@ const Index = () => {
       // Firebase reviews first, then static reviews
       const allReviews = [...firebaseReviews, ...staticReviews];
       setReviews(allReviews);
-      
+
       // Load likes, comments, and views for all reviews
       loadLikes(setReviews);
       loadComments(setReviews);
       loadReviewViews(setReviews);
     });
-
     return () => unsubscribe();
   }, []);
-
   useEffect(() => {
     loadTodayViews();
     trackDailyView();
 
     // Setup real-time listener for view count
     const unsubscribe = setupRealTimeViewListener(setRealTimeViewCount);
-    
     return () => {
       if (typeof unsubscribe === 'function') {
         unsubscribe();
@@ -106,7 +99,6 @@ const Index = () => {
   useEffect(() => {
     setRealTimeViewCount(todayViews);
   }, [todayViews]);
-
   const initializeReviews = async () => {
     const reviewsWithInteractions: MovieReview[] = movieReviewsData.map(review => ({
       ...review,
@@ -131,36 +123,26 @@ const Index = () => {
     const commentText = newComment[reviewId];
     handleComment(reviewId, commentText, setReviews, setNewComment);
   };
-
   const handleReplySubmit = (reviewId: string, commentId: string, replyText: string) => {
     handleReply(reviewId, commentId, replyText, setReviews);
   };
-
   const handleLikeClick = (reviewId: string) => {
     handleLike(reviewId, setReviews);
   };
-
   const handleCommentSubmitWrapper = (reviewId: string, commentText: string) => {
-    const commentState: { [key: string]: string } = {};
+    const commentState: {
+      [key: string]: string;
+    } = {};
     commentState[reviewId] = commentText;
     handleComment(reviewId, commentText, setReviews, () => {});
   };
-
   const filteredReviews = reviews.filter(review => review.title.toLowerCase().includes(searchTerm.toLowerCase()) || review.review.toLowerCase().includes(searchTerm.toLowerCase()));
   return <div className="min-h-screen bg-background">
       {/* Fixed Header with Black and Gold Theme */}
       <div className="fixed top-0 left-0 w-full z-50 p-2 shadow-[0_4px_20px_rgba(255,215,0,0.3)] border-b-2 border-primary bg-background">
-        <h1 className="text-center text-lg font-bold mb-2 text-primary">
-          WELCOME TO SM REVIEW 2.0
-        </h1>
+        <h1 className="text-center mb-2 text-primary font-extrabold text-3xl">SM REVIEWS 3.0</h1>
         <div className="flex gap-2 mb-2">
-          <Input
-            type="text"
-            placeholder="Search for movie Reviews..."
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            className="flex-1 bg-input text-foreground border-primary focus:ring-primary"
-          />
+          <Input type="text" placeholder="Search for movie Reviews..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="flex-1 bg-input text-foreground border-primary focus:ring-primary" />
         </div>
       </div>
 
@@ -177,11 +159,9 @@ const Index = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 pt-0 pb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredReviews.map(review => (
-            <div key={review.id} id={`review-${review.id}`}>
+          {filteredReviews.map(review => <div key={review.id} id={`review-${review.id}`}>
               <MovieCard review={review} />
-            </div>
-          ))}
+            </div>)}
         </div>
       </div>
     </div>;
