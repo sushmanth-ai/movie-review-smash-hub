@@ -133,6 +133,17 @@ const Index = () => {
   const handleReplySubmit = (reviewId: string, commentId: string, replyText: string) => {
     handleReply(reviewId, commentId, replyText, setReviews);
   };
+
+  const handleLikeClick = (reviewId: string) => {
+    handleLike(reviewId, setReviews);
+  };
+
+  const handleCommentSubmitWrapper = (reviewId: string, commentText: string) => {
+    const commentState: { [key: string]: string } = {};
+    commentState[reviewId] = commentText;
+    handleComment(reviewId, commentText, setReviews, () => {});
+  };
+
   const filteredReviews = reviews.filter(review => review.title.toLowerCase().includes(searchTerm.toLowerCase()) || review.review.toLowerCase().includes(searchTerm.toLowerCase()));
   return <div className="min-h-screen bg-background">
       {/* Fixed Header with Black and Gold Theme */}
@@ -141,12 +152,12 @@ const Index = () => {
           WELCOME TO SM REVIEW 2.0
         </h1>
         <div className="flex gap-2 mb-2">
-          <Input 
-            type="text" 
-            placeholder="Search for movie Reviews..." 
-            value={searchTerm} 
-            onChange={e => setSearchTerm(e.target.value)} 
-            className="flex-1 bg-input text-foreground border-primary focus:ring-primary" 
+          <Input
+            type="text"
+            placeholder="Search for movie Reviews..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="flex-1 bg-input text-foreground border-primary focus:ring-primary"
           />
         </div>
       </div>
@@ -166,7 +177,14 @@ const Index = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredReviews.map(review => (
             <div key={review.id} id={`review-${review.id}`}>
-              <MovieCard review={review} />
+              <MovieCard
+                review={review}
+                onLike={handleLikeClick}
+                onShare={handleShare}
+                onCommentSubmit={handleCommentSubmitWrapper}
+                onReplySubmit={handleReplySubmit}
+                isLiked={likedReviews.has(review.id)}
+              />
             </div>
           ))}
         </div>

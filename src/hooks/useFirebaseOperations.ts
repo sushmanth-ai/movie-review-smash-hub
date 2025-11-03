@@ -364,9 +364,10 @@ export const useFirebaseOperations = () => {
 
   const handleShare = async (review: MovieReview) => {
     console.log('Share button clicked for:', review.title);
-    
+
     const shareText = `Check out this movie review of ${review.title}: ${review.overall} - Rating: ${review.rating}`;
-    const shareUrl = window.location.href;
+    const baseUrl = window.location.origin;
+    const shareUrl = `${baseUrl}/review/${review.id}`;
 
     if (navigator.share) {
       try {
@@ -375,7 +376,7 @@ export const useFirebaseOperations = () => {
           text: shareText,
           url: shareUrl
         });
-        
+
         console.log('Content shared successfully via Web Share API');
         toast({
           title: "Shared!",
@@ -395,7 +396,7 @@ export const useFirebaseOperations = () => {
     try {
       const textToShare = `${review.title}\n\n${shareText}\n\n${shareUrl}`;
       await navigator.clipboard.writeText(textToShare);
-      
+
       console.log('Content copied to clipboard successfully');
       toast({
         title: "Copied to Clipboard!",
@@ -403,7 +404,7 @@ export const useFirebaseOperations = () => {
       });
     } catch (clipboardError) {
       console.error('Clipboard copy failed:', clipboardError);
-      
+
       toast({
         title: "Share Content",
         description: shareText,

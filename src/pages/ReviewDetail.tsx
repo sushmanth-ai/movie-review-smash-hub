@@ -108,30 +108,72 @@ const ReviewDetail = () => {
       if (Array.isArray(updatedReviews)) {
         const updated = updatedReviews.find(r => r.id === review.id);
         if (updated) setReview(updated);
+      } else {
+        setReview(prevReview => {
+          if (!prevReview) return null;
+          const isLiked = likedReviews.has(prevReview.id);
+          return {
+            ...prevReview,
+            likes: isLiked ? Math.max(0, prevReview.likes - 1) : prevReview.likes + 1
+          };
+        });
       }
     });
   };
 
   const handleCommentSubmit = () => {
-    if (!review) return;
-    handleComment(review.id, newComment, (updatedReviews) => {
-      if (Array.isArray(updatedReviews)) {
-        const updated = updatedReviews.find(r => r.id === review.id);
-        if (updated) setReview(updated);
-      }
-    }, () => {
-      setNewComment('');
+    if (!review || !newComment.trim()) return;
+
+    const userName = prompt("Please enter your name:");
+    if (!userName?.trim()) return;
+
+    const tempComment = {
+      id: Date.now().toString(),
+      text: newComment,
+      timestamp: new Date(),
+      author: userName.trim(),
+      replies: []
+    };
+
+    setReview(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        comments: [tempComment, ...prev.comments]
+      };
     });
+
+    setNewComment('');
+
+    handleComment(review.id, newComment, () => {}, () => {});
   };
 
   const handleReplySubmit = (commentId: string, replyText: string) => {
-    if (!review) return;
-    handleReply(review.id, commentId, replyText, (updatedReviews) => {
-      if (Array.isArray(updatedReviews)) {
-        const updated = updatedReviews.find(r => r.id === review.id);
-        if (updated) setReview(updated);
-      }
+    if (!review || !replyText.trim()) return;
+
+    const userName = prompt("Please enter your name:");
+    if (!userName?.trim()) return;
+
+    const tempReply = {
+      id: Date.now().toString(),
+      text: replyText,
+      timestamp: new Date(),
+      author: userName.trim()
+    };
+
+    setReview(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        comments: prev.comments.map(comment =>
+          comment.id === commentId
+            ? { ...comment, replies: [tempReply, ...(comment.replies || [])] }
+            : comment
+        )
+      };
     });
+
+    handleReply(review.id, commentId, replyText, () => {});
   };
 
   return (
