@@ -5,6 +5,14 @@
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */
+@keyframes spin-slow {
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(720deg); }
+}
+.animate-spin-slow {
+  animation: spin-slow 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
 
 @layer base {
   :root {
