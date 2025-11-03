@@ -146,64 +146,96 @@ const ReviewDetail = () => {
     handleReply(review.id, commentId, replyText, setReviewFromList);
   };
 
-  const handleReadReview = () => {
+  const handleReadReview = async () => {
     if (!review) return;
 
     if (isReading) {
-      window.speechSynthesis.cancel();
+      // Stop current audio
+      const audioElement = document.getElementById('review-audio') as HTMLAudioElement;
+      if (audioElement) {
+        audioElement.pause();
+        audioElement.currentTime = 0;
+      }
       setIsReading(false);
       return;
     }
 
-    // Combine all review content
-    const fullReview = `
-      ${review.title}.
-      సమీక్ష: ${review.review}.
-      మొదటి సగం: ${review.firstHalf}.
-      రెండవ సగం: ${review.secondHalf}.
-      సానుకూలాలు: ${review.positives}.
-      ప్రతికూలాలు: ${review.negatives}.
-      మొత్తం మీద: ${review.overall}.
-      రేటింగ్: ${review.rating} స్టార్స్.
-    `;
+    setIsReading(true);
 
-    const utterance = new SpeechSynthesisUtterance(fullReview);
-    
-    // Try to find Telugu voice
-    const voices = window.speechSynthesis.getVoices();
-    const teluguVoice = voices.find(voice => 
-      voice.lang === 'te-IN' || voice.lang.startsWith('te')
-    );
-    
-    if (teluguVoice) {
-      utterance.voice = teluguVoice;
-    } else {
-      // Fallback to any male voice if Telugu not available
-      const maleVoice = voices.find(voice => 
-        voice.name.toLowerCase().includes('male') || 
-        voice.name.toLowerCase().includes('david') ||
-        voice.name.toLowerCase().includes('james')
+    try {
+      // Combine all review content in Telugu
+      const fullReview = `
+        ${review.title}.
+        సమీక్ష: ${review.review}.
+        మొదటి సగం: ${review.firstHalf}.
+        రెండవ సగం: ${review.secondHalf}.
+        సానుకూలాలు: ${review.positives}.
+        ప్రతికూలాలు: ${review.negatives}.
+        మొత్తం మీద: ${review.overall}.
+        రేటింగ్: ${review.rating} స్టార్స్.
+      `;
+
+      console.log('Calling text-to-speech function...');
+
+      // Call the edge function
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/text-to-speech`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ text: fullReview }),
+        }
       );
-      if (maleVoice) utterance.voice = maleVoice;
-    }
 
-    utterance.lang = 'te-IN';
-    utterance.pitch = 0.9; // Slightly lower for male voice
-    utterance.rate = 0.85; // Slower for better understanding
-    utterance.volume = 1;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate speech');
+      }
 
-    utterance.onstart = () => setIsReading(true);
-    utterance.onend = () => setIsReading(false);
-    utterance.onerror = () => {
+      const data = await response.json();
+      
+      // Convert base64 to audio and play
+      const audioBlob = new Blob(
+        [Uint8Array.from(atob(data.audioContent), c => c.charCodeAt(0))],
+        { type: 'audio/mp3' }
+      );
+      const audioUrl = URL.createObjectURL(audioBlob);
+      
+      // Create or reuse audio element
+      let audioElement = document.getElementById('review-audio') as HTMLAudioElement;
+      if (!audioElement) {
+        audioElement = new Audio();
+        audioElement.id = 'review-audio';
+      }
+      
+      audioElement.src = audioUrl;
+      audioElement.onended = () => {
+        setIsReading(false);
+        URL.revokeObjectURL(audioUrl);
+      };
+      audioElement.onerror = () => {
+        setIsReading(false);
+        URL.revokeObjectURL(audioUrl);
+        toast({
+          title: "Error",
+          description: "Failed to play audio. Please try again.",
+          variant: "destructive"
+        });
+      };
+      
+      await audioElement.play();
+
+    } catch (error) {
+      console.error('Text-to-speech error:', error);
       setIsReading(false);
       toast({
         title: "Error",
-        description: "Unable to read the review. Please try again.",
+        description: error instanceof Error ? error.message : "Unable to read the review. Please try again.",
         variant: "destructive"
       });
-    };
-
-    window.speechSynthesis.speak(utterance);
+    }
   };
 
   return (
