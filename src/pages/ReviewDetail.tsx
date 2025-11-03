@@ -7,6 +7,7 @@ import { MovieReview } from '@/data/movieReviews';
 import { movieReviewsData } from '@/data/movieReviews';
 import { InteractionButtons } from '@/components/InteractionButtons';
 import { CommentSection } from '@/components/CommentSection';
+import { ThreeDRatingMeter } from '@/components/ThreeDRatingMeter';
 import { useFirebaseOperations } from '@/hooks/useFirebaseOperations';
 import { collection, onSnapshot, query, orderBy, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/utils/firebase';
@@ -236,13 +237,9 @@ const ReviewDetail = () => {
           </CardContent>
 
           <CardFooter className="bg-primary text-primary-foreground rounded-b-lg py-6">
-            <div className="w-full">
-              <h3 className="text-2xl font-bold mb-3 text-center">SM RATING</h3>
-              <div className="flex justify-center">
-                <div className="px-8 py-4 rounded-md font-bold text-2xl bg-background text-primary border-2 border-primary min-w-[100px] text-center">
-                  {review.rating}
-                </div>
-              </div>
+            <div className="w-full flex flex-col items-center gap-4">
+              <h3 className="text-2xl font-bold text-center">SM RATING</h3>
+              <ThreeDRatingMeter rating={parseFloat(review.rating)} size={160} />
             </div>
           </CardFooter>
         </Card>
