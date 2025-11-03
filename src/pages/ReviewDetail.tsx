@@ -29,6 +29,19 @@ const ReviewDetail = () => {
     likedReviews,
   } = useFirebaseOperations();
 
+  // Adapter: use hook's array-based setters with single-review state
+  const setReviewFromList: React.Dispatch<React.SetStateAction<MovieReview[]>> = (updater) => {
+    setReview(prev => {
+      const currentList = prev ? [prev] : [];
+      const nextList = typeof updater === 'function' ? (updater as any)(currentList) : updater;
+      return nextList?.[0] ?? prev;
+    });
+  };
+
+  // No-op to satisfy hook API; we manage a single input locally on this page
+  const noopSetNewComment: React.Dispatch<React.SetStateAction<{ [key: string]: string }>> = () => {};
+
+
   useEffect(() => {
     if (!id) return;
 
@@ -54,18 +67,9 @@ const ReviewDetail = () => {
           };
           setReview(firebaseReview);
           
-          // Load likes and comments for a single review in an array
-          const reviewArray = [firebaseReview];
-          loadLikes((updatedReviews) => {
-            if (Array.isArray(updatedReviews)) {
-              setReview(updatedReviews[0]);
-            }
-          });
-          loadComments((updatedReviews) => {
-            if (Array.isArray(updatedReviews)) {
-              setReview(updatedReviews[0]);
-            }
-          });
+          // Load likes and comments for this single review
+          loadLikes(setReviewFromList);
+          loadComments(setReviewFromList);
         } else {
           // Check static data
           const staticReview = movieReviewsData.find(r => r.id === id);
@@ -73,16 +77,8 @@ const ReviewDetail = () => {
             const reviewWithDefaults = { ...staticReview, likes: 0, comments: [] };
             setReview(reviewWithDefaults);
             
-            loadLikes((updatedReviews) => {
-              if (Array.isArray(updatedReviews)) {
-                setReview(updatedReviews[0]);
-              }
-            });
-            loadComments((updatedReviews) => {
-              if (Array.isArray(updatedReviews)) {
-                setReview(updatedReviews[0]);
-              }
-            });
+            loadLikes(setReviewFromList);
+            loadComments(setReviewFromList);
           }
         }
       });
@@ -103,53 +99,21 @@ const ReviewDetail = () => {
     );
   }
 
-  const handleLikeClick = () => {
-    if (!review) return;
-    handleLike(review.id, (updatedReviews) => {
-      if (Array.isArray(updatedReviews)) {
-        const updated = updatedReviews.find(r => r.id === review.id);
-        if (updated) setReview(updated);
-      } else {
-        setReview(prevReview => {
-          if (!prevReview) return null;
-          const isLiked = likedReviews.has(prevReview.id);
-          return {
-            ...prevReview,
-            likes: isLiked ? Math.max(0, prevReview.likes - 1) : prevReview.likes + 1
-          };
-        });
-      }
-    });
+  const handleLikeClick = (reviewId: string) => {
+    handleLike(reviewId, setReviewFromList);
   };
 
   const handleCommentSubmit = () => {
     if (!review || !newComment.trim()) return;
 
-    const userName = prompt("Please enter your name:");
-    if (!userName?.trim()) return;
-
-    handleComment(review.id, newComment, (updatedReviews) => {
-      if (Array.isArray(updatedReviews)) {
-        const updated = updatedReviews.find(r => r.id === review.id);
-        if (updated) setReview(updated);
-      }
-    }, () => {});
-
+    handleComment(review.id, newComment, setReviewFromList, noopSetNewComment);
     setNewComment('');
   };
 
   const handleReplySubmit = (commentId: string, replyText: string) => {
     if (!review || !replyText.trim()) return;
 
-    const userName = prompt("Please enter your name:");
-    if (!userName?.trim()) return;
-
-    handleReply(review.id, commentId, replyText, (updatedReviews) => {
-      if (Array.isArray(updatedReviews)) {
-        const updated = updatedReviews.find(r => r.id === review.id);
-        if (updated) setReview(updated);
-      }
-    });
+    handleReply(review.id, commentId, replyText, setReviewFromList);
   };
 
   return (
@@ -220,7 +184,7 @@ const ReviewDetail = () => {
             <InteractionButtons
               review={review}
               onLike={handleLikeClick}
-              onToggleComments={() => setShowComments(!showComments)}
+              onToggleComments={(_id) => setShowComments(prev => !prev)}
               onShare={handleShare}
               isLiked={likedReviews.has(review.id)}
             />
