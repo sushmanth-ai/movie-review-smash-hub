@@ -127,25 +127,14 @@ const ReviewDetail = () => {
     const userName = prompt("Please enter your name:");
     if (!userName?.trim()) return;
 
-    const tempComment = {
-      id: Date.now().toString(),
-      text: newComment,
-      timestamp: new Date(),
-      author: userName.trim(),
-      replies: []
-    };
-
-    setReview(prev => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        comments: [tempComment, ...prev.comments]
-      };
-    });
+    handleComment(review.id, newComment, (updatedReviews) => {
+      if (Array.isArray(updatedReviews)) {
+        const updated = updatedReviews.find(r => r.id === review.id);
+        if (updated) setReview(updated);
+      }
+    }, () => {});
 
     setNewComment('');
-
-    handleComment(review.id, newComment, () => {}, () => {});
   };
 
   const handleReplySubmit = (commentId: string, replyText: string) => {
@@ -154,26 +143,12 @@ const ReviewDetail = () => {
     const userName = prompt("Please enter your name:");
     if (!userName?.trim()) return;
 
-    const tempReply = {
-      id: Date.now().toString(),
-      text: replyText,
-      timestamp: new Date(),
-      author: userName.trim()
-    };
-
-    setReview(prev => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        comments: prev.comments.map(comment =>
-          comment.id === commentId
-            ? { ...comment, replies: [tempReply, ...(comment.replies || [])] }
-            : comment
-        )
-      };
+    handleReply(review.id, commentId, replyText, (updatedReviews) => {
+      if (Array.isArray(updatedReviews)) {
+        const updated = updatedReviews.find(r => r.id === review.id);
+        if (updated) setReview(updated);
+      }
     });
-
-    handleReply(review.id, commentId, replyText, () => {});
   };
 
   return (

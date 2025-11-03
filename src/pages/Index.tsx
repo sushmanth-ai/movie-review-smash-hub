@@ -177,14 +177,7 @@ const Index = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredReviews.map(review => (
             <div key={review.id} id={`review-${review.id}`}>
-              <MovieCard
-                review={review}
-                onLike={handleLikeClick}
-                onShare={handleShare}
-                onCommentSubmit={handleCommentSubmitWrapper}
-                onReplySubmit={handleReplySubmit}
-                isLiked={likedReviews.has(review.id)}
-              />
+              <MovieCard review={review} />
             </div>
           ))}
         </div>
