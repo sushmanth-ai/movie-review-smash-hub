@@ -233,7 +233,7 @@ const ReviewDetail = () => {
           <Button variant="outline" size="icon" onClick={() => navigate('/')} className="border-primary text-primary hover:bg-primary hover:text-primary-foreground">
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h1 className="text-xl font-bold text-primary">SM REVIEW 2.0</h1>
+          <h1 className="text-xl font-bold text-primary">SM REVIEW 3.0</h1>
         </div>
       </div>
 
