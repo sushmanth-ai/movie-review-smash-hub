@@ -2,22 +2,26 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Volume2, Eye } from 'lucide-react';
 import { MovieReview } from '@/data/movieReviews';
 import { movieReviewsData } from '@/data/movieReviews';
 import { InteractionButtons } from '@/components/InteractionButtons';
 import { CommentSection } from '@/components/CommentSection';
 import { ThreeDRatingMeter } from '@/components/ThreeDRatingMeter';
 import { useFirebaseOperations } from '@/hooks/useFirebaseOperations';
-import { collection, onSnapshot, query, orderBy, doc, getDoc } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, doc, getDoc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '@/utils/firebase';
+import { useToast } from '@/hooks/use-toast';
 
 const ReviewDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [review, setReview] = useState<MovieReview | null>(null);
   const [newComment, setNewComment] = useState('');
   const [showComments, setShowComments] = useState(false);
+  const [viewCount, setViewCount] = useState(0);
+  const [isReading, setIsReading] = useState(false);
   
   const {
     loadLikes,
@@ -42,15 +46,33 @@ const ReviewDetail = () => {
   const noopSetNewComment: React.Dispatch<React.SetStateAction<{ [key: string]: string }>> = () => {};
 
 
+  // Track view and load review data
   useEffect(() => {
     if (!id) return;
+
+    const trackView = async () => {
+      if (db) {
+        try {
+          const reviewDoc = doc(db, 'reviews', id);
+          await updateDoc(reviewDoc, {
+            views: increment(1)
+          });
+        } catch (error) {
+          console.log('View tracking error:', error);
+        }
+      }
+    };
 
     // First check if it's a Firebase review
     if (db) {
       const reviewDoc = doc(db, 'reviews', id);
-      getDoc(reviewDoc).then((docSnap) => {
+      
+      // Set up real-time listener for views
+      const unsubscribe = onSnapshot(reviewDoc, (docSnap) => {
         if (docSnap.exists()) {
           const data = docSnap.data();
+          setViewCount(data.views || 0);
+          
           const firebaseReview: MovieReview = {
             id: docSnap.id,
             title: data.title,
@@ -63,7 +85,8 @@ const ReviewDetail = () => {
             overall: data.overall,
             rating: data.rating,
             likes: 0,
-            comments: []
+            comments: [],
+            views: data.views || 0
           };
           setReview(firebaseReview);
           
@@ -76,17 +99,24 @@ const ReviewDetail = () => {
           if (staticReview) {
             const reviewWithDefaults = { ...staticReview, likes: 0, comments: [] };
             setReview(reviewWithDefaults);
+            setViewCount(staticReview.views || 0);
             
             loadLikes(setReviewFromList);
             loadComments(setReviewFromList);
           }
         }
       });
+
+      // Track the view
+      trackView();
+
+      return () => unsubscribe();
     } else {
       // If Firebase not available, use static data
       const staticReview = movieReviewsData.find(r => r.id === id);
       if (staticReview) {
         setReview({ ...staticReview, likes: 0, comments: [] });
+        setViewCount(staticReview.views || 0);
       }
     }
   }, [id]);
@@ -116,6 +146,66 @@ const ReviewDetail = () => {
     handleReply(review.id, commentId, replyText, setReviewFromList);
   };
 
+  const handleReadReview = () => {
+    if (!review) return;
+
+    if (isReading) {
+      window.speechSynthesis.cancel();
+      setIsReading(false);
+      return;
+    }
+
+    // Combine all review content
+    const fullReview = `
+      ${review.title}.
+      సమీక్ష: ${review.review}.
+      మొదటి సగం: ${review.firstHalf}.
+      రెండవ సగం: ${review.secondHalf}.
+      సానుకూలాలు: ${review.positives}.
+      ప్రతికూలాలు: ${review.negatives}.
+      మొత్తం మీద: ${review.overall}.
+      రేటింగ్: ${review.rating} స్టార్స్.
+    `;
+
+    const utterance = new SpeechSynthesisUtterance(fullReview);
+    
+    // Try to find Telugu voice
+    const voices = window.speechSynthesis.getVoices();
+    const teluguVoice = voices.find(voice => 
+      voice.lang === 'te-IN' || voice.lang.startsWith('te')
+    );
+    
+    if (teluguVoice) {
+      utterance.voice = teluguVoice;
+    } else {
+      // Fallback to any male voice if Telugu not available
+      const maleVoice = voices.find(voice => 
+        voice.name.toLowerCase().includes('male') || 
+        voice.name.toLowerCase().includes('david') ||
+        voice.name.toLowerCase().includes('james')
+      );
+      if (maleVoice) utterance.voice = maleVoice;
+    }
+
+    utterance.lang = 'te-IN';
+    utterance.pitch = 0.9; // Slightly lower for male voice
+    utterance.rate = 0.85; // Slower for better understanding
+    utterance.volume = 1;
+
+    utterance.onstart = () => setIsReading(true);
+    utterance.onend = () => setIsReading(false);
+    utterance.onerror = () => {
+      setIsReading(false);
+      toast({
+        title: "Error",
+        description: "Unable to read the review. Please try again.",
+        variant: "destructive"
+      });
+    };
+
+    window.speechSynthesis.speak(utterance);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -136,8 +226,22 @@ const ReviewDetail = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 pt-24 pb-8">
         <Card className="bg-card border-2 border-primary shadow-[0_0_30px_rgba(255,215,0,0.5)] max-w-4xl mx-auto">
-          <CardHeader className="text-center">
+          <CardHeader className="text-center space-y-4">
             <h2 className="text-3xl font-bold text-primary mb-4">{review.title}</h2>
+            <div className="flex items-center justify-center gap-6">
+              <div className="flex items-center gap-2 text-primary">
+                <Eye className="w-5 h-5" />
+                <span className="font-bold text-lg">{viewCount} views</span>
+              </div>
+              <Button
+                onClick={handleReadReview}
+                variant={isReading ? "destructive" : "default"}
+                className="flex items-center gap-2"
+              >
+                <Volume2 className="w-4 h-4" />
+                {isReading ? 'Stop Reading' : 'Read in Telugu'}
+              </Button>
+            </div>
           </CardHeader>
 
           <div className="px-6">
