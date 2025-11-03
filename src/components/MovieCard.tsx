@@ -20,33 +20,20 @@ export const MovieCard: React.FC<MovieCardProps> = ({ review }) => {
         </h3>
       </CardHeader>
 
-      <div className="px-4">
+      <div className="px-4 pb-4">
         <img 
           src={review.image} 
           alt={review.title} 
-          className="w-full h-48 object-cover rounded-lg mb-4 border-2 border-primary/30" 
+          className="w-full h-64 object-cover rounded-lg border-2 border-primary/30" 
         />
       </div>
 
-      <CardContent className="space-y-2">
-        <p className="text-muted-foreground text-sm line-clamp-3">{review.review}</p>
-        
-        <div className="flex items-center justify-center gap-2 text-primary pt-2">
+      <CardContent className="pb-4">
+        <div className="flex items-center justify-center gap-2 text-primary">
           <span className="font-bold text-sm">Click to read full review</span>
           <ChevronRight className="w-4 h-4" />
         </div>
       </CardContent>
-
-      <CardFooter className="bg-primary text-primary-foreground rounded-b-lg">
-        <div className="w-full">
-          <h4 className="text-lg font-bold mb-2 mt-1 text-center">SM RATING</h4>
-          <div className="flex justify-center">
-            <div className="px-4 py-2 rounded-md font-bold bg-background text-primary border-2 border-primary min-w-[60px] text-center">
-              {review.rating}
-            </div>
-          </div>
-        </div>
-      </CardFooter>
     </Card>
   );
 };
