@@ -8,7 +8,6 @@ import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '@/utils/firebase';
 import { TodayViews } from '@/components/TodayViews';
 import { ReviewCarousel } from '@/components/ReviewCarousel';
-import { Title3D } from '@/components/Title3D';
 
 const Index = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -165,13 +164,8 @@ const Index = () => {
         </div>
       </div>
 
-      {/* 3D Title */}
-      <div className="container mx-auto px-4 pt-4">
-        <Title3D />
-      </div>
-
       {/* Today Views Card - Outside Header */}
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 pt-24">
         <TodayViews viewCount={realTimeViewCount} />
       </div>
 
