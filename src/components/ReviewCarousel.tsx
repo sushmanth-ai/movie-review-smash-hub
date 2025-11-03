@@ -12,13 +12,16 @@ export const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews }) => {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const carouselRef = useRef<HTMLDivElement | null>(null);
 
-  // Take first 6 reviews for 3D effect
-  const carouselReviews = reviews.slice(0, 6);
+  // You can use all reviews or slice a few
+  const carouselReviews = reviews.slice(0, 8); // up to 8 looks clean for 360°
+
+  // Calculate the angle for even spacing (360° / number of items)
+  const angleStep = 360 / carouselReviews.length;
 
   // Rotate carousel automatically
   useEffect(() => {
     const rotateNext = () => {
-      setRotation((prev) => prev - 60);
+      setRotation((prev) => prev - angleStep);
     };
 
     const startAutoplay = () => {
@@ -37,10 +40,10 @@ export const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews }) => {
       carouselElement?.removeEventListener("mouseenter", stopAutoplay);
       carouselElement?.removeEventListener("mouseleave", startAutoplay);
     };
-  }, []);
+  }, [angleStep]);
 
   return (
-    <div className="flex flex-col items-center justify-center w-full py-16">
+    <div className="flex flex-col items-center justify-center w-full py-16 bg-transparent">
       {/* 3D carousel container */}
       <div className="relative w-[250px] h-[200px] perspective-[1000px]">
         <div
@@ -54,11 +57,10 @@ export const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews }) => {
           {carouselReviews.map((review, index) => (
             <div
               key={review.id}
-              className="absolute w-[250px] h-[200px] rounded-lg overflow-hidden text-white text-center text-5xl font-bold cursor-pointer"
+              className="absolute w-[250px] h-[200px] rounded-2xl overflow-hidden text-white text-center text-5xl font-bold cursor-pointer shadow-lg"
               style={{
-                transform: `rotateY(${index * 60}deg) translateZ(250px)`,
+                transform: `rotateY(${index * angleStep}deg) translateZ(280px)`,
                 background: "#000",
-                opacity: 0.95,
               }}
               onClick={() => navigate(`/review/${review.id}`)}
             >
