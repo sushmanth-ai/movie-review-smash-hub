@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MovieReview } from '@/data/movieReviews';
 
 interface ReviewCarouselProps {
@@ -11,6 +11,24 @@ export const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews, onRevie
   
   // Take first 5 reviews for carousel
   const carouselReviews = reviews.slice(0, 5);
+
+  // Auto-adjust selectedIndex when reviews change
+  useEffect(() => {
+    if (carouselReviews.length > 0 && selectedIndex >= carouselReviews.length) {
+      setSelectedIndex(Math.min(2, carouselReviews.length - 1));
+    }
+  }, [carouselReviews.length, selectedIndex]);
+
+  // Return early if no reviews
+  if (carouselReviews.length === 0) {
+    return (
+      <div className="w-full py-12 px-4">
+        <div className="text-center text-muted-foreground">
+          <p className="text-lg">No reviews available yet</p>
+        </div>
+      </div>
+    );
+  }
 
   const getTransformClass = (index: number) => {
     const diff = (index - selectedIndex + 5) % 5;
