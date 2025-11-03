@@ -287,12 +287,14 @@ const ReviewDetail = () => {
             {showComments && <CommentSection review={review} newComment={newComment} onCommentChange={setNewComment} onCommentSubmit={handleCommentSubmit} onReplySubmit={handleReplySubmit} />}
           </CardContent>
 
-          <CardFooter className="bg-slate-100 text-slate-900 rounded-b-lg py-6">
-            <div className="w-full flex flex-col items-center gap-4">
-              <h3 className="text-2xl font-bold text-center">SM RATING</h3>
-              <ThreeDRatingMeter rating={parseFloat(review.rating)} size={160} />
-            </div>
-          </CardFooter>
+        </Card>
+
+        {/* Separate Rating Card */}
+        <Card className="bg-slate-100 border-2 border-primary shadow-[0_0_30px_rgba(255,215,0,0.5)] max-w-sm mx-auto mt-6 p-8">
+          <div className="flex flex-col items-center gap-4">
+            <h3 className="text-2xl font-bold text-center text-slate-900">SM RATING</h3>
+            <ThreeDRatingMeter rating={parseFloat(review.rating)} size={160} />
+          </div>
         </Card>
       </div>
     </div>;
