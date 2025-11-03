@@ -12,6 +12,7 @@ export interface MovieReview {
   rating: string;
   likes: number;
   comments: Comment[];
+  views?: number;
 }
 
 export interface Comment {

@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { MovieReview } from '@/data/movieReviews';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Eye } from 'lucide-react';
 
 interface MovieCardProps {
   review: MovieReview;
@@ -35,9 +35,15 @@ export const MovieCard: React.FC<MovieCardProps> = ({ review }) => {
       </div>
 
       <CardContent className="pb-4">
-        <div className="flex items-center justify-center gap-2 text-primary">
-          <span className="font-bold text-sm">Click to read full review</span>
-          <ChevronRight className="w-4 h-4" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-primary">
+            <Eye className="w-4 h-4" />
+            <span className="font-bold text-sm">{review.views || 0} views</span>
+          </div>
+          <div className="flex items-center gap-2 text-primary">
+            <span className="font-bold text-sm">Read more</span>
+            <ChevronRight className="w-4 h-4" />
+          </div>
         </div>
       </CardContent>
     </Card>
