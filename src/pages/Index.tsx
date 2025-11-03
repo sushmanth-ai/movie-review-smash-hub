@@ -151,10 +151,8 @@ const Index = () => {
   return <div className="min-h-screen bg-background">
       {/* Fixed Header with Black and Gold Theme */}
       <div className="fixed top-0 left-0 w-full z-50 p-2 shadow-[0_4px_20px_rgba(255,215,0,0.3)] border-b-2 border-primary bg-background">
-        <h1 className="text-center text-lg font-bold mb-2 text-primary">
-          WELCOME TO SM REVIEW 2.0
-        </h1>
-        <div className="flex gap-2 mb-2">
+        <Title3D />
+        <div className="flex gap-2">
           <Input
             type="text"
             placeholder="Search for movie Reviews..."
@@ -165,13 +163,8 @@ const Index = () => {
         </div>
       </div>
 
-      {/* 3D Title */}
-      <div className="container mx-auto px-4 pt-4">
-        <Title3D />
-      </div>
-
       {/* Today Views Card - Outside Header */}
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 pt-32">
         <TodayViews viewCount={realTimeViewCount} />
       </div>
 
