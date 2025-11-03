@@ -88,18 +88,7 @@ export const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [
     rating: '3 STARS'
   },
   
-  {
-    id: 'junior',
-    title: 'JUNIOR',
-    image: 'https://assets-in.bmscdn.com/iedb/movies/images/mobile/listing/medium/junior-et00448285-1748861990.jpg',
-    review: 'inka Movie ela vundho detail review lo chudham',
-    firstHalf: 'Em cheppali... Story antha kotha gaa em ledu.. edo velipothu vuntadhi... conflict Execution lo tedha kottindhi.. correct gaa present chesunte intervel loo cheppina point connect ayyi vundedhi..But didnt..',
-    secondHalf: 'Second half kk parledhu its better than first Half..konni Flaws vunna kuda kk anipinchela Vuntadhi..Inka Heroine ni Enduku pettero teledu.. movie loo chala Charcters complete cheykunda finish chestaru..',
-    positives: 'Kireeti Performance,dance and fights ,Viral vyari song..',
-    negatives: 'Execution, Routine scenes, improper endings of The characters',
-    overall: "it's a Average movie",
-    rating: '3 STARS'
-  },
+  
 
  {
     id: 'oh bhama ayyo rama',
@@ -150,18 +139,7 @@ export const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [
     overall: "it's a Youthful entertainer and worth watch movie",
     rating: '4 STARS'
   },
-  {
-    id: 'hit3',
-    title: 'HIT 3',
-    image: 'https://indiaglitz-medianw.s3.amazonaws.com/telugu/home/hit-3-010525-1.jpg',
-    review: 'HIT Movie hit aindha ledha detail review lo chudham',
-    firstHalf: 'First half started a good Note.. Interesting scenes, Story Plot..Arjun Sarkar characterization ... Heroine Portions... overall ekkada Bore kottaledu...and nice interval Bang',
-    secondHalf: 'Second half lo new world vuntadhi..chaala intresting and kotha gaa vuntadhi...That Last pre climax and climax was 🔥🔥🔥...Konni surprises gaa ni vuntai..',
-    positives: 'Arjun Sarkar characterization,New Concept...',
-    negatives: 'investigation Process Inka better gaa Present chesunte bagundu anipinchindi...',
-    overall: "it's Worth Watching",
-    rating: '4 STARS'
-  },
+  
   {
     id: 'robinhood',
     title: 'ROBINHOOD',
