@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { MovieReview } from "@/data/movieReviews";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { MovieReview } from '@/data/movieReviews';
 
 interface ReviewCarouselProps {
   reviews: MovieReview[];
@@ -8,99 +8,97 @@ interface ReviewCarouselProps {
 
 export const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews }) => {
   const navigate = useNavigate();
-  const [rotation, setRotation] = useState(0);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const carouselRef = useRef<HTMLDivElement | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState(2); // Start with middle item
+  
+  // Take first 5 reviews for carousel
+  const carouselReviews = reviews.slice(0, 5);
 
-  // Take first 6 reviews for 3D effect
-  const carouselReviews = reviews.slice(0, 6);
+  // Auto-adjust selectedIndex when reviews change
+  useEffect(() => {
+    if (carouselReviews.length > 0 && selectedIndex >= carouselReviews.length) {
+      setSelectedIndex(Math.min(2, carouselReviews.length - 1));
+    }
+  }, [carouselReviews.length, selectedIndex]);
 
-  // Rotate carousel on button click
-  const rotate = (direction: "next" | "prev") => {
-    setRotation((prev) => prev + (direction === "next" ? -60 : 60));
+  // Return early if no reviews
+  if (carouselReviews.length === 0) {
+    return (
+      <div className="w-full py-12 px-4">
+        <div className="text-center text-muted-foreground">
+          <p className="text-lg">No reviews available yet</p>
+        </div>
+      </div>
+    );
+  }
+
+  const getTransformClass = (index: number) => {
+    const diff = (index - selectedIndex + 5) % 5;
+    
+    if (diff === 0) {
+      return 'translate-x-0 translate-z-0 z-30 scale-100 opacity-100';
+    } else if (diff === 1 || diff === -4) {
+      return 'translate-x-[15%] -translate-z-[100px] z-20 scale-90 opacity-90';
+    } else if (diff === 4 || diff === -1) {
+      return 'translate-x-[-15%] -translate-z-[100px] z-20 scale-90 opacity-90';
+    } else if (diff === 2 || diff === -3) {
+      return 'translate-x-[30%] -translate-z-[200px] z-10 scale-75 opacity-60';
+    } else {
+      return 'translate-x-[-30%] -translate-z-[200px] z-10 scale-75 opacity-60';
+    }
   };
 
-  // Autoplay rotation
-  useEffect(() => {
-    const startAutoplay = () => {
-      intervalRef.current = setInterval(() => {
-        rotate("next");
-      }, 2500);
-    };
-    startAutoplay();
-
-    const stopAutoplay = () => intervalRef.current && clearInterval(intervalRef.current);
-
-    const carouselElement = carouselRef.current;
-    carouselElement?.addEventListener("mouseenter", stopAutoplay);
-    carouselElement?.addEventListener("mouseleave", startAutoplay);
-
-    return () => {
-      stopAutoplay();
-      carouselElement?.removeEventListener("mouseenter", stopAutoplay);
-      carouselElement?.removeEventListener("mouseleave", startAutoplay);
-    };
-  }, []);
-
   return (
-    <div className="flex flex-col items-center justify-center w-full py-16">
-      {/* 3D container */}
-      <div className="relative w-[250px] h-[200px] perspective-[1000px]">
-        <div
-          ref={carouselRef}
-          className="absolute w-full h-full transition-transform duration-700 ease-in-out"
-          style={{
-            transformStyle: "preserve-3d",
-            transform: `rotateY(${rotation}deg)`,
-          }}
-        >
-          {carouselReviews.map((review, index) => (
-            <div
-              key={review.id}
-              className="absolute w-[250px] h-[200px] rounded-lg overflow-hidden text-white text-center text-5xl font-bold cursor-pointer"
-              style={{
-                transform: `rotateY(${index * 60}deg) translateZ(250px)`,
-                background: "#000",
-                opacity: 0.95,
-              }}
-              onClick={() => navigate(`/review/${review.id}`)}
-            >
+    <div className="w-full py-12 px-4">
+      <div className="relative h-[35vw] max-h-[500px] min-h-[300px]" style={{ perspective: '1000px', transformStyle: 'preserve-3d' }}>
+        {carouselReviews.map((review, index) => (
+          <div
+            key={review.id}
+            className={`absolute left-0 right-0 mx-auto w-[60%] h-full rounded-lg cursor-pointer transition-all duration-500 ease-out ${getTransformClass(index)}`}
+            style={{
+              transformStyle: 'preserve-3d',
+              boxShadow: index === selectedIndex 
+                ? '0 13px 25px 0 rgba(255, 215, 0, 0.3), 0 11px 7px 0 rgba(0, 0, 0, 0.19)'
+                : '0 6px 10px 0 rgba(0, 0, 0, 0.3), 0 2px 2px 0 rgba(0, 0, 0, 0.2)'
+            }}
+            onClick={() => {
+              setSelectedIndex(index);
+              navigate(`/review/${review.id}`);
+            }}
+          >
+            <div className="relative w-full h-full overflow-hidden rounded-lg border-2 border-primary">
               <img
                 src={review.image}
                 alt={review.title}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white py-2">
-                <h3 className="text-lg font-semibold">{review.title}</h3>
-                <div className="flex justify-center gap-1 text-yellow-400">
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background via-background/90 to-transparent p-4">
+                <h3 className="text-primary font-bold text-xl line-clamp-2">{review.title}</h3>
+                <div className="flex items-center gap-1 mt-1">
                   {[...Array(5)].map((_, i) => (
-                    <span key={i}>{i < Number(review.rating) ? "★" : "☆"}</span>
+                    <span key={i} className={i < Number(review.rating) ? 'text-primary' : 'text-muted'}>★</span>
                   ))}
                 </div>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
-
-      {/* Buttons */}
-      <div className="flex justify-between w-[300px] mt-8">
-        <button
-          onClick={() => rotate("prev")}
-          className="px-4 py-2 bg-gray-300 rounded-md shadow-md hover:bg-gray-400 active:translate-y-[2px]"
-        >
-          Prev
-        </button>
-        <button
-          onClick={() => rotate("next")}
-          className="px-4 py-2 bg-gray-300 rounded-md shadow-md hover:bg-gray-400 active:translate-y-[2px]"
-        >
-          Next
-        </button>
+      
+      {/* Navigation dots */}
+      <div className="flex justify-center gap-3 mt-8">
+        {carouselReviews.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setSelectedIndex(index)}
+            className={`w-3 h-3 rounded-full transition-all duration-300 ${
+              index === selectedIndex 
+                ? 'bg-primary w-8' 
+                : 'bg-muted hover:bg-primary/50'
+            }`}
+            aria-label={`Go to slide ${index + 1}`}
+          />
+        ))}
       </div>
     </div>
   );
 };
-
-remove next previous navigations....and remove star rTING IN THEIR CARDS
-
