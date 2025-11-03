@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MovieReview } from '@/data/movieReviews';
 
 interface ReviewCarouselProps {
   reviews: MovieReview[];
-  onReviewClick?: (review: MovieReview) => void;
 }
 
-export const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews, onReviewClick }) => {
+export const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews }) => {
+  const navigate = useNavigate();
   const [selectedIndex, setSelectedIndex] = useState(2); // Start with middle item
   
   // Take first 5 reviews for carousel
@@ -61,9 +62,7 @@ export const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews, onRevie
             }}
             onClick={() => {
               setSelectedIndex(index);
-              if (onReviewClick) {
-                onReviewClick(review);
-              }
+              navigate(`/review/${review.id}`);
             }}
           >
             <div className="relative w-full h-full overflow-hidden rounded-lg border-2 border-primary">
