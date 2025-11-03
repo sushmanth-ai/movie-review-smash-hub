@@ -12,20 +12,20 @@ export const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews }) => {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const carouselRef = useRef<HTMLDivElement | null>(null);
 
-  // You can use all reviews or slice a few
-  const carouselReviews = reviews.slice(0, 8); // up to 8 looks clean for 360°
+  // Take first 6 reviews for 3D effect
+  const carouselReviews = reviews.slice(0, 6);
 
-  // Calculate the angle for even spacing (360° / number of items)
-  const angleStep = 360 / carouselReviews.length;
+  // Rotate carousel on button click
+  const rotate = (direction: "next" | "prev") => {
+    setRotation((prev) => prev + (direction === "next" ? -60 : 60));
+  };
 
-  // Rotate carousel automatically
+  // Autoplay rotation
   useEffect(() => {
-    const rotateNext = () => {
-      setRotation((prev) => prev - angleStep);
-    };
-
     const startAutoplay = () => {
-      intervalRef.current = setInterval(rotateNext, 2500);
+      intervalRef.current = setInterval(() => {
+        rotate("next");
+      }, 2500);
     };
     startAutoplay();
 
@@ -40,11 +40,11 @@ export const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews }) => {
       carouselElement?.removeEventListener("mouseenter", stopAutoplay);
       carouselElement?.removeEventListener("mouseleave", startAutoplay);
     };
-  }, [angleStep]);
+  }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center w-full py-16 bg-transparent">
-      {/* 3D carousel container */}
+    <div className="flex flex-col items-center justify-center w-full py-16">
+      {/* 3D container */}
       <div className="relative w-[250px] h-[200px] perspective-[1000px]">
         <div
           ref={carouselRef}
@@ -57,10 +57,11 @@ export const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews }) => {
           {carouselReviews.map((review, index) => (
             <div
               key={review.id}
-              className="absolute w-[250px] h-[200px] rounded-2xl overflow-hidden text-white text-center text-5xl font-bold cursor-pointer shadow-lg"
+              className="absolute w-[250px] h-[200px] rounded-lg overflow-hidden text-white text-center text-5xl font-bold cursor-pointer"
               style={{
-                transform: `rotateY(${index * angleStep}deg) translateZ(280px)`,
+                transform: `rotateY(${index * 60}deg) translateZ(250px)`,
                 background: "#000",
+                opacity: 0.95,
               }}
               onClick={() => navigate(`/review/${review.id}`)}
             >
@@ -71,11 +72,35 @@ export const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews }) => {
               />
               <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white py-2">
                 <h3 className="text-lg font-semibold">{review.title}</h3>
+                <div className="flex justify-center gap-1 text-yellow-400">
+                  {[...Array(5)].map((_, i) => (
+                    <span key={i}>{i < Number(review.rating) ? "★" : "☆"}</span>
+                  ))}
+                </div>
               </div>
             </div>
           ))}
         </div>
       </div>
+
+      {/* Buttons */}
+      <div className="flex justify-between w-[300px] mt-8">
+        <button
+          onClick={() => rotate("prev")}
+          className="px-4 py-2 bg-gray-300 rounded-md shadow-md hover:bg-gray-400 active:translate-y-[2px]"
+        >
+          Prev
+        </button>
+        <button
+          onClick={() => rotate("next")}
+          className="px-4 py-2 bg-gray-300 rounded-md shadow-md hover:bg-gray-400 active:translate-y-[2px]"
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 };
+
+remove next previous navigations....and remove star rTING IN THEIR CARDS
+
