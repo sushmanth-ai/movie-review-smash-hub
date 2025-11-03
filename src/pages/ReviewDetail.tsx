@@ -241,8 +241,9 @@ const ReviewDetail = () => {
       <div className="container mx-auto px-4 pt-24 pb-8">
         <Card className="bg-card border-2 border-primary shadow-[0_0_30px_rgba(255,215,0,0.5)] max-w-4xl mx-auto">
           <CardHeader className="text-center space-y-4">
-            <h2 className="text-3xl font-bold text-primary mb-4">{review.title}</h2>
-            
+            <div className="bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-lg p-4 border-2 border-primary/50 shadow-[0_0_20px_rgba(255,215,0,0.3)]">
+              <h2 className="text-3xl font-bold text-primary">{review.title}</h2>
+            </div>
           </CardHeader>
 
           <div className="px-6">
@@ -258,38 +259,28 @@ const ReviewDetail = () => {
             </div>
 
             <div className="space-y-4">
-              <div className="pl-4 py-2">
-                <div className="bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-lg p-3 mb-3 border-l-4 border-primary shadow-[0_0_15px_rgba(255,215,0,0.2)]">
-                  <h4 className="text-primary font-bold text-lg">First Half:</h4>
-                </div>
+              <div className="border-l-4 border-primary pl-4 py-2">
+                <h4 className="text-primary font-bold text-lg mb-2">First Half:</h4>
                 <p className="text-base font-bold text-slate-50 leading-relaxed">{review.firstHalf}</p>
               </div>
 
-              <div className="pl-4 py-2">
-                <div className="bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-lg p-3 mb-3 border-l-4 border-primary shadow-[0_0_15px_rgba(255,215,0,0.2)]">
-                  <h4 className="text-primary font-bold text-lg">Second Half:</h4>
-                </div>
+              <div className="border-l-4 border-primary pl-4 py-2">
+                <h4 className="text-primary font-bold text-lg mb-2">Second Half:</h4>
                 <p className="text-base text-slate-50 font-bold leading-relaxed">{review.secondHalf}</p>
               </div>
 
-              <div className="pl-4 py-2">
-                <div className="bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-lg p-3 mb-3 border-l-4 border-primary shadow-[0_0_15px_rgba(255,215,0,0.2)]">
-                  <h4 className="text-primary font-bold text-lg">Positives:</h4>
-                </div>
+              <div className="border-l-4 border-primary pl-4 py-2">
+                <h4 className="text-primary font-bold text-lg mb-2">Positives:</h4>
                 <p className="text-base text-slate-50 font-bold leading-relaxed">{review.positives}</p>
               </div>
 
-              <div className="pl-4 py-2">
-                <div className="bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-lg p-3 mb-3 border-l-4 border-primary shadow-[0_0_15px_rgba(255,215,0,0.2)]">
-                  <h4 className="text-primary font-bold text-lg">Negatives:</h4>
-                </div>
+              <div className="border-l-4 border-primary pl-4 py-2">
+                <h4 className="text-primary font-bold text-lg mb-2">Negatives:</h4>
                 <p className="text-base font-bold text-slate-50 leading-relaxed">{review.negatives}</p>
               </div>
 
-              <div className="pl-4 py-2">
-                <div className="bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-lg p-3 mb-3 border-l-4 border-primary shadow-[0_0_15px_rgba(255,215,0,0.2)]">
-                  <h4 className="text-primary font-bold text-lg">Overall Movie:</h4>
-                </div>
+              <div className="border-l-4 border-primary pl-4 py-2">
+                <h4 className="text-primary font-bold text-lg mb-2">Overall Movie:</h4>
                 <p className="text-base text-slate-50 font-bold leading-relaxed">{review.overall}</p>
               </div>
             </div>
