@@ -12,17 +12,21 @@ import { useFirebaseOperations } from '@/hooks/useFirebaseOperations';
 import { collection, onSnapshot, query, orderBy, doc, getDoc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '@/utils/firebase';
 import { useToast } from '@/hooks/use-toast';
-
 const ReviewDetail = () => {
-  const { id } = useParams<{ id: string }>();
+  const {
+    id
+  } = useParams<{
+    id: string;
+  }>();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const [review, setReview] = useState<MovieReview | null>(null);
   const [newComment, setNewComment] = useState('');
   const [showComments, setShowComments] = useState(false);
   const [viewCount, setViewCount] = useState(0);
   const [isReading, setIsReading] = useState(false);
-  
   const {
     loadLikes,
     loadComments,
@@ -30,11 +34,11 @@ const ReviewDetail = () => {
     handleComment,
     handleReply,
     handleShare,
-    likedReviews,
+    likedReviews
   } = useFirebaseOperations();
 
   // Adapter: use hook's array-based setters with single-review state
-  const setReviewFromList: React.Dispatch<React.SetStateAction<MovieReview[]>> = (updater) => {
+  const setReviewFromList: React.Dispatch<React.SetStateAction<MovieReview[]>> = updater => {
     setReview(prev => {
       const currentList = prev ? [prev] : [];
       const nextList = typeof updater === 'function' ? (updater as any)(currentList) : updater;
@@ -43,13 +47,13 @@ const ReviewDetail = () => {
   };
 
   // No-op to satisfy hook API; we manage a single input locally on this page
-  const noopSetNewComment: React.Dispatch<React.SetStateAction<{ [key: string]: string }>> = () => {};
-
+  const noopSetNewComment: React.Dispatch<React.SetStateAction<{
+    [key: string]: string;
+  }>> = () => {};
 
   // Track view and load review data
   useEffect(() => {
     if (!id) return;
-
     const trackView = async () => {
       if (db) {
         try {
@@ -66,13 +70,12 @@ const ReviewDetail = () => {
     // First check if it's a Firebase review
     if (db) {
       const reviewDoc = doc(db, 'reviews', id);
-      
+
       // Set up real-time listener for views
-      const unsubscribe = onSnapshot(reviewDoc, (docSnap) => {
+      const unsubscribe = onSnapshot(reviewDoc, docSnap => {
         if (docSnap.exists()) {
           const data = docSnap.data();
           setViewCount(data.views || 0);
-          
           const firebaseReview: MovieReview = {
             id: docSnap.id,
             title: data.title,
@@ -89,7 +92,7 @@ const ReviewDetail = () => {
             views: data.views || 0
           };
           setReview(firebaseReview);
-          
+
           // Load likes and comments for this single review
           loadLikes(setReviewFromList);
           loadComments(setReviewFromList);
@@ -97,10 +100,13 @@ const ReviewDetail = () => {
           // Check static data
           const staticReview = movieReviewsData.find(r => r.id === id);
           if (staticReview) {
-            const reviewWithDefaults = { ...staticReview, likes: 0, comments: [] };
+            const reviewWithDefaults = {
+              ...staticReview,
+              likes: 0,
+              comments: []
+            };
             setReview(reviewWithDefaults);
             setViewCount(staticReview.views || 0);
-            
             loadLikes(setReviewFromList);
             loadComments(setReviewFromList);
           }
@@ -109,46 +115,39 @@ const ReviewDetail = () => {
 
       // Track the view
       trackView();
-
       return () => unsubscribe();
     } else {
       // If Firebase not available, use static data
       const staticReview = movieReviewsData.find(r => r.id === id);
       if (staticReview) {
-        setReview({ ...staticReview, likes: 0, comments: [] });
+        setReview({
+          ...staticReview,
+          likes: 0,
+          comments: []
+        });
         setViewCount(staticReview.views || 0);
       }
     }
   }, [id]);
-
   if (!review) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+    return <div className="min-h-screen bg-background flex items-center justify-center">
         <p className="text-primary text-xl">Loading review...</p>
-      </div>
-    );
+      </div>;
   }
-
   const handleLikeClick = (reviewId: string) => {
     handleLike(reviewId, setReviewFromList);
   };
-
   const handleCommentSubmit = () => {
     if (!review || !newComment.trim()) return;
-
     handleComment(review.id, newComment, setReviewFromList, noopSetNewComment);
     setNewComment('');
   };
-
   const handleReplySubmit = (commentId: string, replyText: string) => {
     if (!review || !replyText.trim()) return;
-
     handleReply(review.id, commentId, replyText, setReviewFromList);
   };
-
   const handleReadReview = async () => {
     if (!review) return;
-
     if (isReading) {
       // Stop current audio
       const audioElement = document.getElementById('review-audio') as HTMLAudioElement;
@@ -159,9 +158,7 @@ const ReviewDetail = () => {
       setIsReading(false);
       return;
     }
-
     setIsReading(true);
-
     try {
       // Combine all review content in Telugu
       const fullReview = `
@@ -174,42 +171,36 @@ const ReviewDetail = () => {
         మొత్తం మీద: ${review.overall}.
         రేటింగ్: ${review.rating} స్టార్స్.
       `;
-
       console.log('Calling text-to-speech function...');
 
       // Call the edge function
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/text-to-speech`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ text: fullReview }),
-        }
-      );
-
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/text-to-speech`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          text: fullReview
+        })
+      });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to generate speech');
       }
-
       const data = await response.json();
-      
+
       // Convert base64 to audio and play
-      const audioBlob = new Blob(
-        [Uint8Array.from(atob(data.audioContent), c => c.charCodeAt(0))],
-        { type: 'audio/mp3' }
-      );
+      const audioBlob = new Blob([Uint8Array.from(atob(data.audioContent), c => c.charCodeAt(0))], {
+        type: 'audio/mp3'
+      });
       const audioUrl = URL.createObjectURL(audioBlob);
-      
+
       // Create or reuse audio element
       let audioElement = document.getElementById('review-audio') as HTMLAudioElement;
       if (!audioElement) {
         audioElement = new Audio();
         audioElement.id = 'review-audio';
       }
-      
       audioElement.src = audioUrl;
       audioElement.onended = () => {
         setIsReading(false);
@@ -224,9 +215,7 @@ const ReviewDetail = () => {
           variant: "destructive"
         });
       };
-      
       await audioElement.play();
-
     } catch (error) {
       console.error('Text-to-speech error:', error);
       setIsReading(false);
@@ -237,18 +226,11 @@ const ReviewDetail = () => {
       });
     }
   };
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="fixed top-0 left-0 w-full z-50 p-4 shadow-[0_4px_20px_rgba(255,215,0,0.3)] border-b-2 border-primary bg-background">
         <div className="container mx-auto flex items-center gap-4">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => navigate('/')}
-            className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-          >
+          <Button variant="outline" size="icon" onClick={() => navigate('/')} className="border-primary text-primary hover:bg-primary hover:text-primary-foreground">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <h1 className="text-xl font-bold text-primary">SM REVIEW 2.0</h1>
@@ -260,28 +242,11 @@ const ReviewDetail = () => {
         <Card className="bg-card border-2 border-primary shadow-[0_0_30px_rgba(255,215,0,0.5)] max-w-4xl mx-auto">
           <CardHeader className="text-center space-y-4">
             <h2 className="text-3xl font-bold text-primary mb-4">{review.title}</h2>
-            <div className="flex items-center justify-center gap-6">
-              <div className="flex items-center gap-2 text-primary">
-                <Eye className="w-5 h-5" />
-                <span className="font-bold text-lg">{viewCount} views</span>
-              </div>
-              <Button
-                onClick={handleReadReview}
-                variant={isReading ? "destructive" : "default"}
-                className="flex items-center gap-2"
-              >
-                <Volume2 className="w-4 h-4" />
-                {isReading ? 'Stop Reading' : 'Read in Telugu'}
-              </Button>
-            </div>
+            
           </CardHeader>
 
           <div className="px-6">
-            <img 
-              src={review.image} 
-              alt={review.title} 
-              className="w-full max-h-[500px] object-cover rounded-lg mb-6 border-2 border-primary/30" 
-            />
+            <img src={review.image} alt={review.title} className="w-full max-h-[500px] object-cover rounded-lg mb-6 border-2 border-primary/30" />
           </div>
 
           <CardContent className="space-y-6">
@@ -317,23 +282,9 @@ const ReviewDetail = () => {
               </div>
             </div>
 
-            <InteractionButtons
-              review={review}
-              onLike={handleLikeClick}
-              onToggleComments={(_id) => setShowComments(prev => !prev)}
-              onShare={handleShare}
-              isLiked={likedReviews.has(review.id)}
-            />
+            <InteractionButtons review={review} onLike={handleLikeClick} onToggleComments={_id => setShowComments(prev => !prev)} onShare={handleShare} isLiked={likedReviews.has(review.id)} />
 
-            {showComments && (
-              <CommentSection
-                review={review}
-                newComment={newComment}
-                onCommentChange={setNewComment}
-                onCommentSubmit={handleCommentSubmit}
-                onReplySubmit={handleReplySubmit}
-              />
-            )}
+            {showComments && <CommentSection review={review} newComment={newComment} onCommentChange={setNewComment} onCommentSubmit={handleCommentSubmit} onReplySubmit={handleReplySubmit} />}
           </CardContent>
 
           <CardFooter className="bg-slate-100 text-slate-900 rounded-b-lg py-6">
@@ -344,8 +295,6 @@ const ReviewDetail = () => {
           </CardFooter>
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default ReviewDetail;
