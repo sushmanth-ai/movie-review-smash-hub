@@ -513,6 +513,29 @@ export const useFirebaseOperations = () => {
   const trackReviewView = async (reviewId: string) => {
     if (!db) return;
 
+    // Check if user has already viewed this review
+    const viewedReviewsKey = 'viewedReviews';
+    const viewedReviews = localStorage.getItem(viewedReviewsKey);
+    let viewedSet: Set<string> = new Set();
+    
+    if (viewedReviews) {
+      try {
+        viewedSet = new Set(JSON.parse(viewedReviews));
+      } catch (error) {
+        console.error('Error parsing viewed reviews:', error);
+      }
+    }
+
+    // If user has already viewed this review, don't increment
+    if (viewedSet.has(reviewId)) {
+      console.log('User already viewed this review:', reviewId);
+      return;
+    }
+
+    // Mark as viewed
+    viewedSet.add(reviewId);
+    localStorage.setItem(viewedReviewsKey, JSON.stringify(Array.from(viewedSet)));
+
     try {
       const viewsRef = doc(db, 'reviewViews', reviewId);
       
