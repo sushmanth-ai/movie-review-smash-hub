@@ -239,7 +239,7 @@ const ReviewDetail = () => {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 pt-24 pb-8">
-        <Card className="bg-card border-2 border-primary shadow-[0_0_30px_rgba(255,215,0,0.5)] max-w-4xl mx-auto">
+       
           <CardHeader className="text-center space-y-4">
             
               <h2 className="text-3xl font-bold text-primary">{review.title}</h2>
