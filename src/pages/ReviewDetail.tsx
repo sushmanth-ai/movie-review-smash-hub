@@ -12,21 +12,21 @@ import { useFirebaseOperations } from '@/hooks/useFirebaseOperations';
 import { collection, onSnapshot, query, orderBy, doc, getDoc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '@/utils/firebase';
 import { useToast } from '@/hooks/use-toast';
-
 const ReviewDetail = () => {
-  const { id } = useParams<{ id: string }>();
+  const {
+    id
+  } = useParams<{
+    id: string;
+  }>();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const [review, setReview] = useState<MovieReview | null>(null);
   const [newComment, setNewComment] = useState('');
   const [showComments, setShowComments] = useState(false);
   const [viewCount, setViewCount] = useState(0);
   const [isReading, setIsReading] = useState(false);
-
-  // 🎬 New States for Rating Spin Feature
-  const [isSpinning, setIsSpinning] = useState(false);
-  const [showRatingValue, setShowRatingValue] = useState(false);
-
   const {
     loadLikes,
     loadComments,
@@ -37,6 +37,7 @@ const ReviewDetail = () => {
     likedReviews
   } = useFirebaseOperations();
 
+  // Adapter: use hook's array-based setters with single-review state
   const setReviewFromList: React.Dispatch<React.SetStateAction<MovieReview[]>> = updater => {
     setReview(prev => {
       const currentList = prev ? [prev] : [];
@@ -45,24 +46,32 @@ const ReviewDetail = () => {
     });
   };
 
-  const noopSetNewComment: React.Dispatch<React.SetStateAction<{ [key: string]: string }>> = () => {};
+  // No-op to satisfy hook API; we manage a single input locally on this page
+  const noopSetNewComment: React.Dispatch<React.SetStateAction<{
+    [key: string]: string;
+  }>> = () => {};
 
-  // 🔥 Load review and track views
+  // Track view and load review data
   useEffect(() => {
     if (!id) return;
     const trackView = async () => {
       if (db) {
         try {
           const reviewDoc = doc(db, 'reviews', id);
-          await updateDoc(reviewDoc, { views: increment(1) });
+          await updateDoc(reviewDoc, {
+            views: increment(1)
+          });
         } catch (error) {
           console.log('View tracking error:', error);
         }
       }
     };
 
+    // First check if it's a Firebase review
     if (db) {
       const reviewDoc = doc(db, 'reviews', id);
+
+      // Set up real-time listener for views
       const unsubscribe = onSnapshot(reviewDoc, docSnap => {
         if (docSnap.exists()) {
           const data = docSnap.data();
@@ -83,12 +92,19 @@ const ReviewDetail = () => {
             views: data.views || 0
           };
           setReview(firebaseReview);
+
+          // Load likes and comments for this single review
           loadLikes(setReviewFromList);
           loadComments(setReviewFromList);
         } else {
+          // Check static data
           const staticReview = movieReviewsData.find(r => r.id === id);
           if (staticReview) {
-            const reviewWithDefaults = { ...staticReview, likes: 0, comments: [] };
+            const reviewWithDefaults = {
+              ...staticReview,
+              likes: 0,
+              comments: []
+            };
             setReview(reviewWithDefaults);
             setViewCount(staticReview.views || 0);
             loadLikes(setReviewFromList);
@@ -97,44 +113,43 @@ const ReviewDetail = () => {
         }
       });
 
+      // Track the view
       trackView();
       return () => unsubscribe();
     } else {
+      // If Firebase not available, use static data
       const staticReview = movieReviewsData.find(r => r.id === id);
       if (staticReview) {
-        setReview({ ...staticReview, likes: 0, comments: [] });
+        setReview({
+          ...staticReview,
+          likes: 0,
+          comments: []
+        });
         setViewCount(staticReview.views || 0);
       }
     }
   }, [id]);
-
   if (!review) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+    return <div className="min-h-screen bg-background flex items-center justify-center">
         <p className="text-primary text-xl">Loading review...</p>
-      </div>
-    );
+      </div>;
   }
-
   const handleLikeClick = (reviewId: string) => {
     handleLike(reviewId, setReviewFromList);
   };
-
   const handleCommentSubmit = () => {
     if (!review || !newComment.trim()) return;
     handleComment(review.id, newComment, setReviewFromList, noopSetNewComment);
     setNewComment('');
   };
-
   const handleReplySubmit = (commentId: string, replyText: string) => {
     if (!review || !replyText.trim()) return;
     handleReply(review.id, commentId, replyText, setReviewFromList);
   };
-
-  // 🎧 Text-to-speech (existing feature)
   const handleReadReview = async () => {
     if (!review) return;
     if (isReading) {
+      // Stop current audio
       const audioElement = document.getElementById('review-audio') as HTMLAudioElement;
       if (audioElement) {
         audioElement.pause();
@@ -145,6 +160,7 @@ const ReviewDetail = () => {
     }
     setIsReading(true);
     try {
+      // Combine all review content in Telugu
       const fullReview = `
         ${review.title}.
         సమీక్ష: ${review.review}.
@@ -155,15 +171,31 @@ const ReviewDetail = () => {
         మొత్తం మీద: ${review.overall}.
         రేటింగ్: ${review.rating} స్టార్స్.
       `;
+      console.log('Calling text-to-speech function...');
+
+      // Call the edge function
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/text-to-speech`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: fullReview })
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          text: fullReview
+        })
       });
-      if (!response.ok) throw new Error('Failed to generate speech');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate speech');
+      }
       const data = await response.json();
-      const audioBlob = new Blob([Uint8Array.from(atob(data.audioContent), c => c.charCodeAt(0))], { type: 'audio/mp3' });
+
+      // Convert base64 to audio and play
+      const audioBlob = new Blob([Uint8Array.from(atob(data.audioContent), c => c.charCodeAt(0))], {
+        type: 'audio/mp3'
+      });
       const audioUrl = URL.createObjectURL(audioBlob);
+
+      // Create or reuse audio element
       let audioElement = document.getElementById('review-audio') as HTMLAudioElement;
       if (!audioElement) {
         audioElement = new Audio();
@@ -173,6 +205,15 @@ const ReviewDetail = () => {
       audioElement.onended = () => {
         setIsReading(false);
         URL.revokeObjectURL(audioUrl);
+      };
+      audioElement.onerror = () => {
+        setIsReading(false);
+        URL.revokeObjectURL(audioUrl);
+        toast({
+          title: "Error",
+          description: "Failed to play audio. Please try again.",
+          variant: "destructive"
+        });
       };
       await audioElement.play();
     } catch (error) {
@@ -185,19 +226,7 @@ const ReviewDetail = () => {
       });
     }
   };
-
-  // 🌟 Handle Rating Spin
-  const handleShowRating = () => {
-    setIsSpinning(true);
-    setShowRatingValue(false);
-    setTimeout(() => {
-      setIsSpinning(false);
-      setShowRatingValue(true);
-    }, 3000);
-  };
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="fixed top-0 left-0 w-full z-50 p-4 shadow-[0_4px_20px_rgba(255,215,0,0.3)] border-b-2 border-primary bg-background">
         <div className="container mx-auto flex items-center gap-4">
@@ -212,8 +241,11 @@ const ReviewDetail = () => {
       <div className="container mx-auto px-4 pt-24 pb-8">
         <Card className="bg-card border-2 border-primary shadow-[0_0_30px_rgba(255,215,0,0.5)] max-w-4xl mx-auto">
           <CardHeader className="text-center space-y-4">
-            <h2 className="text-4xl font-extrabold text-primary tracking-wide">{review.title}</h2>
-          </CardHeader>
+  <h2 className="text-4xl font-extrabold text-primary tracking-wide">
+    {review.title}
+  </h2>
+</CardHeader>
+
 
           <div className="px-6">
             <img src={review.image} alt={review.title} className="w-full max-h-[500px] object-cover rounded-lg mb-6 border-2 border-primary/30" />
@@ -254,53 +286,21 @@ const ReviewDetail = () => {
               </div>
             </div>
 
-            <InteractionButtons
-              review={review}
-              onLike={handleLikeClick}
-              onToggleComments={() => setShowComments(prev => !prev)}
-              onShare={handleShare}
-              isLiked={likedReviews.has(review.id)}
-            />
+            <InteractionButtons review={review} onLike={handleLikeClick} onToggleComments={_id => setShowComments(prev => !prev)} onShare={handleShare} isLiked={likedReviews.has(review.id)} />
 
-            {showComments && (
-              <CommentSection
-                review={review}
-                newComment={newComment}
-                onCommentChange={setNewComment}
-                onCommentSubmit={handleCommentSubmit}
-                onReplySubmit={handleReplySubmit}
-              />
-            )}
+            {showComments && <CommentSection review={review} newComment={newComment} onCommentChange={setNewComment} onCommentSubmit={handleCommentSubmit} onReplySubmit={handleReplySubmit} />}
           </CardContent>
+
         </Card>
 
-        {/* 🌟 Rating Meter with Spin Feature */}
-        <Card className="bg-slate-100 border-2 border-primary shadow-[0_0_30px_rgba(255,215,0,0.5)] max-w-sm mx-auto mt-6 p-8 flex flex-col items-center gap-4">
-          <h3 className="text-2xl text-center text-slate-900 font-extrabold">RATING METER</h3>
-
-          <div
-            className={`transition-transform duration-700 ${
-              isSpinning ? 'animate-spin-slow' : ''
-            }`}
-          >
+        {/* Separate Rating Card */}
+        <Card className="bg-slate-100 border-2 border-primary shadow-[0_0_30px_rgba(255,215,0,0.5)] max-w-sm mx-auto mt-6 p-8">
+          <div className="flex flex-col items-center gap-4">
+            <h3 className="text-2xl text-center text-slate-900 font-extrabold"> RATING METER</h3>
             <ThreeDRatingMeter rating={parseFloat(review.rating)} size={160} />
           </div>
-
-          {showRatingValue ? (
-            <p className="text-3xl font-extrabold text-primary mt-4">{review.rating} / 5 ⭐</p>
-          ) : (
-            <Button
-              onClick={handleShowRating}
-              disabled={isSpinning}
-              className="bg-primary text-white mt-4 hover:bg-primary/90"
-            >
-              {isSpinning ? 'Spinning...' : 'Show Rating'}
-            </Button>
-          )}
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default ReviewDetail;
