@@ -9,154 +9,112 @@ interface TeluguVoiceReaderProps {
 
 export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({ reviewText }) => {
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [synth, setSynth] = useState<SpeechSynthesis | null>(null);
-  const [voicesLoaded, setVoicesLoaded] = useState(false);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const { toast } = useToast();
 
+  // Load voices properly
   useEffect(() => {
-    // Initialize speech synthesis
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      const speechSynth = window.speechSynthesis;
-      setSynth(speechSynth);
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
 
-      // Load voices
-      const loadVoices = () => {
-        const voices = speechSynth.getVoices();
-        console.log('Available voices:', voices.map(v => ({ name: v.name, lang: v.lang })));
-        if (voices.length > 0) {
-          setVoicesLoaded(true);
-        }
-      };
+    const synth = window.speechSynthesis;
 
-      // Try to load voices immediately
-      loadVoices();
-
-      // Also listen for voices changed event
-      if (speechSynth.onvoiceschanged !== undefined) {
-        speechSynth.onvoiceschanged = loadVoices;
+    const loadVoices = () => {
+      const allVoices = synth.getVoices();
+      if (allVoices.length > 0) {
+        setVoices(allVoices);
       }
+    };
 
-      // Cleanup
-      return () => {
-        speechSynth.cancel();
-      };
-    }
+    // Try now and again on event
+    loadVoices();
+    synth.onvoiceschanged = loadVoices;
+
+    return () => {
+      synth.onvoiceschanged = null;
+    };
   }, []);
 
   const speakInChunks = (text: string) => {
-    if (!synth) return;
-
-    // Cancel any ongoing speech
+    const synth = window.speechSynthesis;
     synth.cancel();
 
-    // Split text into smaller chunks (max 200 characters per chunk)
-    const chunkSize = 200;
-    const chunks: string[] = [];
-    
-    // Split by sentences first to avoid breaking mid-sentence
-    const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
-    
-    let currentChunk = '';
-    sentences.forEach(sentence => {
-      if ((currentChunk + sentence).length <= chunkSize) {
-        currentChunk += sentence;
-      } else {
-        if (currentChunk) chunks.push(currentChunk.trim());
-        currentChunk = sentence;
-      }
-    });
-    if (currentChunk) chunks.push(currentChunk.trim());
+    const teluguVoice =
+      voices.find(v => v.lang.toLowerCase().includes('te-in')) ||
+      voices.find(v => v.lang.toLowerCase().includes('hi-in')) ||
+      voices.find(v => v.lang.toLowerCase().includes('en-in')) ||
+      voices[0];
 
-    console.log(`Split text into ${chunks.length} chunks`);
-
-    let currentChunkIndex = 0;
-
-    const speakNextChunk = () => {
-      if (currentChunkIndex >= chunks.length) {
-        console.log('All chunks completed');
-        setIsSpeaking(false);
-        return;
-      }
-
-      const chunk = chunks[currentChunkIndex];
-      console.log(`Speaking chunk ${currentChunkIndex + 1}/${chunks.length}`);
-
-      const utterance = new SpeechSynthesisUtterance(chunk);
-      
-      // Get voices
-      const voices = synth.getVoices();
-      let selectedVoice = voices.find(v => 
-        v.lang.toLowerCase().includes('te-in') || 
-        v.lang.toLowerCase().includes('te')
-      );
-
-      if (!selectedVoice) {
-        selectedVoice = voices.find(v => 
-          v.lang.toLowerCase().includes('hi-in') || 
-          v.lang.toLowerCase().includes('hi')
-        );
-      }
-
-      if (!selectedVoice) {
-        selectedVoice = voices.find(v => v.name.toLowerCase().includes('female')) || voices[0];
-      }
-
-      if (selectedVoice) {
-        utterance.voice = selectedVoice;
-      }
-
-      utterance.lang = selectedVoice?.lang || 'te-IN';
-      utterance.rate = 0.9;
-      utterance.pitch = 1.0;
-      utterance.volume = 1.0;
-
-      utterance.onend = () => {
-        console.log(`Chunk ${currentChunkIndex + 1} completed`);
-        currentChunkIndex++;
-        // Small delay before next chunk to prevent interruption
-        setTimeout(speakNextChunk, 50);
-      };
-
-      utterance.onerror = (event) => {
-        console.error(`Chunk ${currentChunkIndex + 1} error:`, event.error);
-        
-        if (event.error === 'interrupted' || event.error === 'canceled') {
-          // User cancelled, stop everything
-          setIsSpeaking(false);
-          return;
-        }
-
-        // For other errors, try next chunk
-        currentChunkIndex++;
-        setTimeout(speakNextChunk, 100);
-      };
-
-      synth.speak(utterance);
-    };
-
-    setIsSpeaking(true);
-    // Small delay before starting
-    setTimeout(speakNextChunk, 100);
-  };
-
-  const handleSpeech = () => {
-    if (!synth) {
+    if (!teluguVoice) {
       toast({
-        title: "Error",
-        description: "Speech synthesis not supported in this browser",
-        variant: "destructive"
+        title: 'Voice not found',
+        description: 'Telugu voice not available on this browser. Try English-India voice.',
+        variant: 'destructive',
       });
       return;
     }
 
+    const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+    let i = 0;
+
+    const speakNext = () => {
+      if (i >= sentences.length) {
+        setIsSpeaking(false);
+        return;
+      }
+
+      const utter = new SpeechSynthesisUtterance(sentences[i]);
+      utter.voice = teluguVoice;
+      utter.lang = teluguVoice.lang;
+      utter.rate = 0.9;
+      utter.pitch = 1;
+      utter.volume = 1;
+
+      utter.onend = () => {
+        i++;
+        setTimeout(speakNext, 50);
+      };
+
+      utter.onerror = (e) => {
+        console.error('Speech error:', e);
+        setIsSpeaking(false);
+      };
+
+      synth.speak(utter);
+    };
+
+    setIsSpeaking(true);
+    speakNext();
+  };
+
+  const handleSpeech = () => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      toast({
+        title: 'Error',
+        description: 'Speech synthesis not supported in this browser',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const synth = window.speechSynthesis;
+
     if (isSpeaking) {
-      console.log('Stopping speech...');
       synth.cancel();
       setIsSpeaking(false);
       return;
     }
 
-    console.log('Starting speech with chunking...');
+    if (voices.length === 0) {
+      toast({
+        title: 'Loading voices...',
+        description: 'Please wait 1–2 seconds and try again',
+      });
+      window.speechSynthesis.onvoiceschanged = () => {
+        setVoices(window.speechSynthesis.getVoices());
+      };
+      return;
+    }
+
     speakInChunks(reviewText);
   };
 
@@ -170,19 +128,12 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({ reviewText
           <>
             <VolumeX className="w-6 h-6 mr-2" />
             <span>🛑 Stop Voice</span>
-            <span className="absolute inset-0 rounded-full bg-primary/30 animate-pulse" />
           </>
         ) : (
           <>
             <Volume2 className="w-6 h-6 mr-2" />
             <span>🔊 Read Review</span>
           </>
-        )}
-        {isSpeaking && (
-          <span className="absolute -top-1 -right-1 flex h-5 w-5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-5 w-5 bg-primary"></span>
-          </span>
         )}
       </Button>
     </div>
