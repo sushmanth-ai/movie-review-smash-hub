@@ -12,45 +12,34 @@ export const ThreeDRatingMeter: React.FC<ThreeDRatingMeterProps> = ({
 }) => {
   const [showRating, setShowRating] = useState(false);
   const [animatedPercentage, setAnimatedPercentage] = useState(0);
-  const [animatedRating, setAnimatedRating] = useState(0);
-
   const targetPercentage = Math.min(100, Math.max(0, (rating / 5) * 100));
 
   useEffect(() => {
     if (showRating) {
+      // Animate the progress from 0 to target percentage
       let currentPercentage = 0;
-      let currentRating = 0;
-
       const duration = 2000; // 2 seconds
-      const steps = 60; // number of animation frames
-      const incrementPercentage = targetPercentage / steps;
-      const incrementRating = rating / steps;
+      const steps = 60;
+      const increment = targetPercentage / steps;
       const stepDuration = duration / steps;
 
       const interval = setInterval(() => {
-        currentPercentage += incrementPercentage;
-        currentRating += incrementRating;
-
+        currentPercentage += increment;
         if (currentPercentage >= targetPercentage) {
           setAnimatedPercentage(targetPercentage);
-          setAnimatedRating(rating);
           clearInterval(interval);
         } else {
           setAnimatedPercentage(currentPercentage);
-          setAnimatedRating(currentRating);
         }
       }, stepDuration);
 
       return () => clearInterval(interval);
     }
-  }, [showRating, targetPercentage, rating]);
+  }, [showRating, targetPercentage]);
 
   if (!showRating) {
     return (
-      <div
-        className="flex items-center justify-center"
-        style={{ width: size, height: size }}
-      >
+      <div className="flex items-center justify-center" style={{ width: size, height: size }}>
         <Button
           onClick={() => setShowRating(true)}
           className="bg-gradient-to-r from-primary via-yellow-500 to-primary text-primary-foreground font-bold text-lg px-8 py-6 rounded-full shadow-[0_0_30px_rgba(255,215,0,0.6)] hover:shadow-[0_0_40px_rgba(255,215,0,0.8)] hover:scale-105 transition-all duration-300 border-2 border-primary/50"
@@ -132,9 +121,7 @@ export const ThreeDRatingMeter: React.FC<ThreeDRatingMeterProps> = ({
           textShadow: "0 0 12px rgba(255, 215, 0, 0.8)",
         }}
       >
-        <span className="text-3xl">
-          {animatedRating.toFixed(1)}
-        </span>
+        <span className="text-3xl">{rating.toFixed(1)}</span>
         <span className="text-sm text-gray-400">/5</span>
       </div>
     </div>

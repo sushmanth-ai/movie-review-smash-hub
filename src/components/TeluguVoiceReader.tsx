@@ -1,30 +1,28 @@
-import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Volume2, VolumeX, Languages, Download } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Volume2, VolumeX, Languages } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
-interface HybridVoiceReaderProps {
+interface UniversalEnglishReaderProps {
   text: string;
 }
 
-export const HybridVoiceReader: React.FC<HybridVoiceReaderProps> = ({ text }) => {
+export const UniversalEnglishReader: React.FC<UniversalEnglishReaderProps> = ({ text }) => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [translatedText, setTranslatedText] = useState<string>("");
+  const [translatedText, setTranslatedText] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  // Detect mobile browser
-  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-  // Load available voices
   useEffect(() => {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
     const synth = window.speechSynthesis;
 
+    // Load voices with retry (for mobile)
     const loadVoices = () => {
       const allVoices = synth.getVoices();
       if (allVoices.length > 0) setVoices(allVoices);
+      else setTimeout(loadVoices, 500); // retry until voices load
     };
 
     loadVoices();
@@ -37,32 +35,15 @@ export const HybridVoiceReader: React.FC<HybridVoiceReaderProps> = ({ text }) =>
 
   const containsTelugu = (input: string): boolean => /[\u0C00-\u0C7F]/.test(input);
 
-  // 🔧 Split and translate Telugu → English safely
   const translateToEnglish = async (input: string): Promise<string> => {
     try {
-      // Split text into chunks <= 400 characters
-      const chunks: string[] = [];
-      for (let i = 0; i < input.length; i += 400) {
-        chunks.push(input.slice(i, i + 400));
-      }
-
-      let translated = "";
-
-      for (const chunk of chunks) {
-        const response = await fetch(
-          `https://api.mymemory.translated.net/get?q=${encodeURIComponent(
-            chunk
-          )}&langpair=te|en`
-        );
-        const data = await response.json();
-        translated += " " + (data.responseData.translatedText || chunk);
-        // Small delay to avoid rate limit
-        await new Promise((r) => setTimeout(r, 200));
-      }
-
-      return translated.trim();
+      const response = await fetch(
+        `https://api.mymemory.translated.net/get?q=${encodeURIComponent(input)}&langpair=te|en`
+      );
+      const data = await response.json();
+      return data.responseData.translatedText || input;
     } catch (error) {
-      console.error("Translation error:", error);
+      console.error('Translation error:', error);
       return input;
     }
   };
@@ -72,39 +53,48 @@ export const HybridVoiceReader: React.FC<HybridVoiceReaderProps> = ({ text }) =>
     synth.cancel();
 
     const englishVoice =
-      voices.find((v) => v.lang.toLowerCase().includes("en-in")) ||
-      voices.find((v) => v.lang.toLowerCase().includes("en-gb")) ||
-      voices.find((v) => v.lang.toLowerCase().includes("en-us")) ||
+      voices.find(v => v.lang.toLowerCase().includes('en-in')) ||
+      voices.find(v => v.lang.toLowerCase().includes('en-gb')) ||
+      voices.find(v => v.lang.toLowerCase().includes('en-us')) ||
       voices[0];
 
     if (!englishVoice) {
       toast({
-        title: "No English voice available",
-        description: "Please enable text-to-speech voices in your browser.",
-        variant: "destructive",
+        title: 'Voice not found',
+        description: 'Please enable English voice on your device.',
+        variant: 'destructive',
       });
       return;
     }
 
+    // iOS requires a direct user tap to start speaking
     const utter = new SpeechSynthesisUtterance(textToSpeak);
     utter.voice = englishVoice;
     utter.lang = englishVoice.lang;
     utter.rate = 1;
     utter.pitch = 1;
     utter.volume = 1;
-
     utter.onend = () => setIsSpeaking(false);
     utter.onerror = () => setIsSpeaking(false);
 
     setIsSpeaking(true);
-    synth.speak(utter);
+    setTimeout(() => synth.speak(utter), 150); // slight delay helps mobile start playback
   };
 
   const handleRead = async () => {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      toast({
+        title: 'Not Supported',
+        description: 'Speech synthesis is not supported in this browser.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const synth = window.speechSynthesis;
 
     if (isSpeaking) {
-      window.speechSynthesis.cancel();
+      synth.cancel();
       setIsSpeaking(false);
       return;
     }
@@ -114,8 +104,8 @@ export const HybridVoiceReader: React.FC<HybridVoiceReaderProps> = ({ text }) =>
 
     if (containsTelugu(text)) {
       toast({
-        title: "Translating...",
-        description: "Converting Telugu to English for voice playback.",
+        title: 'Translating...',
+        description: 'Converting Telugu to English for voice playback.',
       });
       textToRead = await translateToEnglish(text);
       setTranslatedText(textToRead);
@@ -124,32 +114,7 @@ export const HybridVoiceReader: React.FC<HybridVoiceReaderProps> = ({ text }) =>
     }
 
     setIsLoading(false);
-
-    // 🖥️ Desktop: Speak directly
-    if (!isMobile) {
-      speakEnglish(textToRead);
-      return;
-    }
-
-    // 📱 Mobile: Create downloadable audio link
-    const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(
-      textToRead.substring(0, 200) // Limit Google TTS input
-    )}&tl=en&client=tw-ob`;
-
-    toast({
-      title: "Voice Ready 🎧",
-      description: "Tap below to listen or download the voice file.",
-      action: (
-        <a
-          href={ttsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center text-blue-600 font-semibold mt-2"
-        >
-          <Download className="w-4 h-4 mr-1" /> Play / Download Voice
-        </a>
-      ),
-    });
+    speakEnglish(textToRead);
   };
 
   return (
@@ -169,7 +134,7 @@ export const HybridVoiceReader: React.FC<HybridVoiceReaderProps> = ({ text }) =>
           </>
         ) : (
           <>
-            <Volume2 className="w-6 h-6 mr-2" /> Read Review
+            <Volume2 className="w-6 h-6 mr-2" /> Read in English
           </>
         )}
       </Button>
