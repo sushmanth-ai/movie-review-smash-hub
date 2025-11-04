@@ -8,6 +8,7 @@ import { movieReviewsData } from '@/data/movieReviews';
 import { InteractionButtons } from '@/components/InteractionButtons';
 import { CommentSection } from '@/components/CommentSection';
 import { ThreeDRatingMeter } from '@/components/ThreeDRatingMeter';
+import { TeluguVoiceReader } from '@/components/TeluguVoiceReader';
 import { useFirebaseOperations } from '@/hooks/useFirebaseOperations';
 import { collection, onSnapshot, query, orderBy, doc, getDoc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '@/utils/firebase';
@@ -287,6 +288,11 @@ const ReviewDetail = () => {
             </div>
 
             <InteractionButtons review={review} onLike={handleLikeClick} onToggleComments={_id => setShowComments(prev => !prev)} onShare={handleShare} isLiked={likedReviews.has(review.id)} />
+
+            {/* Telugu Voice Reader */}
+            <TeluguVoiceReader 
+              reviewText={`${review.title}. సమీక్ష: ${review.review}. మొదటి సగం: ${review.firstHalf}. రెండవ సగం: ${review.secondHalf}. సానుకూలాలు: ${review.positives}. ప్రతికూలాలు: ${review.negatives}. మొత్తం మీద: ${review.overall}. రేటింగ్: ${review.rating} స్టార్స్.`}
+            />
 
             {showComments && <CommentSection review={review} newComment={newComment} onCommentChange={setNewComment} onCommentSubmit={handleCommentSubmit} onReplySubmit={handleReplySubmit} />}
           </CardContent>
