@@ -14,7 +14,7 @@ export const HybridVoiceReader: React.FC<HybridVoiceReaderProps> = ({ text }) =>
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  // Detect if on mobile device
+  // Detect mobile browser
   const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
   // Load available voices
@@ -37,13 +37,30 @@ export const HybridVoiceReader: React.FC<HybridVoiceReaderProps> = ({ text }) =>
 
   const containsTelugu = (input: string): boolean => /[\u0C00-\u0C7F]/.test(input);
 
+  // 🔧 Split and translate Telugu → English safely
   const translateToEnglish = async (input: string): Promise<string> => {
     try {
-      const response = await fetch(
-        `https://api.mymemory.translated.net/get?q=${encodeURIComponent(input)}&langpair=te|en`
-      );
-      const data = await response.json();
-      return data.responseData.translatedText || input;
+      // Split text into chunks <= 400 characters
+      const chunks: string[] = [];
+      for (let i = 0; i < input.length; i += 400) {
+        chunks.push(input.slice(i, i + 400));
+      }
+
+      let translated = "";
+
+      for (const chunk of chunks) {
+        const response = await fetch(
+          `https://api.mymemory.translated.net/get?q=${encodeURIComponent(
+            chunk
+          )}&langpair=te|en`
+        );
+        const data = await response.json();
+        translated += " " + (data.responseData.translatedText || chunk);
+        // Small delay to avoid rate limit
+        await new Promise((r) => setTimeout(r, 200));
+      }
+
+      return translated.trim();
     } catch (error) {
       console.error("Translation error:", error);
       return input;
@@ -95,11 +112,10 @@ export const HybridVoiceReader: React.FC<HybridVoiceReaderProps> = ({ text }) =>
     setIsLoading(true);
     let textToRead = text;
 
-    // Translate Telugu → English if needed
     if (containsTelugu(text)) {
       toast({
         title: "Translating...",
-        description: "Converting Telugu to English for speech.",
+        description: "Converting Telugu to English for voice playback.",
       });
       textToRead = await translateToEnglish(text);
       setTranslatedText(textToRead);
@@ -109,20 +125,20 @@ export const HybridVoiceReader: React.FC<HybridVoiceReaderProps> = ({ text }) =>
 
     setIsLoading(false);
 
-    // ✅ DESKTOP: Speak live
+    // 🖥️ Desktop: Speak directly
     if (!isMobile) {
       speakEnglish(textToRead);
       return;
     }
 
-    // 📱 MOBILE: Download or show audio popup
+    // 📱 Mobile: Create downloadable audio link
     const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(
-      textToRead
+      textToRead.substring(0, 200) // Limit Google TTS input
     )}&tl=en&client=tw-ob`;
 
     toast({
       title: "Voice Ready 🎧",
-      description: "Click below to listen or download the audio.",
+      description: "Tap below to listen or download the voice file.",
       action: (
         <a
           href={ttsUrl}
