@@ -14,15 +14,16 @@ export const UniversalEnglishReader: React.FC<UniversalEnglishReaderProps> = ({ 
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
+  // Load available voices
   useEffect(() => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
     const synth = window.speechSynthesis;
 
-    // Load voices with retry (for mobile)
     const loadVoices = () => {
       const allVoices = synth.getVoices();
-      if (allVoices.length > 0) setVoices(allVoices);
-      else setTimeout(loadVoices, 500); // retry until voices load
+      if (allVoices.length > 0) {
+        setVoices(allVoices);
+      }
     };
 
     loadVoices();
@@ -33,8 +34,10 @@ export const UniversalEnglishReader: React.FC<UniversalEnglishReaderProps> = ({ 
     };
   }, []);
 
+  // Check if text contains Telugu
   const containsTelugu = (input: string): boolean => /[\u0C00-\u0C7F]/.test(input);
 
+  // Translate Telugu → English using MyMemory free API
   const translateToEnglish = async (input: string): Promise<string> => {
     try {
       const response = await fetch(
@@ -48,6 +51,7 @@ export const UniversalEnglishReader: React.FC<UniversalEnglishReaderProps> = ({ 
     }
   };
 
+  // Speak in English
   const speakEnglish = (textToSpeak: string) => {
     const synth = window.speechSynthesis;
     synth.cancel();
@@ -60,25 +64,25 @@ export const UniversalEnglishReader: React.FC<UniversalEnglishReaderProps> = ({ 
 
     if (!englishVoice) {
       toast({
-        title: 'Voice not found',
-        description: 'Please enable English voice on your device.',
+        title: 'No English voice available',
+        description: 'Please enable text-to-speech voices in your browser.',
         variant: 'destructive',
       });
       return;
     }
 
-    // iOS requires a direct user tap to start speaking
-    const utter = new SpeechSynthesisUtterance(textToSpeak);
-    utter.voice = englishVoice;
-    utter.lang = englishVoice.lang;
-    utter.rate = 1;
-    utter.pitch = 1;
-    utter.volume = 1;
-    utter.onend = () => setIsSpeaking(false);
-    utter.onerror = () => setIsSpeaking(false);
+    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+    utterance.voice = englishVoice;
+    utterance.lang = englishVoice.lang;
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
 
     setIsSpeaking(true);
-    setTimeout(() => synth.speak(utter), 150); // slight delay helps mobile start playback
+    synth.speak(utterance);
   };
 
   const handleRead = async () => {
@@ -92,7 +96,6 @@ export const UniversalEnglishReader: React.FC<UniversalEnglishReaderProps> = ({ 
     }
 
     const synth = window.speechSynthesis;
-
     if (isSpeaking) {
       synth.cancel();
       setIsSpeaking(false);
@@ -102,10 +105,11 @@ export const UniversalEnglishReader: React.FC<UniversalEnglishReaderProps> = ({ 
     setIsLoading(true);
     let textToRead = text;
 
+    // Detect Telugu and translate if needed
     if (containsTelugu(text)) {
       toast({
         title: 'Translating...',
-        description: 'Converting Telugu to English for voice playback.',
+        description: 'Converting Telugu to English for speech.',
       });
       textToRead = await translateToEnglish(text);
       setTranslatedText(textToRead);
