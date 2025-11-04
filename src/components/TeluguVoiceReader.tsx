@@ -1,29 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Volume2, VolumeX, Languages } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Volume2, VolumeX, Languages, Download } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
-interface UniversalEnglishReaderProps {
+interface HybridVoiceReaderProps {
   text: string;
 }
 
-export const UniversalEnglishReader: React.FC<UniversalEnglishReaderProps> = ({ text }) => {
+export const HybridVoiceReader: React.FC<HybridVoiceReaderProps> = ({ text }) => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [translatedText, setTranslatedText] = useState<string>('');
+  const [translatedText, setTranslatedText] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
+  // Detect if on mobile device
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
   // Load available voices
   useEffect(() => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
     const synth = window.speechSynthesis;
 
     const loadVoices = () => {
       const allVoices = synth.getVoices();
-      if (allVoices.length > 0) {
-        setVoices(allVoices);
-      }
+      if (allVoices.length > 0) setVoices(allVoices);
     };
 
     loadVoices();
@@ -34,10 +35,8 @@ export const UniversalEnglishReader: React.FC<UniversalEnglishReaderProps> = ({ 
     };
   }, []);
 
-  // Check if text contains Telugu
   const containsTelugu = (input: string): boolean => /[\u0C00-\u0C7F]/.test(input);
 
-  // Translate Telugu → English using MyMemory free API
   const translateToEnglish = async (input: string): Promise<string> => {
     try {
       const response = await fetch(
@@ -46,58 +45,49 @@ export const UniversalEnglishReader: React.FC<UniversalEnglishReaderProps> = ({ 
       const data = await response.json();
       return data.responseData.translatedText || input;
     } catch (error) {
-      console.error('Translation error:', error);
+      console.error("Translation error:", error);
       return input;
     }
   };
 
-  // Speak in English
   const speakEnglish = (textToSpeak: string) => {
     const synth = window.speechSynthesis;
     synth.cancel();
 
     const englishVoice =
-      voices.find(v => v.lang.toLowerCase().includes('en-in')) ||
-      voices.find(v => v.lang.toLowerCase().includes('en-gb')) ||
-      voices.find(v => v.lang.toLowerCase().includes('en-us')) ||
+      voices.find((v) => v.lang.toLowerCase().includes("en-in")) ||
+      voices.find((v) => v.lang.toLowerCase().includes("en-gb")) ||
+      voices.find((v) => v.lang.toLowerCase().includes("en-us")) ||
       voices[0];
 
     if (!englishVoice) {
       toast({
-        title: 'No English voice available',
-        description: 'Please enable text-to-speech voices in your browser.',
-        variant: 'destructive',
+        title: "No English voice available",
+        description: "Please enable text-to-speech voices in your browser.",
+        variant: "destructive",
       });
       return;
     }
 
-    const utterance = new SpeechSynthesisUtterance(textToSpeak);
-    utterance.voice = englishVoice;
-    utterance.lang = englishVoice.lang;
-    utterance.rate = 1;
-    utterance.pitch = 1;
-    utterance.volume = 1;
+    const utter = new SpeechSynthesisUtterance(textToSpeak);
+    utter.voice = englishVoice;
+    utter.lang = englishVoice.lang;
+    utter.rate = 1;
+    utter.pitch = 1;
+    utter.volume = 1;
 
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
+    utter.onend = () => setIsSpeaking(false);
+    utter.onerror = () => setIsSpeaking(false);
 
     setIsSpeaking(true);
-    synth.speak(utterance);
+    synth.speak(utter);
   };
 
   const handleRead = async () => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-      toast({
-        title: 'Not Supported',
-        description: 'Speech synthesis is not supported in this browser.',
-        variant: 'destructive',
-      });
-      return;
-    }
+    if (typeof window === "undefined") return;
 
-    const synth = window.speechSynthesis;
     if (isSpeaking) {
-      synth.cancel();
+      window.speechSynthesis.cancel();
       setIsSpeaking(false);
       return;
     }
@@ -105,11 +95,11 @@ export const UniversalEnglishReader: React.FC<UniversalEnglishReaderProps> = ({ 
     setIsLoading(true);
     let textToRead = text;
 
-    // Detect Telugu and translate if needed
+    // Translate Telugu → English if needed
     if (containsTelugu(text)) {
       toast({
-        title: 'Translating...',
-        description: 'Converting Telugu to English for speech.',
+        title: "Translating...",
+        description: "Converting Telugu to English for speech.",
       });
       textToRead = await translateToEnglish(text);
       setTranslatedText(textToRead);
@@ -118,7 +108,32 @@ export const UniversalEnglishReader: React.FC<UniversalEnglishReaderProps> = ({ 
     }
 
     setIsLoading(false);
-    speakEnglish(textToRead);
+
+    // ✅ DESKTOP: Speak live
+    if (!isMobile) {
+      speakEnglish(textToRead);
+      return;
+    }
+
+    // 📱 MOBILE: Download or show audio popup
+    const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(
+      textToRead
+    )}&tl=en&client=tw-ob`;
+
+    toast({
+      title: "Voice Ready 🎧",
+      description: "Click below to listen or download the audio.",
+      action: (
+        <a
+          href={ttsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center text-blue-600 font-semibold mt-2"
+        >
+          <Download className="w-4 h-4 mr-1" /> Play / Download Voice
+        </a>
+      ),
+    });
   };
 
   return (
@@ -138,7 +153,7 @@ export const UniversalEnglishReader: React.FC<UniversalEnglishReaderProps> = ({ 
           </>
         ) : (
           <>
-            <Volume2 className="w-6 h-6 mr-2" /> Read in English
+            <Volume2 className="w-6 h-6 mr-2" /> Read Review
           </>
         )}
       </Button>
