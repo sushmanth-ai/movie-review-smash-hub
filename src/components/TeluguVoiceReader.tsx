@@ -1,190 +1,154 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Volume2, VolumeX } from 'lucide-react';
+import { Volume2, VolumeX, Languages } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { SmartTranslateAndRead } from '@/components/SmartTranslateAndRead';
+<SmartTranslateAndRead text={review.text} />
 
-interface TeluguVoiceReaderProps {
-  reviewText: string;
+
+interface SmartTranslateAndReadProps {
+  text: string;
 }
 
-export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({ reviewText }) => {
+export const SmartTranslateAndRead: React.FC<SmartTranslateAndReadProps> = ({ text }) => {
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [synth, setSynth] = useState<SpeechSynthesis | null>(null);
-  const [voicesLoaded, setVoicesLoaded] = useState(false);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [translatedText, setTranslatedText] = useState<string>('');
+  const [isTranslating, setIsTranslating] = useState(false);
   const { toast } = useToast();
 
+  // Load voices
   useEffect(() => {
-    // Initialize speech synthesis
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      const speechSynth = window.speechSynthesis;
-      setSynth(speechSynth);
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
 
-      // Load voices
-      const loadVoices = () => {
-        const voices = speechSynth.getVoices();
-        console.log('Available voices:', voices.map(v => ({ name: v.name, lang: v.lang })));
-        if (voices.length > 0) {
-          setVoicesLoaded(true);
-        }
-      };
+    const synth = window.speechSynthesis;
 
-      // Try to load voices immediately
-      loadVoices();
-
-      // Also listen for voices changed event
-      if (speechSynth.onvoiceschanged !== undefined) {
-        speechSynth.onvoiceschanged = loadVoices;
-      }
-
-      // Cleanup
-      return () => {
-        speechSynth.cancel();
-      };
-    }
-  }, []);
-
-  const speakInChunks = (text: string) => {
-    if (!synth) return;
-
-    // Cancel any ongoing speech
-    synth.cancel();
-
-    // Split text into smaller chunks (max 200 characters per chunk)
-    const chunkSize = 200;
-    const chunks: string[] = [];
-    
-    // Split by sentences first to avoid breaking mid-sentence
-    const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
-    
-    let currentChunk = '';
-    sentences.forEach(sentence => {
-      if ((currentChunk + sentence).length <= chunkSize) {
-        currentChunk += sentence;
-      } else {
-        if (currentChunk) chunks.push(currentChunk.trim());
-        currentChunk = sentence;
-      }
-    });
-    if (currentChunk) chunks.push(currentChunk.trim());
-
-    console.log(`Split text into ${chunks.length} chunks`);
-
-    let currentChunkIndex = 0;
-
-    const speakNextChunk = () => {
-      if (currentChunkIndex >= chunks.length) {
-        console.log('All chunks completed');
-        setIsSpeaking(false);
-        return;
-      }
-
-      const chunk = chunks[currentChunkIndex];
-      console.log(`Speaking chunk ${currentChunkIndex + 1}/${chunks.length}`);
-
-      const utterance = new SpeechSynthesisUtterance(chunk);
-      
-      // Get voices
-      const voices = synth.getVoices();
-      let selectedVoice = voices.find(v => 
-        v.lang.toLowerCase().includes('te-in') || 
-        v.lang.toLowerCase().includes('te')
-      );
-
-      if (!selectedVoice) {
-        selectedVoice = voices.find(v => 
-          v.lang.toLowerCase().includes('hi-in') || 
-          v.lang.toLowerCase().includes('hi')
-        );
-      }
-
-      if (!selectedVoice) {
-        selectedVoice = voices.find(v => v.name.toLowerCase().includes('female')) || voices[0];
-      }
-
-      if (selectedVoice) {
-        utterance.voice = selectedVoice;
-      }
-
-      utterance.lang = selectedVoice?.lang || 'te-IN';
-      utterance.rate = 0.9;
-      utterance.pitch = 1.0;
-      utterance.volume = 1.0;
-
-      utterance.onend = () => {
-        console.log(`Chunk ${currentChunkIndex + 1} completed`);
-        currentChunkIndex++;
-        // Small delay before next chunk to prevent interruption
-        setTimeout(speakNextChunk, 50);
-      };
-
-      utterance.onerror = (event) => {
-        console.error(`Chunk ${currentChunkIndex + 1} error:`, event.error);
-        
-        if (event.error === 'interrupted' || event.error === 'canceled') {
-          // User cancelled, stop everything
-          setIsSpeaking(false);
-          return;
-        }
-
-        // For other errors, try next chunk
-        currentChunkIndex++;
-        setTimeout(speakNextChunk, 100);
-      };
-
-      synth.speak(utterance);
+    const loadVoices = () => {
+      const allVoices = synth.getVoices();
+      if (allVoices.length > 0) setVoices(allVoices);
     };
 
-    setIsSpeaking(true);
-    // Small delay before starting
-    setTimeout(speakNextChunk, 100);
+    loadVoices();
+    synth.onvoiceschanged = loadVoices;
+
+    return () => {
+      synth.onvoiceschanged = null;
+    };
+  }, []);
+
+  // Detect if text is Telugu
+  const isTelugu = (input: string): boolean => /[\u0C00-\u0C7F]/.test(input);
+
+  // Translate Telugu to English (using MyMemory API – free)
+  const translateToEnglish = async (input: string): Promise<string> => {
+    try {
+      setIsTranslating(true);
+      const response = await fetch(
+        `https://api.mymemory.translated.net/get?q=${encodeURIComponent(input)}&langpair=te|en`
+      );
+      const data = await response.json();
+      setIsTranslating(false);
+      return data.responseData.translatedText || input;
+    } catch (err) {
+      console.error('Translation error:', err);
+      setIsTranslating(false);
+      return input; // fallback
+    }
   };
 
-  const handleSpeech = () => {
-    if (!synth) {
+  // Speak given text in English
+  const speakText = (input: string) => {
+    const synth = window.speechSynthesis;
+    synth.cancel();
+
+    const selectedVoice =
+      voices.find(v => v.lang.toLowerCase().includes('en-in')) ||
+      voices.find(v => v.lang.toLowerCase().includes('en-gb')) ||
+      voices.find(v => v.lang.toLowerCase().includes('en-us')) ||
+      voices[0];
+
+    if (!selectedVoice) {
       toast({
-        title: "Error",
-        description: "Speech synthesis not supported in this browser",
-        variant: "destructive"
+        title: 'Voice not found',
+        description: 'No English voice available in your browser.',
+        variant: 'destructive',
       });
       return;
     }
 
+    const utterance = new SpeechSynthesisUtterance(input);
+    utterance.voice = selectedVoice;
+    utterance.lang = selectedVoice.lang;
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = (e) => {
+      console.error('Speech error:', e);
+      setIsSpeaking(false);
+    };
+
+    setIsSpeaking(true);
+    synth.speak(utterance);
+  };
+
+  const handleClick = async () => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      toast({
+        title: 'Not Supported',
+        description: 'Speech synthesis is not available in this browser.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const synth = window.speechSynthesis;
     if (isSpeaking) {
-      console.log('Stopping speech...');
       synth.cancel();
       setIsSpeaking(false);
       return;
     }
 
-    console.log('Starting speech with chunking...');
-    speakInChunks(reviewText);
+    let textToRead = text;
+    if (isTelugu(text)) {
+      toast({ title: 'Translating...', description: 'Converting Telugu to English...' });
+      textToRead = await translateToEnglish(text);
+      setTranslatedText(textToRead);
+    } else {
+      setTranslatedText(text);
+    }
+
+    speakText(textToRead);
   };
 
   return (
-    <div className="flex justify-center mt-6">
+    <div className="flex flex-col items-center mt-6 space-y-3">
       <Button
-        onClick={handleSpeech}
-        className="relative bg-gradient-to-r from-primary via-yellow-500 to-primary text-primary-foreground font-bold text-lg px-8 py-6 rounded-full shadow-[0_0_30px_rgba(255,215,0,0.6)] hover:shadow-[0_0_40px_rgba(255,215,0,0.8)] hover:scale-105 transition-all duration-300 border-2 border-primary/50"
+        onClick={handleClick}
+        disabled={isTranslating}
+        className="relative bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-700 text-white font-semibold text-lg px-8 py-5 rounded-full shadow-lg hover:scale-105 transition-all duration-300"
       >
         {isSpeaking ? (
           <>
-            <VolumeX className="w-6 h-6 mr-2" />
-            <span>🛑 Stop Voice</span>
-            <span className="absolute inset-0 rounded-full bg-primary/30 animate-pulse" />
+            <VolumeX className="w-6 h-6 mr-2" /> Stop Voice
+          </>
+        ) : isTranslating ? (
+          <>
+            <Languages className="w-6 h-6 mr-2" /> Translating...
           </>
         ) : (
           <>
-            <Volume2 className="w-6 h-6 mr-2" />
-            <span>🔊 Read Review</span>
+            <Volume2 className="w-6 h-6 mr-2" /> Read in English
           </>
         )}
-        {isSpeaking && (
-          <span className="absolute -top-1 -right-1 flex h-5 w-5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-5 w-5 bg-primary"></span>
-          </span>
-        )}
       </Button>
+
+      {translatedText && (
+        <p className="text-sm text-gray-600 italic text-center px-4">
+          Translated: "{translatedText}"
+        </p>
+      )}
     </div>
   );
 };
