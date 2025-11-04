@@ -10,9 +10,10 @@ interface TeluguVoiceReaderProps {
 export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({ reviewText }) => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [unlocked, setUnlocked] = useState(false);
   const { toast } = useToast();
 
-  // Load voices properly
+  // Load voices and handle browser quirks
   useEffect(() => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
 
@@ -25,14 +26,28 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({ reviewText
       }
     };
 
-    // Try now and again on event
     loadVoices();
     synth.onvoiceschanged = loadVoices;
 
+    // Safari / Mobile resume workaround
+    const interval = setInterval(() => {
+      if (synth.speaking && !synth.paused) synth.resume();
+    }, 500);
+
     return () => {
+      clearInterval(interval);
       synth.onvoiceschanged = null;
     };
   }, []);
+
+  // Unlock speech on mobile (iOS workaround)
+  const unlockAudio = () => {
+    if (unlocked) return;
+    const synth = window.speechSynthesis;
+    const utter = new SpeechSynthesisUtterance('');
+    synth.speak(utter);
+    setUnlocked(true);
+  };
 
   const speakInChunks = (text: string) => {
     const synth = window.speechSynthesis;
@@ -79,6 +94,8 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({ reviewText
         setIsSpeaking(false);
       };
 
+      // Chrome mobile sometimes needs a resume
+      setTimeout(() => synth.resume(), 100);
       synth.speak(utter);
     };
 
@@ -97,6 +114,7 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({ reviewText
     }
 
     const synth = window.speechSynthesis;
+    unlockAudio(); // Unlock mobile audio context
 
     if (isSpeaking) {
       synth.cancel();
@@ -107,11 +125,9 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({ reviewText
     if (voices.length === 0) {
       toast({
         title: 'Loading voices...',
-        description: 'Please wait 1–2 seconds and try again',
+        description: 'Please wait a moment and try again',
       });
-      window.speechSynthesis.onvoiceschanged = () => {
-        setVoices(window.speechSynthesis.getVoices());
-      };
+      setTimeout(() => setVoices(window.speechSynthesis.getVoices()), 800);
       return;
     }
 
