@@ -1,120 +1,93 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Volume2, VolumeX, Languages } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Volume2, VolumeX, Languages } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
-interface UniversalEnglishReaderProps {
+interface VoiceReaderProps {
   text: string;
 }
 
-export const UniversalEnglishReader: React.FC<UniversalEnglishReaderProps> = ({ text }) => {
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [translatedText, setTranslatedText] = useState<string>('');
+/**
+ * Universal Voice Reader
+ * - Works on mobile & desktop
+ * - Converts Telugu → English, then speaks in English voice
+ * - Uses Google Translate TTS (MP3 playback)
+ */
+export const VoiceReader: React.FC<VoiceReaderProps> = ({ text }) => {
+  const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [audioUrl, setAudioUrl] = useState<string>("");
+  const [translatedText, setTranslatedText] = useState<string>("");
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    const synth = window.speechSynthesis;
+  // Check if Telugu
+  const isTelugu = (input: string) => /[\u0C00-\u0C7F]/.test(input);
 
-    // Load voices with retry (for mobile)
-    const loadVoices = () => {
-      const allVoices = synth.getVoices();
-      if (allVoices.length > 0) setVoices(allVoices);
-      else setTimeout(loadVoices, 500); // retry until voices load
-    };
-
-    loadVoices();
-    synth.onvoiceschanged = loadVoices;
-
-    return () => {
-      synth.onvoiceschanged = null;
-    };
-  }, []);
-
-  const containsTelugu = (input: string): boolean => /[\u0C00-\u0C7F]/.test(input);
-
+  // Translate Telugu -> English
   const translateToEnglish = async (input: string): Promise<string> => {
     try {
-      const response = await fetch(
+      const res = await fetch(
         `https://api.mymemory.translated.net/get?q=${encodeURIComponent(input)}&langpair=te|en`
       );
-      const data = await response.json();
+      const data = await res.json();
       return data.responseData.translatedText || input;
-    } catch (error) {
-      console.error('Translation error:', error);
+    } catch (err) {
+      console.error("Translation error:", err);
       return input;
     }
   };
 
-  const speakEnglish = (textToSpeak: string) => {
-    const synth = window.speechSynthesis;
-    synth.cancel();
-
-    const englishVoice =
-      voices.find(v => v.lang.toLowerCase().includes('en-in')) ||
-      voices.find(v => v.lang.toLowerCase().includes('en-gb')) ||
-      voices.find(v => v.lang.toLowerCase().includes('en-us')) ||
-      voices[0];
-
-    if (!englishVoice) {
-      toast({
-        title: 'Voice not found',
-        description: 'Please enable English voice on your device.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // iOS requires a direct user tap to start speaking
-    const utter = new SpeechSynthesisUtterance(textToSpeak);
-    utter.voice = englishVoice;
-    utter.lang = englishVoice.lang;
-    utter.rate = 1;
-    utter.pitch = 1;
-    utter.volume = 1;
-    utter.onend = () => setIsSpeaking(false);
-    utter.onerror = () => setIsSpeaking(false);
-
-    setIsSpeaking(true);
-    setTimeout(() => synth.speak(utter), 150); // slight delay helps mobile start playback
-  };
+  // Create a playable Google TTS MP3 URL
+  const getEnglishVoiceUrl = (text: string) =>
+    `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(
+      text
+    )}&tl=en&client=tw-ob`;
 
   const handleRead = async () => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+    try {
+      if (isPlaying) {
+        const audio = document.getElementById("voice-audio") as HTMLAudioElement;
+        if (audio) audio.pause();
+        setIsPlaying(false);
+        return;
+      }
+
+      setIsLoading(true);
+      let englishText = text;
+
+      // Step 1: Translate Telugu to English if needed
+      if (isTelugu(text)) {
+        toast({ title: "Translating...", description: "Converting Telugu to English..." });
+        englishText = await translateToEnglish(text);
+      }
+      setTranslatedText(englishText);
+
+      // Step 2: Get voice URL
+      const url = getEnglishVoiceUrl(englishText);
+      setAudioUrl(url);
+
+      // Step 3: Play voice
+      const audio = new Audio(url);
+      audio.id = "voice-audio";
+      audio.play();
+      setIsPlaying(true);
+
+      audio.onended = () => setIsPlaying(false);
+      audio.onerror = () => {
+        setIsPlaying(false);
+        toast({ title: "Error", description: "Could not play audio", variant: "destructive" });
+      };
+
+      setIsLoading(false);
+    } catch (error) {
+      console.error("VoiceReader error:", error);
       toast({
-        title: 'Not Supported',
-        description: 'Speech synthesis is not supported in this browser.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Something went wrong while generating voice",
+        variant: "destructive",
       });
-      return;
+      setIsLoading(false);
     }
-
-    const synth = window.speechSynthesis;
-
-    if (isSpeaking) {
-      synth.cancel();
-      setIsSpeaking(false);
-      return;
-    }
-
-    setIsLoading(true);
-    let textToRead = text;
-
-    if (containsTelugu(text)) {
-      toast({
-        title: 'Translating...',
-        description: 'Converting Telugu to English for voice playback.',
-      });
-      textToRead = await translateToEnglish(text);
-      setTranslatedText(textToRead);
-    } else {
-      setTranslatedText(text);
-    }
-
-    setIsLoading(false);
-    speakEnglish(textToRead);
   };
 
   return (
@@ -124,13 +97,13 @@ export const UniversalEnglishReader: React.FC<UniversalEnglishReaderProps> = ({ 
         disabled={isLoading}
         className="relative bg-gradient-to-r from-blue-600 via-indigo-500 to-blue-700 text-white font-semibold text-lg px-8 py-5 rounded-full shadow-lg hover:scale-105 transition-all duration-300"
       >
-        {isSpeaking ? (
+        {isPlaying ? (
           <>
             <VolumeX className="w-6 h-6 mr-2" /> Stop Voice
           </>
         ) : isLoading ? (
           <>
-            <Languages className="w-6 h-6 mr-2" /> Translating...
+            <Languages className="w-6 h-6 mr-2" /> Generating...
           </>
         ) : (
           <>
@@ -143,6 +116,10 @@ export const UniversalEnglishReader: React.FC<UniversalEnglishReaderProps> = ({ 
         <p className="text-sm text-gray-600 italic text-center px-4">
           <strong>English:</strong> "{translatedText}"
         </p>
+      )}
+
+      {audioUrl && (
+        <audio id="voice-audio" src={audioUrl} preload="auto" className="hidden"></audio>
       )}
     </div>
   );
