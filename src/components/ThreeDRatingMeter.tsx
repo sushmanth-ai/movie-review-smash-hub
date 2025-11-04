@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 
 interface ThreeDRatingMeterProps {
   rating: number; // Rating out of 5
@@ -9,7 +10,45 @@ export const ThreeDRatingMeter: React.FC<ThreeDRatingMeterProps> = ({
   rating,
   size = 140,
 }) => {
-  const percentage = Math.min(100, Math.max(0, (rating / 5) * 100));
+  const [showRating, setShowRating] = useState(false);
+  const [animatedPercentage, setAnimatedPercentage] = useState(0);
+  const targetPercentage = Math.min(100, Math.max(0, (rating / 5) * 100));
+
+  useEffect(() => {
+    if (showRating) {
+      // Animate the progress from 0 to target percentage
+      let currentPercentage = 0;
+      const duration = 2000; // 2 seconds
+      const steps = 60;
+      const increment = targetPercentage / steps;
+      const stepDuration = duration / steps;
+
+      const interval = setInterval(() => {
+        currentPercentage += increment;
+        if (currentPercentage >= targetPercentage) {
+          setAnimatedPercentage(targetPercentage);
+          clearInterval(interval);
+        } else {
+          setAnimatedPercentage(currentPercentage);
+        }
+      }, stepDuration);
+
+      return () => clearInterval(interval);
+    }
+  }, [showRating, targetPercentage]);
+
+  if (!showRating) {
+    return (
+      <div className="flex items-center justify-center" style={{ width: size, height: size }}>
+        <Button
+          onClick={() => setShowRating(true)}
+          className="bg-gradient-to-r from-primary via-yellow-500 to-primary text-primary-foreground font-bold text-lg px-8 py-6 rounded-full shadow-[0_0_30px_rgba(255,215,0,0.6)] hover:shadow-[0_0_40px_rgba(255,215,0,0.8)] hover:scale-105 transition-all duration-300 border-2 border-primary/50"
+        >
+          Click to See Rating
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -54,9 +93,9 @@ export const ThreeDRatingMeter: React.FC<ThreeDRatingMeterProps> = ({
             stroke="url(#goldGradient)"
             strokeWidth="14"
             strokeLinecap="round"
-            strokeDasharray={`${(percentage / 100) * Math.PI * (size - 16)}, 999`}
+            strokeDasharray={`${(animatedPercentage / 100) * Math.PI * (size - 16)}, 999`}
             fill="none"
-            className="transition-all duration-700"
+            className="transition-all duration-100"
             filter="url(#glow)"
           />
           {/* Gradient Definition */}
