@@ -143,7 +143,17 @@ const Index = () => {
       <div className="min-h-screen bg-background">
       {/* Fixed Header with Black and Gold Theme */}
       <div className="fixed top-0 left-0 w-full z-50 p-2 shadow-[0_4px_20px_rgba(255,215,0,0.3)] border-b-2 border-primary bg-background">
-        <h1 className="text-center mb-2 text-primary text-3xl font-extrabold px-[20px] mx-[10px]">SM REVIEWS 3.0</h1>
+        <div className="flex justify-center mb-2">
+  <img
+    src="/sm-logo.jpg"
+    alt="SM Reviews Logo"
+    className="h-14 w-14 md:h-16 md:w-16 object-contain drop-shadow-[0_0_15px_rgba(255,215,0,0.6)]"
+  />
+  <span className="text-primary text-3xl font-extrabold ml-3 mt-3">
+    REVIEWS 3.0
+  </span>
+</div>
+
         <div className="flex gap-2 mb-2">
           <Input type="text" placeholder="Search for movie Reviews..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="flex-1 bg-input text-foreground border-primary focus:ring-primary" />
         </div>
