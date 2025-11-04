@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Volume2, VolumeX } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface TeluguVoiceReaderProps {
   reviewText: string;
@@ -9,50 +10,127 @@ interface TeluguVoiceReaderProps {
 export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({ reviewText }) => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [synth, setSynth] = useState<SpeechSynthesis | null>(null);
+  const [voicesLoaded, setVoicesLoaded] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     // Initialize speech synthesis
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      setSynth(window.speechSynthesis);
+      const speechSynth = window.speechSynthesis;
+      setSynth(speechSynth);
+
+      // Load voices
+      const loadVoices = () => {
+        const voices = speechSynth.getVoices();
+        console.log('Available voices:', voices.map(v => ({ name: v.name, lang: v.lang })));
+        if (voices.length > 0) {
+          setVoicesLoaded(true);
+        }
+      };
+
+      // Try to load voices immediately
+      loadVoices();
+
+      // Also listen for voices changed event
+      if (speechSynth.onvoiceschanged !== undefined) {
+        speechSynth.onvoiceschanged = loadVoices;
+      }
+
+      // Cleanup
+      return () => {
+        speechSynth.cancel();
+      };
     }
   }, []);
 
   const handleSpeech = () => {
-    if (!synth) return;
+    if (!synth) {
+      toast({
+        title: "Error",
+        description: "Speech synthesis not supported in this browser",
+        variant: "destructive"
+      });
+      return;
+    }
 
     if (isSpeaking) {
+      console.log('Stopping speech...');
       synth.cancel();
       setIsSpeaking(false);
-    } else {
-      const utterance = new SpeechSynthesisUtterance(reviewText);
-      utterance.lang = 'te-IN'; // Telugu accent
-
-      // Wait for voices to load
-      const setVoice = () => {
-        const voices = synth.getVoices();
-        const teluguVoice = voices.find(v => 
-          v.lang.includes('te-IN') || v.lang.includes('te')
-        );
-        
-        if (teluguVoice) {
-          utterance.voice = teluguVoice;
-        }
-      };
-
-      // Check if voices are already loaded
-      if (synth.getVoices().length > 0) {
-        setVoice();
-      } else {
-        // Wait for voices to load
-        synth.onvoiceschanged = setVoice;
-      }
-
-      utterance.onend = () => setIsSpeaking(false);
-      utterance.onerror = () => setIsSpeaking(false);
-      
-      synth.speak(utterance);
-      setIsSpeaking(true);
+      return;
     }
+
+    console.log('Starting speech...');
+    const utterance = new SpeechSynthesisUtterance(reviewText);
+    
+    // Get all available voices
+    const voices = synth.getVoices();
+    console.log('Total voices available:', voices.length);
+
+    // Try to find Telugu voice (te-IN or te)
+    let selectedVoice = voices.find(v => 
+      v.lang.toLowerCase().includes('te-in') || 
+      v.lang.toLowerCase().includes('te')
+    );
+
+    // If Telugu not found, try Hindi as fallback (hi-IN)
+    if (!selectedVoice) {
+      console.log('Telugu voice not found, trying Hindi...');
+      selectedVoice = voices.find(v => 
+        v.lang.toLowerCase().includes('hi-in') || 
+        v.lang.toLowerCase().includes('hi')
+      );
+    }
+
+    // If still not found, use any female voice or first available voice
+    if (!selectedVoice) {
+      console.log('No Indian language voices found, using default...');
+      selectedVoice = voices.find(v => v.name.toLowerCase().includes('female')) || voices[0];
+    }
+
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+      console.log('Selected voice:', selectedVoice.name, selectedVoice.lang);
+    } else {
+      console.log('No voice selected, using default');
+    }
+
+    // Set language
+    utterance.lang = selectedVoice?.lang || 'te-IN';
+    
+    // Adjust speech parameters for better quality
+    utterance.rate = 0.9; // Slightly slower for clarity
+    utterance.pitch = 1.0;
+    utterance.volume = 1.0;
+
+    utterance.onstart = () => {
+      console.log('Speech started');
+      setIsSpeaking(true);
+    };
+
+    utterance.onend = () => {
+      console.log('Speech ended');
+      setIsSpeaking(false);
+    };
+
+    utterance.onerror = (event) => {
+      console.error('Speech error:', event.error);
+      setIsSpeaking(false);
+      toast({
+        title: "Error",
+        description: `Speech error: ${event.error}`,
+        variant: "destructive"
+      });
+    };
+
+    // Cancel any ongoing speech before starting
+    synth.cancel();
+    
+    // Small delay to ensure cancel completes
+    setTimeout(() => {
+      synth.speak(utterance);
+      console.log('Speech queued');
+    }, 100);
   };
 
   return (
