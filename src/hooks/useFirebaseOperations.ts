@@ -365,22 +365,52 @@ export const useFirebaseOperations = () => {
   const handleShare = async (review: MovieReview) => {
     console.log('Share button clicked for:', review.title);
 
-    const shareText = `Check out this movie review of ${review.title}: ${review.overall} - Rating: ${review.rating}`;
-    const baseUrl = window.location.origin;
-    const shareUrl = `${baseUrl}/review/${review.id}`;
+    // Parse rating to get numeric value
+    const ratingMatch = review.rating.match(/[\d.]+/);
+    const numericRating = ratingMatch ? parseFloat(ratingMatch[0]) : 0;
+    const ratingOutOfTen = ((numericRating / 5) * 10).toFixed(1);
+
+    // Generate Instagram-style post
+    const instagramPost = `🎬 ${review.title.toUpperCase()} 🎥
+
+🔥 ${review.review}
+
+📽️ FIRST HALF:
+${review.firstHalf}
+
+🎭 SECOND HALF:
+${review.secondHalf}
+
+👍 POSITIVES:
+${review.positives}
+
+👎 NEGATIVES:
+${review.negatives}
+
+💭 OVERALL:
+${review.overall}
+
+⭐ RATING: ${ratingOutOfTen}/10 (${review.rating})
+
+🎨 Visual Theme: Dark Cinematic with Golden Accents ✨
+
+${generateHashtags(review.title)}
+
+---
+Full review: ${window.location.origin}/review/${review.id}
+`;
 
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `SM Review: ${review.title}`,
-          text: shareText,
-          url: shareUrl
+          title: `🎬 ${review.title} Review`,
+          text: instagramPost,
         });
 
         console.log('Content shared successfully via Web Share API');
         toast({
-          title: "Shared!",
-          description: "Review shared successfully.",
+          title: "Shared! 🎉",
+          description: "Instagram-style review ready to post!",
         });
         return;
       } catch (error) {
@@ -394,22 +424,51 @@ export const useFirebaseOperations = () => {
     }
 
     try {
-      const textToShare = `${review.title}\n\n${shareText}\n\n${shareUrl}`;
-      await navigator.clipboard.writeText(textToShare);
+      await navigator.clipboard.writeText(instagramPost);
 
       console.log('Content copied to clipboard successfully');
       toast({
-        title: "Copied to Clipboard!",
-        description: "Review details copied to clipboard for sharing.",
+        title: "Copied to Clipboard! 📋",
+        description: "Instagram-style review copied! Ready to paste on Instagram.",
+        duration: 5000,
       });
     } catch (clipboardError) {
       console.error('Clipboard copy failed:', clipboardError);
 
       toast({
         title: "Share Content",
-        description: shareText,
+        description: "Unable to copy. Please try again.",
+        variant: "destructive"
       });
     }
+  };
+
+  // Helper function to generate hashtags
+  const generateHashtags = (movieTitle: string) => {
+    const baseHashtags = [
+      '#MovieReview',
+      '#Cinema',
+      '#FilmReview',
+      '#MovieBuff',
+      '#CinemaLovers',
+      '#FilmCritic',
+      '#MovieNight',
+      '#MustWatch',
+      '#SMReviews',
+      '#MovieRecommendation'
+    ];
+
+    // Clean movie title and create hashtags
+    const titleWords = movieTitle
+      .replace(/[^a-zA-Z0-9\s]/g, '')
+      .split(' ')
+      .filter(word => word.length > 0);
+    
+    const movieHashtags = titleWords.length > 0 
+      ? [`#${titleWords.join('')}`, `#${titleWords.join('')}Movie`]
+      : [];
+
+    return [...baseHashtags, ...movieHashtags].join(' ');
   };
 
   // Setup real-time listener for today's views
