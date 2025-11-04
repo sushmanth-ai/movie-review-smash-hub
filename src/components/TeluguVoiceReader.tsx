@@ -2,134 +2,161 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Volume2, VolumeX } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-<SmartVoiceReader reviewText={reviewText} />
 
-
-interface SmartVoiceReaderProps {
+interface TeluguVoiceReaderProps {
   reviewText: string;
 }
 
-export const SmartVoiceReader: React.FC<SmartVoiceReaderProps> = ({ reviewText }) => {
+export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({ reviewText }) => {
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [synth, setSynth] = useState<SpeechSynthesis | null>(null);
+  const [voicesLoaded, setVoicesLoaded] = useState(false);
   const { toast } = useToast();
 
-  // Load available voices
   useEffect(() => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    // Initialize speech synthesis
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      const speechSynth = window.speechSynthesis;
+      setSynth(speechSynth);
 
-    const synth = window.speechSynthesis;
+      // Load voices
+      const loadVoices = () => {
+        const voices = speechSynth.getVoices();
+        console.log('Available voices:', voices.map(v => ({ name: v.name, lang: v.lang })));
+        if (voices.length > 0) {
+          setVoicesLoaded(true);
+        }
+      };
 
-    const loadVoices = () => {
-      const allVoices = synth.getVoices();
-      if (allVoices.length > 0) {
-        setVoices(allVoices);
+      // Try to load voices immediately
+      loadVoices();
+
+      // Also listen for voices changed event
+      if (speechSynth.onvoiceschanged !== undefined) {
+        speechSynth.onvoiceschanged = loadVoices;
       }
-    };
 
-    loadVoices();
-    synth.onvoiceschanged = loadVoices;
-
-    return () => {
-      synth.onvoiceschanged = null;
-    };
+      // Cleanup
+      return () => {
+        speechSynth.cancel();
+      };
+    }
   }, []);
 
-  // 🔍 Detect review language
-  const detectLanguage = (text: string): string => {
-    const teluguRegex = /[\u0C00-\u0C7F]/;
-    const hindiRegex = /[\u0900-\u097F]/;
-
-    if (teluguRegex.test(text)) return 'te-IN';
-    if (hindiRegex.test(text)) return 'hi-IN';
-    return 'en-IN';
-  };
-
-  // 🗣️ Speak text in detected language
   const speakInChunks = (text: string) => {
-    const synth = window.speechSynthesis;
+    if (!synth) return;
+
+    // Cancel any ongoing speech
     synth.cancel();
 
-    const lang = detectLanguage(text);
-    console.log('Detected language:', lang);
-
-    let selectedVoice =
-      voices.find(v => v.lang.toLowerCase().includes(lang.toLowerCase())) ||
-      voices.find(v => v.lang.toLowerCase().includes('en-in')) ||
-      voices.find(v => v.lang.toLowerCase().includes('hi-in')) ||
-      voices[0];
-
-    if (!selectedVoice) {
-      toast({
-        title: 'Voice not found',
-        description: 'No matching voice found. Try reloading or enabling voices.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
+    // Split text into smaller chunks (max 200 characters per chunk)
+    const chunkSize = 200;
+    const chunks: string[] = [];
+    
+    // Split by sentences first to avoid breaking mid-sentence
     const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
-    let i = 0;
+    
+    let currentChunk = '';
+    sentences.forEach(sentence => {
+      if ((currentChunk + sentence).length <= chunkSize) {
+        currentChunk += sentence;
+      } else {
+        if (currentChunk) chunks.push(currentChunk.trim());
+        currentChunk = sentence;
+      }
+    });
+    if (currentChunk) chunks.push(currentChunk.trim());
 
-    const speakNext = () => {
-      if (i >= sentences.length) {
+    console.log(`Split text into ${chunks.length} chunks`);
+
+    let currentChunkIndex = 0;
+
+    const speakNextChunk = () => {
+      if (currentChunkIndex >= chunks.length) {
+        console.log('All chunks completed');
         setIsSpeaking(false);
         return;
       }
 
-      const utter = new SpeechSynthesisUtterance(sentences[i]);
-      utter.voice = selectedVoice;
-      utter.lang = selectedVoice.lang;
-      utter.rate = 0.9;
-      utter.pitch = 1;
-      utter.volume = 1;
+      const chunk = chunks[currentChunkIndex];
+      console.log(`Speaking chunk ${currentChunkIndex + 1}/${chunks.length}`);
 
-      utter.onend = () => {
-        i++;
-        setTimeout(speakNext, 50);
+      const utterance = new SpeechSynthesisUtterance(chunk);
+      
+      // Get voices
+      const voices = synth.getVoices();
+      let selectedVoice = voices.find(v => 
+        v.lang.toLowerCase().includes('te-in') || 
+        v.lang.toLowerCase().includes('te')
+      );
+
+      if (!selectedVoice) {
+        selectedVoice = voices.find(v => 
+          v.lang.toLowerCase().includes('hi-in') || 
+          v.lang.toLowerCase().includes('hi')
+        );
+      }
+
+      if (!selectedVoice) {
+        selectedVoice = voices.find(v => v.name.toLowerCase().includes('female')) || voices[0];
+      }
+
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+      }
+
+      utterance.lang = selectedVoice?.lang || 'te-IN';
+      utterance.rate = 0.9;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+
+      utterance.onend = () => {
+        console.log(`Chunk ${currentChunkIndex + 1} completed`);
+        currentChunkIndex++;
+        // Small delay before next chunk to prevent interruption
+        setTimeout(speakNextChunk, 50);
       };
 
-      utter.onerror = (e) => {
-        console.error('Speech error:', e);
-        setIsSpeaking(false);
+      utterance.onerror = (event) => {
+        console.error(`Chunk ${currentChunkIndex + 1} error:`, event.error);
+        
+        if (event.error === 'interrupted' || event.error === 'canceled') {
+          // User cancelled, stop everything
+          setIsSpeaking(false);
+          return;
+        }
+
+        // For other errors, try next chunk
+        currentChunkIndex++;
+        setTimeout(speakNextChunk, 100);
       };
 
-      synth.speak(utter);
+      synth.speak(utterance);
     };
 
     setIsSpeaking(true);
-    speakNext();
+    // Small delay before starting
+    setTimeout(speakNextChunk, 100);
   };
 
   const handleSpeech = () => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+    if (!synth) {
       toast({
-        title: 'Error',
-        description: 'Speech synthesis not supported in this browser',
-        variant: 'destructive',
+        title: "Error",
+        description: "Speech synthesis not supported in this browser",
+        variant: "destructive"
       });
       return;
     }
 
-    const synth = window.speechSynthesis;
-
     if (isSpeaking) {
+      console.log('Stopping speech...');
       synth.cancel();
       setIsSpeaking(false);
       return;
     }
 
-    if (voices.length === 0) {
-      toast({
-        title: 'Loading voices...',
-        description: 'Please wait 1–2 seconds and try again.',
-      });
-      window.speechSynthesis.onvoiceschanged = () => {
-        setVoices(window.speechSynthesis.getVoices());
-      };
-      return;
-    }
-
+    console.log('Starting speech with chunking...');
     speakInChunks(reviewText);
   };
 
@@ -143,12 +170,19 @@ export const SmartVoiceReader: React.FC<SmartVoiceReaderProps> = ({ reviewText }
           <>
             <VolumeX className="w-6 h-6 mr-2" />
             <span>🛑 Stop Voice</span>
+            <span className="absolute inset-0 rounded-full bg-primary/30 animate-pulse" />
           </>
         ) : (
           <>
             <Volume2 className="w-6 h-6 mr-2" />
             <span>🔊 Read Review</span>
           </>
+        )}
+        {isSpeaking && (
+          <span className="absolute -top-1 -right-1 flex h-5 w-5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-5 w-5 bg-primary"></span>
+          </span>
         )}
       </Button>
     </div>
