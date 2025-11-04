@@ -7,20 +7,24 @@ interface TeluguVoiceReaderProps {
   reviewText: string;
 }
 
-export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
-  reviewText,
-}) => {
+export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({ reviewText }) => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [ready, setReady] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const { toast } = useToast();
 
-  // load voices after user taps (mobile browsers need user gesture)
+  // ✅ Detect mobile
+  useEffect(() => {
+    const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+    const mobileCheck = /android|iphone|ipad|ipod|mobile/i.test(userAgent);
+    setIsMobile(mobileCheck);
+  }, []);
+
   const initVoices = () => {
     const synth = window.speechSynthesis;
     let allVoices = synth.getVoices();
     if (allVoices.length === 0) {
-      // voices load async on mobile
       synth.onvoiceschanged = () => {
         allVoices = synth.getVoices();
         setVoices(allVoices);
@@ -50,7 +54,6 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
       return;
     }
 
-    // make sure voices are loaded
     if (!ready || voices.length === 0) {
       toast({
         title: "Initializing...",
@@ -60,7 +63,6 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
       return;
     }
 
-    // pick Telugu or fallback
     const teluguVoice =
       voices.find((v) => v.lang.toLowerCase().includes("te-in")) ||
       voices.find((v) => v.lang.toLowerCase().includes("hi-in")) ||
@@ -76,7 +78,6 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
       return;
     }
 
-    // divide review into sentences
     const sentences = reviewText.match(/[^.!?]+[.!?]+/g) || [reviewText];
     let i = 0;
 
@@ -104,24 +105,26 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
       };
 
       synth.speak(utter);
-      setTimeout(() => synth.resume(), 250); // ensure it plays
+      setTimeout(() => synth.resume(), 250);
     };
 
     setIsSpeaking(true);
     speakNext();
   };
 
-  // Preload voices when page loads (desktop)
   useEffect(() => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
     initVoices();
   }, []);
 
   return (
-    <div className="flex justify-center mt-6">
+    <div className="flex flex-col items-center mt-6">
       <Button
         onClick={handleSpeech}
-        className="relative bg-gradient-to-r from-primary via-yellow-500 to-primary text-primary-foreground font-bold text-lg px-8 py-6 rounded-full shadow-[0_0_30px_rgba(255,215,0,0.6)] hover:shadow-[0_0_40px_rgba(255,215,0,0.8)] hover:scale-105 transition-all duration-300 border-2 border-primary/50"
+        disabled={isMobile}
+        className={`relative bg-gradient-to-r from-primary via-yellow-500 to-primary text-primary-foreground font-bold text-lg px-8 py-6 rounded-full shadow-[0_0_30px_rgba(255,215,0,0.6)] hover:shadow-[0_0_40px_rgba(255,215,0,0.8)] hover:scale-105 transition-all duration-300 border-2 border-primary/50 ${
+          isMobile ? "opacity-50 cursor-not-allowed" : ""
+        }`}
       >
         {isSpeaking ? (
           <>
@@ -135,6 +138,12 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
           </>
         )}
       </Button>
+
+      {isMobile && (
+        <p className="text-sm text-muted-foreground mt-2">
+          Voice playback is not available on mobile browsers.
+        </p>
+      )}
     </div>
   );
 };
