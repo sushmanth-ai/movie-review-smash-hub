@@ -235,16 +235,12 @@ const ReviewDetail = () => {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="flex justify-center items-center mb-2">
-  <img
-  src="https://res.cloudinary.com/dvdmk59a1/image/upload/v1762242791/SM_Image_m8js8c.jpg"
-  alt="SM Reviews Logo"
-  className="h-14 w-14 md:h-16 md:w-16 object-cover rounded-full border-2 border-yellow-400 shadow-[0_0_20px_rgba(255,215,0,0.6)] hover:rotate-[15deg] hover:scale-105 transition-transform duration-500"
-/>
+  <img src="https://res.cloudinary.com/dvdmk59a1/image/upload/v1762242791/SM_Image_m8js8c.jpg" alt="SM Reviews Logo" className="h-14 w-14 md:h-16 md:w-16 object-cover rounded-full border-2 border-yellow-400 shadow-[0_0_20px_rgba(255,215,0,0.6)] hover:rotate-[15deg] hover:scale-105 transition-transform duration-500" />
 
-  <span className="text-primary text-3xl font-extrabold ml-3 mt-1 tracking-wide">
+  <span className="text-primary font-extrabold ml-3 mt-1 tracking-wide text-2xl">
     REVIEWS 3.0
   </span>
-</div>
+        </div>
 
         </div>
       </div>
@@ -256,7 +252,7 @@ const ReviewDetail = () => {
   <h2 className="text-4xl font-extrabold text-primary tracking-wide">
     {review.title}
   </h2>
-</CardHeader>
+        </CardHeader>
 
 
           <div className="px-6">
@@ -301,9 +297,7 @@ const ReviewDetail = () => {
             <InteractionButtons review={review} onLike={handleLikeClick} onToggleComments={_id => setShowComments(prev => !prev)} onShare={handleShare} isLiked={likedReviews.has(review.id)} />
 
             {/* Telugu Voice Reader */}
-            <TeluguVoiceReader 
-              reviewText={`${review.title}. సమీక్ష: ${review.review}. మొదటి సగం: ${review.firstHalf}. రెండవ సగం: ${review.secondHalf}. సానుకూలాలు: ${review.positives}. ప్రతికూలాలు: ${review.negatives}. మొత్తం మీద: ${review.overall}. రేటింగ్: ${review.rating} స్టార్స్.`}
-            />
+            <TeluguVoiceReader reviewText={`${review.title}. సమీక్ష: ${review.review}. మొదటి సగం: ${review.firstHalf}. రెండవ సగం: ${review.secondHalf}. సానుకూలాలు: ${review.positives}. ప్రతికూలాలు: ${review.negatives}. మొత్తం మీద: ${review.overall}. రేటింగ్: ${review.rating} స్టార్స్.`} />
 
             {showComments && <CommentSection review={review} newComment={newComment} onCommentChange={setNewComment} onCommentSubmit={handleCommentSubmit} onReplySubmit={handleReplySubmit} />}
           </CardContent>
