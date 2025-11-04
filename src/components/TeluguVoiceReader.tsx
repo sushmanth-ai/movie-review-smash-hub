@@ -14,15 +14,12 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({ reviewText
   const [isMobile, setIsMobile] = useState(false);
   const { toast } = useToast();
 
-  // ✅ Detect mobile devices
+  // ✅ Detect mobile
   useEffect(() => {
-    const ua = navigator.userAgent || navigator.vendor || (window as any).opera;
-    const mobileCheck = /android|iphone|ipad|ipod|mobile/i.test(ua);
+    const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+    const mobileCheck = /android|iphone|ipad|ipod|mobile/i.test(userAgent);
     setIsMobile(mobileCheck);
   }, []);
-
-  // ✅ Skip rendering completely on mobile
-  if (isMobile) return null;
 
   const initVoices = () => {
     const synth = window.speechSynthesis;
@@ -121,10 +118,13 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({ reviewText
   }, []);
 
   return (
-    <div className="flex justify-center mt-6">
+    <div className="flex flex-col items-center mt-6">
       <Button
         onClick={handleSpeech}
-        className="relative bg-gradient-to-r from-primary via-yellow-500 to-primary text-primary-foreground font-bold text-lg px-8 py-6 rounded-full shadow-[0_0_30px_rgba(255,215,0,0.6)] hover:shadow-[0_0_40px_rgba(255,215,0,0.8)] hover:scale-105 transition-all duration-300 border-2 border-primary/50"
+        disabled={isMobile}
+        className={`relative bg-gradient-to-r from-primary via-yellow-500 to-primary text-primary-foreground font-bold text-lg px-8 py-6 rounded-full shadow-[0_0_30px_rgba(255,215,0,0.6)] hover:shadow-[0_0_40px_rgba(255,215,0,0.8)] hover:scale-105 transition-all duration-300 border-2 border-primary/50 ${
+          isMobile ? "opacity-50 cursor-not-allowed" : ""
+        }`}
       >
         {isSpeaking ? (
           <>
@@ -138,6 +138,12 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({ reviewText
           </>
         )}
       </Button>
+
+      {isMobile && (
+        <p className="text-sm text-muted-foreground mt-2">
+          Voice playback is not available on mobile browsers.
+        </p>
+      )}
     </div>
   );
 };
