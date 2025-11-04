@@ -1,74 +1,83 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Volume2, VolumeX } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Volume2, VolumeX } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface TeluguVoiceReaderProps {
   reviewText: string;
 }
 
-export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({ reviewText }) => {
+export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
+  reviewText,
+}) => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [unlocked, setUnlocked] = useState(false);
+  const [ready, setReady] = useState(false);
   const { toast } = useToast();
 
-  // Load voices and handle browser quirks
-  useEffect(() => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-
+  // load voices after user taps (mobile browsers need user gesture)
+  const initVoices = () => {
     const synth = window.speechSynthesis;
-
-    const loadVoices = () => {
-      const allVoices = synth.getVoices();
-      if (allVoices.length > 0) {
+    let allVoices = synth.getVoices();
+    if (allVoices.length === 0) {
+      // voices load async on mobile
+      synth.onvoiceschanged = () => {
+        allVoices = synth.getVoices();
         setVoices(allVoices);
-      }
-    };
-
-    loadVoices();
-    synth.onvoiceschanged = loadVoices;
-
-    // Safari / Mobile resume workaround
-    const interval = setInterval(() => {
-      if (synth.speaking && !synth.paused) synth.resume();
-    }, 500);
-
-    return () => {
-      clearInterval(interval);
-      synth.onvoiceschanged = null;
-    };
-  }, []);
-
-  // Unlock speech on mobile (iOS workaround)
-  const unlockAudio = () => {
-    if (unlocked) return;
-    const synth = window.speechSynthesis;
-    const utter = new SpeechSynthesisUtterance('');
-    synth.speak(utter);
-    setUnlocked(true);
+        setReady(true);
+      };
+    } else {
+      setVoices(allVoices);
+      setReady(true);
+    }
   };
 
-  const speakInChunks = (text: string) => {
-    const synth = window.speechSynthesis;
-    synth.cancel();
-
-    const teluguVoice =
-      voices.find(v => v.lang.toLowerCase().includes('te-in')) ||
-      voices.find(v => v.lang.toLowerCase().includes('hi-in')) ||
-      voices.find(v => v.lang.toLowerCase().includes('en-in')) ||
-      voices[0];
-
-    if (!teluguVoice) {
+  const handleSpeech = () => {
+    if (!("speechSynthesis" in window)) {
       toast({
-        title: 'Voice not found',
-        description: 'Telugu voice not available on this browser. Try English-India voice.',
-        variant: 'destructive',
+        title: "Not Supported",
+        description: "Speech synthesis not supported on this device.",
+        variant: "destructive",
       });
       return;
     }
 
-    const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+    const synth = window.speechSynthesis;
+
+    if (isSpeaking) {
+      synth.cancel();
+      setIsSpeaking(false);
+      return;
+    }
+
+    // make sure voices are loaded
+    if (!ready || voices.length === 0) {
+      toast({
+        title: "Initializing...",
+        description: "Tap again after 2 seconds while voices load.",
+      });
+      initVoices();
+      return;
+    }
+
+    // pick Telugu or fallback
+    const teluguVoice =
+      voices.find((v) => v.lang.toLowerCase().includes("te-in")) ||
+      voices.find((v) => v.lang.toLowerCase().includes("hi-in")) ||
+      voices.find((v) => v.lang.toLowerCase().includes("en-in")) ||
+      voices[0];
+
+    if (!teluguVoice) {
+      toast({
+        title: "Voice not found",
+        description: "No Indian voice available — try enabling Google voice engine.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // divide review into sentences
+    const sentences = reviewText.match(/[^.!?]+[.!?]+/g) || [reviewText];
     let i = 0;
 
     const speakNext = () => {
@@ -90,49 +99,23 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({ reviewText
       };
 
       utter.onerror = (e) => {
-        console.error('Speech error:', e);
+        console.error("Speech error:", e);
         setIsSpeaking(false);
       };
 
-      // Chrome mobile sometimes needs a resume
-      setTimeout(() => synth.resume(), 100);
       synth.speak(utter);
+      setTimeout(() => synth.resume(), 250); // ensure it plays
     };
 
     setIsSpeaking(true);
     speakNext();
   };
 
-  const handleSpeech = () => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-      toast({
-        title: 'Error',
-        description: 'Speech synthesis not supported in this browser',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    const synth = window.speechSynthesis;
-    unlockAudio(); // Unlock mobile audio context
-
-    if (isSpeaking) {
-      synth.cancel();
-      setIsSpeaking(false);
-      return;
-    }
-
-    if (voices.length === 0) {
-      toast({
-        title: 'Loading voices...',
-        description: 'Please wait a moment and try again',
-      });
-      setTimeout(() => setVoices(window.speechSynthesis.getVoices()), 800);
-      return;
-    }
-
-    speakInChunks(reviewText);
-  };
+  // Preload voices when page loads (desktop)
+  useEffect(() => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    initVoices();
+  }, []);
 
   return (
     <div className="flex justify-center mt-6">
