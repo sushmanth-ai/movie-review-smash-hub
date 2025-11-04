@@ -2,17 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Volume2, VolumeX } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+<SmartVoiceReader reviewText={reviewText} />
 
-interface TeluguVoiceReaderProps {
+
+interface SmartVoiceReaderProps {
   reviewText: string;
 }
 
-export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({ reviewText }) => {
+export const SmartVoiceReader: React.FC<SmartVoiceReaderProps> = ({ reviewText }) => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const { toast } = useToast();
 
-  // Load voices properly
+  // Load available voices
   useEffect(() => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
 
@@ -25,7 +27,6 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({ reviewText
       }
     };
 
-    // Try now and again on event
     loadVoices();
     synth.onvoiceschanged = loadVoices;
 
@@ -34,20 +35,34 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({ reviewText
     };
   }, []);
 
+  // 🔍 Detect review language
+  const detectLanguage = (text: string): string => {
+    const teluguRegex = /[\u0C00-\u0C7F]/;
+    const hindiRegex = /[\u0900-\u097F]/;
+
+    if (teluguRegex.test(text)) return 'te-IN';
+    if (hindiRegex.test(text)) return 'hi-IN';
+    return 'en-IN';
+  };
+
+  // 🗣️ Speak text in detected language
   const speakInChunks = (text: string) => {
     const synth = window.speechSynthesis;
     synth.cancel();
 
-    const teluguVoice =
-      voices.find(v => v.lang.toLowerCase().includes('te-in')) ||
-      voices.find(v => v.lang.toLowerCase().includes('hi-in')) ||
+    const lang = detectLanguage(text);
+    console.log('Detected language:', lang);
+
+    let selectedVoice =
+      voices.find(v => v.lang.toLowerCase().includes(lang.toLowerCase())) ||
       voices.find(v => v.lang.toLowerCase().includes('en-in')) ||
+      voices.find(v => v.lang.toLowerCase().includes('hi-in')) ||
       voices[0];
 
-    if (!teluguVoice) {
+    if (!selectedVoice) {
       toast({
         title: 'Voice not found',
-        description: 'Telugu voice not available on this browser. Try English-India voice.',
+        description: 'No matching voice found. Try reloading or enabling voices.',
         variant: 'destructive',
       });
       return;
@@ -63,8 +78,8 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({ reviewText
       }
 
       const utter = new SpeechSynthesisUtterance(sentences[i]);
-      utter.voice = teluguVoice;
-      utter.lang = teluguVoice.lang;
+      utter.voice = selectedVoice;
+      utter.lang = selectedVoice.lang;
       utter.rate = 0.9;
       utter.pitch = 1;
       utter.volume = 1;
@@ -107,7 +122,7 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({ reviewText
     if (voices.length === 0) {
       toast({
         title: 'Loading voices...',
-        description: 'Please wait 1–2 seconds and try again',
+        description: 'Please wait 1–2 seconds and try again.',
       });
       window.speechSynthesis.onvoiceschanged = () => {
         setVoices(window.speechSynthesis.getVoices());
