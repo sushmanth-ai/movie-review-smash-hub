@@ -234,18 +234,7 @@ const ReviewDetail = () => {
           <Button variant="outline" size="icon" onClick={() => navigate('/')} className="border-primary text-primary hover:bg-primary hover:text-primary-foreground">
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div className="flex justify-center items-center mb-2">
-  <img
-  src="https://res.cloudinary.com/dvdmk59a1/image/upload/v1762242791/SM_Image_m8js8c.jpg"
-  alt="SM Reviews Logo"
-  className="h-14 w-14 md:h-16 md:w-16 object-cover rounded-full border-2 border-yellow-400 shadow-[0_0_20px_rgba(255,215,0,0.6)] hover:rotate-[15deg] hover:scale-105 transition-transform duration-500"
-/>
-
-  <span className="text-primary text-3xl font-extrabold ml-3 mt-1 tracking-wide">
-    REVIEWS 3.0
-  </span>
-</div>
-
+          <h1 className="text-xl font-bold text-primary">SM REVIEW 3.0</h1>
         </div>
       </div>
 
