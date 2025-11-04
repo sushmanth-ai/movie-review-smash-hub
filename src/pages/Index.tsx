@@ -145,7 +145,7 @@ const Index = () => {
       <div className="fixed top-0 left-0 w-full z-50 p-2 shadow-[0_4px_20px_rgba(255,215,0,0.3)] border-b-2 border-primary bg-background">
        <div className="flex justify-center items-center mb-2">
   <img src="https://res.cloudinary.com/dvdmk59a1/image/upload/v1762242791/SM_Image_m8js8c.jpg" alt="SM Reviews Logo" className="h-14 w-14 md:h-16 md:w-16 object-cover rounded-full border-2 border-yellow-400 shadow-[0_0_20px_rgba(255,215,0,0.6)]" />
-  <span className="text-primary font-extrabold ml-3 mt-1 tracking-wide text-3xl">
+  <span className="text-primary font-extrabold ml-3 mt-1 tracking-wide text-2xl">
     REVIEWS 3.0
   </span>
         </div>
