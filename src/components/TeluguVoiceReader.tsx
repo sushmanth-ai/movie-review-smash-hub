@@ -43,6 +43,102 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({ reviewText
     }
   }, []);
 
+  const speakInChunks = (text: string) => {
+    if (!synth) return;
+
+    // Cancel any ongoing speech
+    synth.cancel();
+
+    // Split text into smaller chunks (max 200 characters per chunk)
+    const chunkSize = 200;
+    const chunks: string[] = [];
+    
+    // Split by sentences first to avoid breaking mid-sentence
+    const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+    
+    let currentChunk = '';
+    sentences.forEach(sentence => {
+      if ((currentChunk + sentence).length <= chunkSize) {
+        currentChunk += sentence;
+      } else {
+        if (currentChunk) chunks.push(currentChunk.trim());
+        currentChunk = sentence;
+      }
+    });
+    if (currentChunk) chunks.push(currentChunk.trim());
+
+    console.log(`Split text into ${chunks.length} chunks`);
+
+    let currentChunkIndex = 0;
+
+    const speakNextChunk = () => {
+      if (currentChunkIndex >= chunks.length) {
+        console.log('All chunks completed');
+        setIsSpeaking(false);
+        return;
+      }
+
+      const chunk = chunks[currentChunkIndex];
+      console.log(`Speaking chunk ${currentChunkIndex + 1}/${chunks.length}`);
+
+      const utterance = new SpeechSynthesisUtterance(chunk);
+      
+      // Get voices
+      const voices = synth.getVoices();
+      let selectedVoice = voices.find(v => 
+        v.lang.toLowerCase().includes('te-in') || 
+        v.lang.toLowerCase().includes('te')
+      );
+
+      if (!selectedVoice) {
+        selectedVoice = voices.find(v => 
+          v.lang.toLowerCase().includes('hi-in') || 
+          v.lang.toLowerCase().includes('hi')
+        );
+      }
+
+      if (!selectedVoice) {
+        selectedVoice = voices.find(v => v.name.toLowerCase().includes('female')) || voices[0];
+      }
+
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+      }
+
+      utterance.lang = selectedVoice?.lang || 'te-IN';
+      utterance.rate = 0.9;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+
+      utterance.onend = () => {
+        console.log(`Chunk ${currentChunkIndex + 1} completed`);
+        currentChunkIndex++;
+        // Small delay before next chunk to prevent interruption
+        setTimeout(speakNextChunk, 50);
+      };
+
+      utterance.onerror = (event) => {
+        console.error(`Chunk ${currentChunkIndex + 1} error:`, event.error);
+        
+        if (event.error === 'interrupted' || event.error === 'canceled') {
+          // User cancelled, stop everything
+          setIsSpeaking(false);
+          return;
+        }
+
+        // For other errors, try next chunk
+        currentChunkIndex++;
+        setTimeout(speakNextChunk, 100);
+      };
+
+      synth.speak(utterance);
+    };
+
+    setIsSpeaking(true);
+    // Small delay before starting
+    setTimeout(speakNextChunk, 100);
+  };
+
   const handleSpeech = () => {
     if (!synth) {
       toast({
@@ -60,77 +156,8 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({ reviewText
       return;
     }
 
-    console.log('Starting speech...');
-    const utterance = new SpeechSynthesisUtterance(reviewText);
-    
-    // Get all available voices
-    const voices = synth.getVoices();
-    console.log('Total voices available:', voices.length);
-
-    // Try to find Telugu voice (te-IN or te)
-    let selectedVoice = voices.find(v => 
-      v.lang.toLowerCase().includes('te-in') || 
-      v.lang.toLowerCase().includes('te')
-    );
-
-    // If Telugu not found, try Hindi as fallback (hi-IN)
-    if (!selectedVoice) {
-      console.log('Telugu voice not found, trying Hindi...');
-      selectedVoice = voices.find(v => 
-        v.lang.toLowerCase().includes('hi-in') || 
-        v.lang.toLowerCase().includes('hi')
-      );
-    }
-
-    // If still not found, use any female voice or first available voice
-    if (!selectedVoice) {
-      console.log('No Indian language voices found, using default...');
-      selectedVoice = voices.find(v => v.name.toLowerCase().includes('female')) || voices[0];
-    }
-
-    if (selectedVoice) {
-      utterance.voice = selectedVoice;
-      console.log('Selected voice:', selectedVoice.name, selectedVoice.lang);
-    } else {
-      console.log('No voice selected, using default');
-    }
-
-    // Set language
-    utterance.lang = selectedVoice?.lang || 'te-IN';
-    
-    // Adjust speech parameters for better quality
-    utterance.rate = 0.9; // Slightly slower for clarity
-    utterance.pitch = 1.0;
-    utterance.volume = 1.0;
-
-    utterance.onstart = () => {
-      console.log('Speech started');
-      setIsSpeaking(true);
-    };
-
-    utterance.onend = () => {
-      console.log('Speech ended');
-      setIsSpeaking(false);
-    };
-
-    utterance.onerror = (event) => {
-      console.error('Speech error:', event.error);
-      setIsSpeaking(false);
-      toast({
-        title: "Error",
-        description: `Speech error: ${event.error}`,
-        variant: "destructive"
-      });
-    };
-
-    // Cancel any ongoing speech before starting
-    synth.cancel();
-    
-    // Small delay to ensure cancel completes
-    setTimeout(() => {
-      synth.speak(utterance);
-      console.log('Speech queued');
-    }, 100);
+    console.log('Starting speech with chunking...');
+    speakInChunks(reviewText);
   };
 
   return (
