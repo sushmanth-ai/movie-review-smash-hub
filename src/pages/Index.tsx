@@ -181,19 +181,19 @@ const Index = () => {
               🎬 New Reviews
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {(showAllNewReviews ? newReviews : newReviews.slice(0, 2)).map(review => (
+              {(showAllNewReviews ? newReviews : newReviews.slice(0, 3)).map(review => (
                 <div key={review.id} id={`review-${review.id}`}>
                   <MovieCard review={review} />
                 </div>
               ))}
             </div>
-            {newReviews.length > 2 && !showAllNewReviews && (
+            {newReviews.length > 3 && (
               <div className="flex justify-center mt-6">
                 <Button
-                  onClick={() => setShowAllNewReviews(true)}
+                  onClick={() => setShowAllNewReviews(!showAllNewReviews)}
                   className="bg-gradient-to-r from-primary via-yellow-500 to-primary text-primary-foreground font-bold px-8 py-3 rounded-full shadow-[0_0_20px_rgba(255,215,0,0.4)] hover:shadow-[0_0_30px_rgba(255,215,0,0.6)] transition-all duration-300"
                 >
-                  See More New Reviews
+                  {showAllNewReviews ? 'See Less' : 'See More New Reviews'}
                 </Button>
               </div>
             )}
@@ -207,19 +207,19 @@ const Index = () => {
               📽️ Old Reviews
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {(showAllOldReviews ? oldReviews : oldReviews.slice(0, 2)).map(review => (
+              {(showAllOldReviews ? oldReviews : oldReviews.slice(0, 3)).map(review => (
                 <div key={review.id} id={`review-${review.id}`}>
                   <MovieCard review={review} />
                 </div>
               ))}
             </div>
-            {oldReviews.length > 2 && !showAllOldReviews && (
+            {oldReviews.length > 3 && (
               <div className="flex justify-center mt-6">
                 <Button
-                  onClick={() => setShowAllOldReviews(true)}
+                  onClick={() => setShowAllOldReviews(!showAllOldReviews)}
                   className="bg-gradient-to-r from-primary via-yellow-500 to-primary text-primary-foreground font-bold px-8 py-3 rounded-full shadow-[0_0_20px_rgba(255,215,0,0.4)] hover:shadow-[0_0_30px_rgba(255,215,0,0.6)] transition-all duration-300"
                 >
-                  See More Old Reviews
+                  {showAllOldReviews ? 'See Less' : 'See More Old Reviews'}
                 </Button>
               </div>
             )}
