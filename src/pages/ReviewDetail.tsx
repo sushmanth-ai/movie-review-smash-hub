@@ -24,8 +24,9 @@ const ReviewDetail = () => {
   const [showComments, setShowComments] = useState(false);
   const [viewCount, setViewCount] = useState(0);
   const [showBookingOptions, setShowBookingOptions] = useState(false);
+  const [showLikeEffect, setShowLikeEffect] = useState(false);
 
-  const { loadLikes, loadComments, handleLike, handleComment, handleReply, handleShare, likedReviews } =
+  const { loadLikes, loadComments, handleLike, handleComment, handleReply, likedReviews } =
     useFirebaseOperations();
 
   const setReviewFromList = (updater) => {
@@ -106,39 +107,50 @@ const ReviewDetail = () => {
     );
   }
 
-  // 🔥 Animated Like Button
+  // ❤️ Like Animation Logic
   const handleLikeClick = (reviewId) => {
     handleLike(reviewId, setReviewFromList);
-    const likeButton = document.getElementById("like-btn");
-    if (likeButton) {
-      likeButton.classList.add("animate-ping-once");
-      setTimeout(() => likeButton.classList.remove("animate-ping-once"), 400);
-    }
+    setShowLikeEffect(true);
+    setTimeout(() => setShowLikeEffect(false), 800);
   };
 
+  // 💬 Comment
   const handleCommentSubmit = () => {
     if (!review || !newComment.trim()) return;
     handleComment(review.id, newComment, setReviewFromList, noopSetNewComment);
     setNewComment("");
   };
 
-  const handleReplySubmit = (commentId, replyText) => {
-    if (!review || !replyText.trim()) return;
-    handleReply(review.id, commentId, replyText, setReviewFromList);
+  // 📤 Share
+  const handleShareClick = async () => {
+    try {
+      const shareData = {
+        title: `SM Reviews: ${review.title}`,
+        text: `${review.title} - Read the full review now on SM Reviews!`,
+        url: window.location.href,
+      };
+      if (navigator.share) {
+        await navigator.share(shareData);
+        toast({ title: "Shared Successfully!", description: "Your friends can see this review now!" });
+      } else {
+        await navigator.clipboard.writeText(shareData.url);
+        toast({ title: "Link Copied!", description: "You can paste and share it anywhere." });
+      }
+    } catch (error) {
+      toast({ title: "Share Failed", description: "Something went wrong. Try again!", variant: "destructive" });
+    }
   };
 
-  // 🎟️ Booking Options Modal
+  // 🎟️ Booking
   const handleBookTicket = () => {
     setShowBookingOptions(true);
   };
-
   const handleOpenBookMyShow = () => {
     window.open("https://in.bookmyshow.com/hyderabad", "_blank");
     setShowBookingOptions(false);
   };
-
   const handleOpenDistrictApp = () => {
-    window.open("https://exampledistrictcinemas.com/hyderabad", "_blank");
+    window.open("https://districtcinemas.com", "_blank"); // your district home page
     setShowBookingOptions(false);
   };
 
@@ -161,7 +173,7 @@ const ReviewDetail = () => {
           </div>
         </div>
 
-        {/* Main Review Content */}
+        {/* Main Content */}
         <div className="container mx-auto px-4 pt-24 pb-8">
           <Card className="bg-card border-2 border-primary shadow-[0_0_30px_rgba(255,215,0,0.5)] max-w-4xl mx-auto">
             <CardHeader className="text-center space-y-4">
@@ -177,7 +189,7 @@ const ReviewDetail = () => {
             </div>
 
             <CardContent className="space-y-6">
-              {/* 🧾 Full Review Text */}
+              {/* Full Review */}
               <div className="border-t border-primary/30 pt-4">
                 <div className="bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-lg p-4 mb-4 border-2 border-primary/50 shadow-[0_0_20px_rgba(255,215,0,0.3)]">
                   <h3 className="text-center font-bold text-primary text-xl">REVIEW</h3>
@@ -212,32 +224,34 @@ const ReviewDetail = () => {
                 </div>
               </div>
 
-              {/* ❤️ Animated Like / Comment / Share */}
-              <div className="flex justify-center gap-6 mt-6">
+              {/* ❤️ Like / 💬 Comment / 📤 Share */}
+              <div className="flex justify-center gap-6 mt-6 relative">
                 <button
-                  id="like-btn"
                   onClick={() => handleLikeClick(review.id)}
-                  className="flex items-center gap-2 text-red-500 font-bold hover:scale-110 transition-transform active:scale-95"
+                  className="flex items-center gap-2 text-red-500 font-bold hover:scale-110 transition-transform relative"
                 >
-                  <ThumbsUp className="w-6 h-6" /> Like
+                  <ThumbsUp className={`w-6 h-6 ${showLikeEffect ? "animate-like-pop" : ""}`} /> Like
+                  {showLikeEffect && (
+                    <span className="absolute -top-6 text-red-400 font-bold animate-bubble">+1 ❤️</span>
+                  )}
                 </button>
 
                 <button
                   onClick={() => setShowComments((prev) => !prev)}
-                  className="flex items-center gap-2 text-yellow-400 font-bold hover:scale-110 transition-transform active:scale-95"
+                  className="flex items-center gap-2 text-yellow-400 font-bold hover:scale-110 transition-transform"
                 >
                   <MessageCircle className="w-6 h-6" /> Comment
                 </button>
 
                 <button
-                  onClick={() => handleShare(review.id)}
-                  className="flex items-center gap-2 text-blue-400 font-bold hover:scale-110 transition-transform active:scale-95"
+                  onClick={handleShareClick}
+                  className="flex items-center gap-2 text-blue-400 font-bold hover:scale-110 transition-transform"
                 >
                   <Share2 className="w-6 h-6" /> Share
                 </button>
               </div>
 
-              {/* 🎟️ Book Ticket */}
+              {/* 🎟️ Book Your Ticket */}
               <div className="flex justify-center mt-6">
                 <Button
                   onClick={handleBookTicket}
@@ -247,7 +261,7 @@ const ReviewDetail = () => {
                 </Button>
               </div>
 
-              {/* Popup for Booking Options */}
+              {/* Booking Options Popup */}
               {showBookingOptions && (
                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
                   <div className="bg-slate-900 border-2 border-yellow-400 rounded-2xl p-6 shadow-2xl max-w-md text-center space-y-4">
@@ -277,7 +291,7 @@ const ReviewDetail = () => {
                 </div>
               )}
 
-              {/* 🎤 Voice Reader + Comments */}
+              {/* 🎤 Telugu Voice Reader + Comments */}
               <TeluguVoiceReader
                 reviewText={`${review.title}. సమీక్ష: ${review.review}. మొదటి సగం: ${review.firstHalf}. రెండవ సగం: ${review.secondHalf}. సానుకూలాలు: ${review.positives}. ప్రతికూలాలు: ${review.negatives}. మొత్తం మీద: ${review.overall}. రేటింగ్: ${review.rating} స్టార్స్.`}
               />
@@ -288,7 +302,7 @@ const ReviewDetail = () => {
                   newComment={newComment}
                   onCommentChange={setNewComment}
                   onCommentSubmit={handleCommentSubmit}
-                  onReplySubmit={handleReplySubmit}
+                  onReplySubmit={() => {}}
                 />
               )}
             </CardContent>
@@ -304,15 +318,22 @@ const ReviewDetail = () => {
         </div>
       </div>
 
-      {/* ❤️ Like Animation */}
+      {/* ❤️ Like + Bubble Animations */}
       <style>{`
-        @keyframes ping-once {
-          0% { transform: scale(1); }
-          50% { transform: scale(1.4); filter: drop-shadow(0 0 10px #ff0000); }
+        @keyframes like-pop {
+          0% { transform: scale(1); filter: drop-shadow(0 0 0 red); }
+          50% { transform: scale(1.4); filter: drop-shadow(0 0 10px red); }
           100% { transform: scale(1); }
         }
-        .animate-ping-once {
-          animation: ping-once 0.4s ease-in-out;
+        .animate-like-pop {
+          animation: like-pop 0.5s ease-in-out;
+        }
+        @keyframes bubble {
+          0% { opacity: 1; transform: translateY(0); }
+          100% { opacity: 0; transform: translateY(-40px); }
+        }
+        .animate-bubble {
+          animation: bubble 0.8s ease-in-out;
         }
       `}</style>
     </>
