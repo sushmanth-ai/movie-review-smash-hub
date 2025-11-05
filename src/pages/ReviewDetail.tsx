@@ -24,10 +24,10 @@ const ReviewDetail = () => {
   const [showComments, setShowComments] = useState(false);
   const [viewCount, setViewCount] = useState(0);
   const [showBookingOptions, setShowBookingOptions] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
   const [showLikeEffect, setShowLikeEffect] = useState(false);
 
-  const { loadLikes, loadComments, handleLike, handleComment, handleReply, likedReviews } =
-    useFirebaseOperations();
+  const { loadLikes, loadComments, handleComment, handleReply } = useFirebaseOperations();
 
   const setReviewFromList = (updater) => {
     setReview((prev) => {
@@ -41,6 +41,7 @@ const ReviewDetail = () => {
 
   useEffect(() => {
     if (!id) return;
+
     const trackView = async () => {
       if (db) {
         try {
@@ -58,6 +59,7 @@ const ReviewDetail = () => {
         if (docSnap.exists()) {
           const data = docSnap.data();
           setViewCount(data.views || 0);
+          setLikeCount(data.likes || 0);
           const firebaseReview = {
             id: docSnap.id,
             title: data.title,
@@ -69,33 +71,17 @@ const ReviewDetail = () => {
             negatives: data.negatives,
             overall: data.overall,
             rating: data.rating,
-            likes: 0,
+            likes: data.likes || 0,
             comments: [],
             views: data.views || 0,
           };
           setReview(firebaseReview);
-          loadLikes(setReviewFromList);
           loadComments(setReviewFromList);
-        } else {
-          const staticReview = movieReviewsData.find((r) => r.id === id);
-          if (staticReview) {
-            const reviewWithDefaults = { ...staticReview, likes: 0, comments: [] };
-            setReview(reviewWithDefaults);
-            setViewCount(staticReview.views || 0);
-            loadLikes(setReviewFromList);
-            loadComments(setReviewFromList);
-          }
         }
       });
 
       trackView();
       return () => unsubscribe();
-    } else {
-      const staticReview = movieReviewsData.find((r) => r.id === id);
-      if (staticReview) {
-        setReview({ ...staticReview, likes: 0, comments: [] });
-        setViewCount(staticReview.views || 0);
-      }
     }
   }, [id]);
 
@@ -107,11 +93,18 @@ const ReviewDetail = () => {
     );
   }
 
-  // ❤️ Like Animation Logic
-  const handleLikeClick = (reviewId) => {
-    handleLike(reviewId, setReviewFromList);
-    setShowLikeEffect(true);
-    setTimeout(() => setShowLikeEffect(false), 800);
+  // ❤️ Like with animation & count
+  const handleLikeClick = async () => {
+    if (!review) return;
+    try {
+      const reviewRef = doc(db, "reviews", review.id);
+      await updateDoc(reviewRef, { likes: increment(1) });
+      setLikeCount((prev) => prev + 1);
+      setShowLikeEffect(true);
+      setTimeout(() => setShowLikeEffect(false), 800);
+    } catch (error) {
+      console.log("Like failed:", error);
+    }
   };
 
   // 💬 Comment
@@ -121,12 +114,12 @@ const ReviewDetail = () => {
     setNewComment("");
   };
 
-  // 📤 Share
+  // 📤 Share button functionality
   const handleShareClick = async () => {
     try {
       const shareData = {
         title: `SM Reviews: ${review.title}`,
-        text: `${review.title} - Read the full review now on SM Reviews!`,
+        text: `${review.title} - Read the full review on SM Reviews!`,
         url: window.location.href,
       };
       if (navigator.share) {
@@ -136,21 +129,19 @@ const ReviewDetail = () => {
         await navigator.clipboard.writeText(shareData.url);
         toast({ title: "Link Copied!", description: "You can paste and share it anywhere." });
       }
-    } catch (error) {
-      toast({ title: "Share Failed", description: "Something went wrong. Try again!", variant: "destructive" });
+    } catch {
+      toast({ title: "Share Failed", description: "Try again!", variant: "destructive" });
     }
   };
 
-  // 🎟️ Booking
-  const handleBookTicket = () => {
-    setShowBookingOptions(true);
-  };
+  // 🎟️ Booking Modal
+  const handleBookTicket = () => setShowBookingOptions(true);
   const handleOpenBookMyShow = () => {
     window.open("https://in.bookmyshow.com/hyderabad", "_blank");
     setShowBookingOptions(false);
   };
   const handleOpenDistrictApp = () => {
-    window.open("https://districtcinemas.com", "_blank"); // your district home page
+    window.open("https://www.district.in/", "_blank"); // ✅ Official District site
     setShowBookingOptions(false);
   };
 
@@ -176,20 +167,28 @@ const ReviewDetail = () => {
         {/* Main Content */}
         <div className="container mx-auto px-4 pt-24 pb-8">
           <Card className="bg-card border-2 border-primary shadow-[0_0_30px_rgba(255,215,0,0.5)] max-w-4xl mx-auto">
-            <CardHeader className="text-center space-y-4">
-              <h2 className="text-4xl font-extrabold text-primary tracking-wide">{review.title}</h2>
+            {/* 🎬 Glowing Cinematic Title */}
+            <CardHeader className="text-center space-y-4 relative overflow-hidden">
+              <h2
+                className="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text 
+                bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600 
+                tracking-widest drop-shadow-[0_0_25px_rgba(255,215,0,0.8)] animate-title-glow"
+              >
+                {review.title}
+              </h2>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-400/10 to-transparent blur-2xl opacity-60 animate-shine" />
             </CardHeader>
 
             <div className="px-6">
               <img
                 src={review.image}
                 alt={review.title}
-                className="w-full max-h-[500px] object-cover rounded-lg mb-6 border-2 border-primary/30"
+                className="w-full max-h-[500px] object-cover rounded-lg mb-6 border-2 border-primary/30 shadow-[0_0_40px_rgba(255,215,0,0.4)]"
               />
             </div>
 
             <CardContent className="space-y-6">
-              {/* Full Review */}
+              {/* 🧾 Review */}
               <div className="border-t border-primary/30 pt-4">
                 <div className="bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-lg p-4 mb-4 border-2 border-primary/50 shadow-[0_0_20px_rgba(255,215,0,0.3)]">
                   <h3 className="text-center font-bold text-primary text-xl">REVIEW</h3>
@@ -197,40 +196,29 @@ const ReviewDetail = () => {
                 <p className="text-base text-slate-50 font-bold leading-relaxed">{review.review}</p>
               </div>
 
-              <div className="space-y-4">
-                <div className="border-l-4 border-primary pl-4 py-2">
-                  <h4 className="text-primary font-bold text-lg mb-2">First Half:</h4>
-                  <p className="text-base text-slate-50 font-bold leading-relaxed">{review.firstHalf}</p>
+              {/* 💬 Full Review Parts */}
+              {[
+                ["First Half", review.firstHalf],
+                ["Second Half", review.secondHalf],
+                ["Positives", review.positives],
+                ["Negatives", review.negatives],
+                ["Overall", review.overall],
+              ].map(([title, text]) => (
+                <div key={title} className="border-l-4 border-primary pl-4 py-2">
+                  <h4 className="text-primary font-bold text-lg mb-2">{title}:</h4>
+                  <p className="text-base text-slate-50 font-bold leading-relaxed">{text}</p>
                 </div>
-
-                <div className="border-l-4 border-primary pl-4 py-2">
-                  <h4 className="text-primary font-bold text-lg mb-2">Second Half:</h4>
-                  <p className="text-base text-slate-50 font-bold leading-relaxed">{review.secondHalf}</p>
-                </div>
-
-                <div className="border-l-4 border-primary pl-4 py-2">
-                  <h4 className="text-primary font-bold text-lg mb-2">Positives:</h4>
-                  <p className="text-base text-slate-50 font-bold leading-relaxed">{review.positives}</p>
-                </div>
-
-                <div className="border-l-4 border-primary pl-4 py-2">
-                  <h4 className="text-primary font-bold text-lg mb-2">Negatives:</h4>
-                  <p className="text-base text-slate-50 font-bold leading-relaxed">{review.negatives}</p>
-                </div>
-
-                <div className="border-l-4 border-primary pl-4 py-2">
-                  <h4 className="text-primary font-bold text-lg mb-2">Overall:</h4>
-                  <p className="text-base text-slate-50 font-bold leading-relaxed">{review.overall}</p>
-                </div>
-              </div>
+              ))}
 
               {/* ❤️ Like / 💬 Comment / 📤 Share */}
-              <div className="flex justify-center gap-6 mt-6 relative">
+              <div className="flex justify-center gap-8 mt-8 relative">
                 <button
-                  onClick={() => handleLikeClick(review.id)}
+                  onClick={handleLikeClick}
                   className="flex items-center gap-2 text-red-500 font-bold hover:scale-110 transition-transform relative"
                 >
-                  <ThumbsUp className={`w-6 h-6 ${showLikeEffect ? "animate-like-pop" : ""}`} /> Like
+                  <ThumbsUp className={`w-6 h-6 ${showLikeEffect ? "animate-like-pop" : ""}`} />
+                  <span>Like</span>
+                  <span className="text-slate-200 text-sm">({likeCount})</span>
                   {showLikeEffect && (
                     <span className="absolute -top-6 text-red-400 font-bold animate-bubble">+1 ❤️</span>
                   )}
@@ -251,8 +239,8 @@ const ReviewDetail = () => {
                 </button>
               </div>
 
-              {/* 🎟️ Book Your Ticket */}
-              <div className="flex justify-center mt-6">
+              {/* 🎟️ Book Ticket Button */}
+              <div className="flex justify-center mt-8">
                 <Button
                   onClick={handleBookTicket}
                   className="bg-gradient-to-r from-red-600 to-yellow-400 text-white font-bold px-8 py-4 rounded-xl hover:scale-105 transition-transform shadow-lg"
@@ -261,7 +249,7 @@ const ReviewDetail = () => {
                 </Button>
               </div>
 
-              {/* Booking Options Popup */}
+              {/* Booking Modal */}
               {showBookingOptions && (
                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
                   <div className="bg-slate-900 border-2 border-yellow-400 rounded-2xl p-6 shadow-2xl max-w-md text-center space-y-4">
@@ -291,7 +279,7 @@ const ReviewDetail = () => {
                 </div>
               )}
 
-              {/* 🎤 Telugu Voice Reader + Comments */}
+              {/* 🎤 Telugu Voice Reader */}
               <TeluguVoiceReader
                 reviewText={`${review.title}. సమీక్ష: ${review.review}. మొదటి సగం: ${review.firstHalf}. రెండవ సగం: ${review.secondHalf}. సానుకూలాలు: ${review.positives}. ప్రతికూలాలు: ${review.negatives}. మొత్తం మీద: ${review.overall}. రేటింగ్: ${review.rating} స్టార్స్.`}
               />
@@ -318,7 +306,7 @@ const ReviewDetail = () => {
         </div>
       </div>
 
-      {/* ❤️ Like + Bubble Animations */}
+      {/* ✨ Animations */}
       <style>{`
         @keyframes like-pop {
           0% { transform: scale(1); filter: drop-shadow(0 0 0 red); }
@@ -334,6 +322,21 @@ const ReviewDetail = () => {
         }
         .animate-bubble {
           animation: bubble 0.8s ease-in-out;
+        }
+        @keyframes title-glow {
+          0%, 100% { text-shadow: 0 0 20px gold, 0 0 40px orange; }
+          50% { text-shadow: 0 0 35px yellow, 0 0 60px red; }
+        }
+        .animate-title-glow {
+          animation: title-glow 3s infinite alternate;
+        }
+        @keyframes shine {
+          0% { transform: translateX(-100%); opacity: 0.2; }
+          50% { transform: translateX(50%); opacity: 1; }
+          100% { transform: translateX(100%); opacity: 0; }
+        }
+        .animate-shine {
+          animation: shine 4s infinite linear;
         }
       `}</style>
     </>
