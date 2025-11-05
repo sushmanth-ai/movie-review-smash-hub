@@ -13,48 +13,53 @@ import { onSnapshot, doc, updateDoc, increment } from "firebase/firestore";
 import { db } from "@/utils/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { CurtainAnimation } from "@/components/CurtainAnimation";
-
 const ReviewDetail = () => {
-  const { id } = useParams();
+  const {
+    id
+  } = useParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   const [review, setReview] = useState(null);
   const [newComment, setNewComment] = useState("");
   const [showComments, setShowComments] = useState(false);
   const [viewCount, setViewCount] = useState(0);
   const [showBookingOptions, setShowBookingOptions] = useState(false);
   const [showLikeEffect, setShowLikeEffect] = useState(false);
-
-  const { loadLikes, loadComments, handleLike, handleComment, handleReply, likedReviews } =
-    useFirebaseOperations();
-
-  const setReviewFromList = (updater) => {
-    setReview((prev) => {
+  const {
+    loadLikes,
+    loadComments,
+    handleLike,
+    handleComment,
+    handleReply,
+    likedReviews
+  } = useFirebaseOperations();
+  const setReviewFromList = updater => {
+    setReview(prev => {
       const currentList = prev ? [prev] : [];
       const nextList = typeof updater === "function" ? updater(currentList) : updater;
       return nextList?.[0] ?? prev;
     });
   };
-
   const noopSetNewComment = () => {};
-
   useEffect(() => {
     if (!id) return;
     const trackView = async () => {
       if (db) {
         try {
           const reviewDoc = doc(db, "reviews", id);
-          await updateDoc(reviewDoc, { views: increment(1) });
+          await updateDoc(reviewDoc, {
+            views: increment(1)
+          });
         } catch (error) {
           console.log("View tracking error:", error);
         }
       }
     };
-
     if (db) {
       const reviewDoc = doc(db, "reviews", id);
-      const unsubscribe = onSnapshot(reviewDoc, (docSnap) => {
+      const unsubscribe = onSnapshot(reviewDoc, docSnap => {
         if (docSnap.exists()) {
           const data = docSnap.data();
           setViewCount(data.views || 0);
@@ -71,15 +76,19 @@ const ReviewDetail = () => {
             rating: data.rating,
             likes: 0,
             comments: [],
-            views: data.views || 0,
+            views: data.views || 0
           };
           setReview(firebaseReview);
           loadLikes(setReviewFromList);
           loadComments(setReviewFromList);
         } else {
-          const staticReview = movieReviewsData.find((r) => r.id === id);
+          const staticReview = movieReviewsData.find(r => r.id === id);
           if (staticReview) {
-            const reviewWithDefaults = { ...staticReview, likes: 0, comments: [] };
+            const reviewWithDefaults = {
+              ...staticReview,
+              likes: 0,
+              comments: []
+            };
             setReview(reviewWithDefaults);
             setViewCount(staticReview.views || 0);
             loadLikes(setReviewFromList);
@@ -87,28 +96,28 @@ const ReviewDetail = () => {
           }
         }
       });
-
       trackView();
       return () => unsubscribe();
     } else {
-      const staticReview = movieReviewsData.find((r) => r.id === id);
+      const staticReview = movieReviewsData.find(r => r.id === id);
       if (staticReview) {
-        setReview({ ...staticReview, likes: 0, comments: [] });
+        setReview({
+          ...staticReview,
+          likes: 0,
+          comments: []
+        });
         setViewCount(staticReview.views || 0);
       }
     }
   }, [id]);
-
   if (!review) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+    return <div className="min-h-screen bg-background flex items-center justify-center">
         <p className="text-primary text-xl">Loading review...</p>
-      </div>
-    );
+      </div>;
   }
 
   // ❤️ Like Animation Logic
-  const handleLikeClick = (reviewId) => {
+  const handleLikeClick = reviewId => {
     handleLike(reviewId, setReviewFromList);
     setShowLikeEffect(true);
     setTimeout(() => setShowLikeEffect(false), 800);
@@ -127,17 +136,27 @@ const ReviewDetail = () => {
       const shareData = {
         title: `SM Reviews: ${review.title}`,
         text: `${review.title} - Read the full review now on SM Reviews!`,
-        url: window.location.href,
+        url: window.location.href
       };
       if (navigator.share) {
         await navigator.share(shareData);
-        toast({ title: "Shared Successfully!", description: "Your friends can see this review now!" });
+        toast({
+          title: "Shared Successfully!",
+          description: "Your friends can see this review now!"
+        });
       } else {
         await navigator.clipboard.writeText(shareData.url);
-        toast({ title: "Link Copied!", description: "You can paste and share it anywhere." });
+        toast({
+          title: "Link Copied!",
+          description: "You can paste and share it anywhere."
+        });
       }
     } catch (error) {
-      toast({ title: "Share Failed", description: "Something went wrong. Try again!", variant: "destructive" });
+      toast({
+        title: "Share Failed",
+        description: "Something went wrong. Try again!",
+        variant: "destructive"
+      });
     }
   };
 
@@ -153,20 +172,13 @@ const ReviewDetail = () => {
     window.open("https://districtcinemas.com", "_blank");
     setShowBookingOptions(false);
   };
-
-  return (
-    <>
+  return <>
       <CurtainAnimation />
       <div className="min-h-screen bg-background">
         {/* Header */}
         <div className="fixed top-0 left-0 w-full z-50 p-4 shadow-[0_4px_20px_rgba(255,215,0,0.3)] border-b-2 border-primary bg-background">
           <div className="container mx-auto flex items-center gap-4">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => navigate("/")}
-              className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-            >
+            <Button variant="outline" size="icon" onClick={() => navigate("/")} className="border-primary text-primary hover:bg-primary hover:text-primary-foreground">
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <h1 className="text-xl font-bold text-primary">SM REVIEW 3.0</h1>
@@ -183,15 +195,11 @@ const ReviewDetail = () => {
             </div>
 
             <CardHeader className="text-center space-y-4 pt-10">
-              <h2 className="text-4xl font-extrabold text-primary tracking-wide">{review.title}</h2>
+              
             </CardHeader>
 
             <div className="px-6">
-              <img
-                src={review.image}
-                alt={review.title}
-                className="w-full max-h-[500px] object-cover rounded-lg mb-6 border-2 border-primary/30"
-              />
+              <img src={review.image} alt={review.title} className="w-full max-h-[500px] object-cover rounded-lg mb-6 border-2 border-primary/30" />
             </div>
 
             <CardContent className="space-y-6">
@@ -232,85 +240,49 @@ const ReviewDetail = () => {
 
               {/* ❤️ Like / 💬 Comment / 📤 Share */}
               <div className="flex justify-center gap-6 mt-6 relative">
-                <button
-                  onClick={() => handleLikeClick(review.id)}
-                  className="flex items-center gap-2 text-red-500 font-bold hover:scale-110 transition-transform relative"
-                >
+                <button onClick={() => handleLikeClick(review.id)} className="flex items-center gap-2 text-red-500 font-bold hover:scale-110 transition-transform relative">
                   <ThumbsUp className={`w-6 h-6 ${showLikeEffect ? "animate-like-pop" : ""}`} /> Like
-                  {showLikeEffect && (
-                    <span className="absolute -top-6 text-red-400 font-bold animate-bubble">+1 ❤️</span>
-                  )}
+                  {showLikeEffect && <span className="absolute -top-6 text-red-400 font-bold animate-bubble">+1 ❤️</span>}
                 </button>
 
-                <button
-                  onClick={() => setShowComments((prev) => !prev)}
-                  className="flex items-center gap-2 text-yellow-400 font-bold hover:scale-110 transition-transform"
-                >
+                <button onClick={() => setShowComments(prev => !prev)} className="flex items-center gap-2 text-yellow-400 font-bold hover:scale-110 transition-transform">
                   <MessageCircle className="w-6 h-6" /> Comment
                 </button>
 
-                <button
-                  onClick={handleShareClick}
-                  className="flex items-center gap-2 text-blue-400 font-bold hover:scale-110 transition-transform"
-                >
+                <button onClick={handleShareClick} className="flex items-center gap-2 text-blue-400 font-bold hover:scale-110 transition-transform">
                   <Share2 className="w-6 h-6" /> Share
                 </button>
               </div>
 
               {/* 🎟️ Book Your Ticket */}
               <div className="flex justify-center mt-6">
-                <Button
-                  onClick={handleBookTicket}
-                  className="bg-gradient-to-r from-red-600 to-yellow-400 text-white font-bold px-8 py-4 rounded-xl hover:scale-105 transition-transform shadow-lg"
-                >
+                <Button onClick={handleBookTicket} className="bg-gradient-to-r from-red-600 to-yellow-400 text-white font-bold px-8 py-4 rounded-xl hover:scale-105 transition-transform shadow-lg">
                   🎟️ Book Your Ticket
                 </Button>
               </div>
 
               {/* Booking Options Popup */}
-              {showBookingOptions && (
-                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+              {showBookingOptions && <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
                   <div className="bg-slate-900 border-2 border-yellow-400 rounded-2xl p-6 shadow-2xl max-w-md text-center space-y-4">
                     <h3 className="text-2xl text-yellow-400 font-bold mb-2">Choose Your Platform</h3>
                     <div className="flex flex-col gap-4">
-                      <Button
-                        onClick={handleOpenBookMyShow}
-                        className="bg-gradient-to-r from-red-600 to-yellow-400 text-white font-bold py-3 rounded-xl hover:scale-105 transition-transform"
-                      >
+                      <Button onClick={handleOpenBookMyShow} className="bg-gradient-to-r from-red-600 to-yellow-400 text-white font-bold py-3 rounded-xl hover:scale-105 transition-transform">
                         🎫 Book via BookMyShow
                       </Button>
-                      <Button
-                        onClick={handleOpenDistrictApp}
-                        className="bg-gradient-to-r from-purple-600 to-pink-400 text-white font-bold py-3 rounded-xl hover:scale-105 transition-transform"
-                      >
+                      <Button onClick={handleOpenDistrictApp} className="bg-gradient-to-r from-purple-600 to-pink-400 text-white font-bold py-3 rounded-xl hover:scale-105 transition-transform">
                         🏛️ Book via District App
                       </Button>
-                      <Button
-                        onClick={() => setShowBookingOptions(false)}
-                        variant="outline"
-                        className="border-yellow-400 text-yellow-400 font-bold"
-                      >
+                      <Button onClick={() => setShowBookingOptions(false)} variant="outline" className="border-yellow-400 text-yellow-400 font-bold">
                         Cancel
                       </Button>
                     </div>
                   </div>
-                </div>
-              )}
+                </div>}
 
               {/* 🎤 Telugu Voice Reader + Comments */}
-              <TeluguVoiceReader
-                reviewText={`${review.title}. సమీక్ష: ${review.review}. మొదటి సగం: ${review.firstHalf}. రెండవ సగం: ${review.secondHalf}. సానుకూలాలు: ${review.positives}. ప్రతికూలాలు: ${review.negatives}. మొత్తం మీద: ${review.overall}. రేటింగ్: ${review.rating} స్టార్స్.`}
-              />
+              <TeluguVoiceReader reviewText={`${review.title}. సమీక్ష: ${review.review}. మొదటి సగం: ${review.firstHalf}. రెండవ సగం: ${review.secondHalf}. సానుకూలాలు: ${review.positives}. ప్రతికూలాలు: ${review.negatives}. మొత్తం మీద: ${review.overall}. రేటింగ్: ${review.rating} స్టార్స్.`} />
 
-              {showComments && (
-                <CommentSection
-                  review={review}
-                  newComment={newComment}
-                  onCommentChange={setNewComment}
-                  onCommentSubmit={handleCommentSubmit}
-                  onReplySubmit={() => {}}
-                />
-              )}
+              {showComments && <CommentSection review={review} newComment={newComment} onCommentChange={setNewComment} onCommentSubmit={handleCommentSubmit} onReplySubmit={() => {}} />}
             </CardContent>
           </Card>
 
@@ -342,8 +314,6 @@ const ReviewDetail = () => {
           animation: bubble 0.8s ease-in-out;
         }
       `}</style>
-    </>
-  );
+    </>;
 };
-
 export default ReviewDetail;
