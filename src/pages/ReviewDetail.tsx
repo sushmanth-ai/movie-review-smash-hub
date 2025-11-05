@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-react';
 import { MovieReview } from '@/data/movieReviews';
 import { movieReviewsData } from '@/data/movieReviews';
@@ -10,7 +10,7 @@ import { CommentSection } from '@/components/CommentSection';
 import { ThreeDRatingMeter } from '@/components/ThreeDRatingMeter';
 import { TeluguVoiceReader } from '@/components/TeluguVoiceReader';
 import { useFirebaseOperations } from '@/hooks/useFirebaseOperations';
-import { collection, onSnapshot, query, orderBy, doc, getDoc, updateDoc, increment } from 'firebase/firestore';
+import { onSnapshot, doc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '@/utils/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { CurtainAnimation } from '@/components/CurtainAnimation';
@@ -19,11 +19,11 @@ const ReviewDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+
   const [review, setReview] = useState<MovieReview | null>(null);
   const [newComment, setNewComment] = useState('');
   const [showComments, setShowComments] = useState(false);
   const [viewCount, setViewCount] = useState(0);
-  const [isReading, setIsReading] = useState(false);
 
   const { loadLikes, loadComments, handleLike, handleComment, handleReply, handleShare, likedReviews } = useFirebaseOperations();
 
@@ -118,18 +118,33 @@ const ReviewDetail = () => {
     handleReply(review.id, commentId, replyText, setReviewFromList);
   };
 
-  // 🆕 BookMyShow Redirect Handler
+  // 🎟️ Book Ticket Button Logic (City or Platform Only)
   const handleBookTicket = () => {
-    const movieName = review.title.toLowerCase().replace(/\s+/g, '-');
-    const city = 'hyderabad'; // optional: can later detect automatically
-    const bookUrl = `https://in.bookmyshow.com/${city}/movies/${movieName}`;
-    window.open(bookUrl, '_blank');
+    const userCity = "hyderabad"; // You can make this dynamic later
+    const preferredPlatform = "bookmyshow"; // or "paytm", "pvr", "local"
+
+    let bookingUrl = "";
+
+    if (preferredPlatform === "bookmyshow") {
+      bookingUrl = `https://in.bookmyshow.com/${userCity}`;
+    } else if (preferredPlatform === "paytm") {
+      bookingUrl = `https://paytm.com/movies/${userCity}`;
+    } else if (preferredPlatform === "pvr") {
+      bookingUrl = `https://www.pvrcinemas.com/`;
+    } else if (preferredPlatform === "local") {
+      bookingUrl = `https://exampledistrictcinemas.com/${userCity}`;
+    } else {
+      bookingUrl = `https://in.bookmyshow.com/`;
+    }
+
+    window.open(bookingUrl, "_blank");
   };
 
   return (
     <>
       <CurtainAnimation />
       <div className="min-h-screen bg-background">
+        {/* Header */}
         <div className="fixed top-0 left-0 w-full z-50 p-4 shadow-[0_4px_20px_rgba(255,215,0,0.3)] border-b-2 border-primary bg-background">
           <div className="container mx-auto flex items-center gap-4">
             <Button
@@ -144,6 +159,7 @@ const ReviewDetail = () => {
           </div>
         </div>
 
+        {/* Main Content */}
         <div className="container mx-auto px-4 pt-24 pb-8">
           <Card className="bg-card border-2 border-primary shadow-[0_0_30px_rgba(255,215,0,0.5)] max-w-4xl mx-auto">
             <CardHeader className="text-center space-y-4">
@@ -159,7 +175,6 @@ const ReviewDetail = () => {
             </div>
 
             <CardContent className="space-y-6">
-              {/* Review Text */}
               <div className="border-t border-primary/30 pt-4">
                 <div className="bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-lg p-4 mb-4 border-2 border-primary/50 shadow-[0_0_20px_rgba(255,215,0,0.3)]">
                   <h3 className="text-center font-bold text-primary text-xl">REVIEW</h3>
@@ -167,16 +182,15 @@ const ReviewDetail = () => {
                 <p className="text-base text-slate-50 font-bold leading-relaxed">{review.review}</p>
               </div>
 
-              {/* Other Details */}
               <div className="space-y-4">
                 <div className="border-l-4 border-primary pl-4 py-2">
                   <h4 className="text-primary font-bold text-lg mb-2">First Half:</h4>
-                  <p className="text-base font-bold text-slate-50 leading-relaxed">{review.firstHalf}</p>
+                  <p className="text-base text-slate-50 font-bold leading-relaxed">{review.firstHalf}</p>
                 </div>
 
                 <div className="border-l-4 border-primary pl-4 py-2">
                   <h4 className="text-primary font-bold text-lg mb-2">Second Half:</h4>
-                  <p className="text-base font-bold text-slate-50 font-bold leading-relaxed">{review.secondHalf}</p>
+                  <p className="text-base text-slate-50 font-bold leading-relaxed">{review.secondHalf}</p>
                 </div>
 
                 <div className="border-l-4 border-primary pl-4 py-2">
@@ -195,7 +209,7 @@ const ReviewDetail = () => {
                 </div>
               </div>
 
-              {/* Buttons */}
+              {/* Buttons Section */}
               <div className="flex flex-col items-center gap-4">
                 <InteractionButtons
                   review={review}
@@ -214,7 +228,7 @@ const ReviewDetail = () => {
                 </Button>
               </div>
 
-              {/* Voice Reader + Comments */}
+              {/* Telugu Voice Reader */}
               <TeluguVoiceReader
                 reviewText={`${review.title}. సమీక్ష: ${review.review}. మొదటి సగం: ${review.firstHalf}. రెండవ సగం: ${review.secondHalf}. సానుకూలాలు: ${review.positives}. ప్రతికూలాలు: ${review.negatives}. మొత్తం మీద: ${review.overall}. రేటింగ్: ${review.rating} స్టార్స్.`}
               />
