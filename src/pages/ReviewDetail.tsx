@@ -13,6 +13,7 @@ import { useFirebaseOperations } from '@/hooks/useFirebaseOperations';
 import { collection, onSnapshot, query, orderBy, doc, getDoc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '@/utils/firebase';
 import { useToast } from '@/hooks/use-toast';
+import { CurtainAnimation } from '@/components/CurtainAnimation';
 const ReviewDetail = () => {
   const {
     id
@@ -227,7 +228,9 @@ const ReviewDetail = () => {
       });
     }
   };
-  return <div className="min-h-screen bg-background">
+  return <>
+    <CurtainAnimation />
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="fixed top-0 left-0 w-full z-50 p-4 shadow-[0_4px_20px_rgba(255,215,0,0.3)] border-b-2 border-primary bg-background">
         <div className="container mx-auto flex items-center gap-4">
@@ -307,6 +310,7 @@ const ReviewDetail = () => {
           </div>
         </Card>
       </div>
-    </div>;
+    </div>
+  </>;
 };
 export default ReviewDetail;

@@ -13,15 +13,7 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [ready, setReady] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const { toast } = useToast();
-
-  // ✅ Detect mobile device (Android/iOS/iPad)
-  useEffect(() => {
-    const ua = navigator.userAgent || navigator.vendor || (window as any).opera;
-    const mobileCheck = /android|iphone|ipad|ipod|mobile/i.test(ua);
-    setIsMobile(mobileCheck);
-  }, []);
 
   const initVoices = () => {
     const synth = window.speechSynthesis;
@@ -123,25 +115,22 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
 
   return (
     <div className="flex justify-center mt-6">
-      {/* ✅ Hide only the Read Review button on mobile */}
-      {!isMobile && (
-        <Button
-          onClick={handleSpeech}
-          className="relative bg-gradient-to-r from-primary via-yellow-500 to-primary text-primary-foreground font-bold text-lg px-8 py-6 rounded-full shadow-[0_0_30px_rgba(255,215,0,0.6)] hover:shadow-[0_0_40px_rgba(255,215,0,0.8)] hover:scale-105 transition-all duration-300 border-2 border-primary/50"
-        >
-          {isSpeaking ? (
-            <>
-              <VolumeX className="w-6 h-6 mr-2" />
-              <span>🛑 Stop Voice</span>
-            </>
-          ) : (
-            <>
-              <Volume2 className="w-6 h-6 mr-2" />
-              <span>🔊 Read Review</span>
-            </>
-          )}
-        </Button>
-      )}
+      <Button
+        onClick={handleSpeech}
+        className="relative bg-gradient-to-r from-primary via-yellow-500 to-primary text-primary-foreground font-bold text-lg px-8 py-6 rounded-full shadow-[0_0_30px_rgba(255,215,0,0.6)] hover:shadow-[0_0_40px_rgba(255,215,0,0.8)] hover:scale-105 transition-all duration-300 border-2 border-primary/50"
+      >
+        {isSpeaking ? (
+          <>
+            <VolumeX className="w-6 h-6 mr-2" />
+            <span>🛑 Stop Voice</span>
+          </>
+        ) : (
+          <>
+            <Volume2 className="w-6 h-6 mr-2" />
+            <span>🔊 Read Review</span>
+          </>
+        )}
+      </Button>
     </div>
   );
 };
