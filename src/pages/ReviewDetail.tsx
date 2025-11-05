@@ -150,7 +150,7 @@ const ReviewDetail = () => {
     setShowBookingOptions(false);
   };
   const handleOpenDistrictApp = () => {
-    window.open("https://districtcinemas.com", "_blank"); // your district home page
+    window.open("https://districtcinemas.com", "_blank");
     setShowBookingOptions(false);
   };
 
@@ -175,13 +175,16 @@ const ReviewDetail = () => {
 
         {/* Main Content */}
         <div className="container mx-auto px-4 pt-24 pb-8">
-
-         {/* 🏷️ Curved Title Box */}
-          <div className="relative flex justify-center mt-[-30px]">
-            <div className="bg-gradient-to-r from-yellow-400 to-red-500 text-white font-extrabold text-2xl px-8 py-3 rounded-b-3xl shadow-[0_4px_20px_rgba(255,215,0,0.6)] border-t-4 border-yellow-300">
+          <Card className="bg-card border-2 border-primary shadow-[0_0_30px_rgba(255,215,0,0.5)] max-w-4xl mx-auto relative">
+            
+            {/* 🔥 New Title Box */}
+            <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-yellow-400 text-black font-extrabold text-xl px-6 py-2 rounded-b-2xl border-2 border-primary shadow-[0_4px_10px_rgba(255,215,0,0.5)]">
               {review.title}
             </div>
-          </div>
+
+            <CardHeader className="text-center space-y-4 pt-10">
+              <h2 className="text-4xl font-extrabold text-primary tracking-wide">{review.title}</h2>
+            </CardHeader>
 
             <div className="px-6">
               <img
