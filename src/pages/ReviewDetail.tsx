@@ -26,8 +26,7 @@ const ReviewDetail = () => {
   const [showBookingOptions, setShowBookingOptions] = useState(false);
   const [showLikeEffect, setShowLikeEffect] = useState(false);
 
-  const { loadLikes, loadComments, handleLike, handleComment, handleReply } =
-    useFirebaseOperations();
+  const { loadLikes, loadComments, handleLike, handleComment } = useFirebaseOperations();
 
   const setReviewFromList = (updater) => {
     setReview((prev) => {
@@ -128,16 +127,10 @@ const ReviewDetail = () => {
       };
       if (navigator.share) {
         await navigator.share(shareData);
-        toast({
-          title: "Shared Successfully!",
-          description: "Your friends can see this review now!",
-        });
+        toast({ title: "Shared Successfully!", description: "Your friends can see this review now!" });
       } else {
         await navigator.clipboard.writeText(shareData.url);
-        toast({
-          title: "Link Copied!",
-          description: "You can paste and share it anywhere.",
-        });
+        toast({ title: "Link Copied!", description: "You can paste and share it anywhere." });
       }
     } catch (error) {
       toast({
@@ -180,15 +173,16 @@ const ReviewDetail = () => {
         </div>
 
         {/* Main Content */}
-        <div className="container mx-auto px-4 pt-24 pb-8 relative">
-          
-          {/* 🔥 Title Box OUTSIDE Card */}
-          <div className="absolute left-1/2 -translate-x-1/2 -top-3 z-20 bg-yellow-400 text-black font-extrabold text-xl px-6 py-2 rounded-b-2xl border-2 border-primary shadow-[0_4px_10px_rgba(255,215,0,0.5)]">
-            {review.title}
-          </div>
+        <div className="container mx-auto px-4 pt-24 pb-8">
+          {/* 🎬 Main Review Card */}
+          <Card className="relative bg-card border-2 border-primary shadow-[0_0_30px_rgba(255,215,0,0.5)] max-w-4xl mx-auto">
 
-          <Card className="bg-card border-2 border-primary shadow-[0_0_30px_rgba(255,215,0,0.5)] max-w-4xl mx-auto mt-6">
-            <CardHeader className="text-center space-y-4 pt-10"></CardHeader>
+            {/* 🟨 Title box attached to main card border */}
+            <div className="absolute left-1/2 -translate-x-1/2 -top-[1.4rem] bg-yellow-400 text-black font-extrabold text-lg px-6 py-1 rounded-b-2xl border-x-2 border-b-2 border-primary shadow-[0_4px_10px_rgba(255,215,0,0.4)]">
+              {review.title}
+            </div>
+
+            <CardHeader className="text-center pt-10"></CardHeader>
 
             <div className="px-6">
               <img
@@ -245,6 +239,7 @@ const ReviewDetail = () => {
                 </div>
               </div>
 
+              {/* ❤️ Like / 💬 Comment / 📤 Share */}
               <div className="flex justify-center gap-6 mt-6 relative">
                 <button
                   onClick={() => handleLikeClick(review.id)}
@@ -276,6 +271,7 @@ const ReviewDetail = () => {
                 </button>
               </div>
 
+              {/* 🎟️ Book Your Ticket */}
               <div className="flex justify-center mt-6">
                 <Button
                   onClick={handleBookTicket}
@@ -285,37 +281,7 @@ const ReviewDetail = () => {
                 </Button>
               </div>
 
-              {showBookingOptions && (
-                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-                  <div className="bg-slate-900 border-2 border-yellow-400 rounded-2xl p-6 shadow-2xl max-w-md text-center space-y-4">
-                    <h3 className="text-2xl text-yellow-400 font-bold mb-2">
-                      Choose Your Platform
-                    </h3>
-                    <div className="flex flex-col gap-4">
-                      <Button
-                        onClick={handleOpenBookMyShow}
-                        className="bg-gradient-to-r from-red-600 to-yellow-400 text-white font-bold py-3 rounded-xl hover:scale-105 transition-transform"
-                      >
-                        🎫 Book via BookMyShow
-                      </Button>
-                      <Button
-                        onClick={handleOpenDistrictApp}
-                        className="bg-gradient-to-r from-purple-600 to-pink-400 text-white font-bold py-3 rounded-xl hover:scale-105 transition-transform"
-                      >
-                        🏛️ Book via District App
-                      </Button>
-                      <Button
-                        onClick={() => setShowBookingOptions(false)}
-                        variant="outline"
-                        className="border-yellow-400 text-yellow-400 font-bold"
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
+              {/* Telugu Voice + Comments */}
               <TeluguVoiceReader
                 reviewText={`${review.title}. సమీక్ష: ${review.review}. మొదటి సగం: ${review.firstHalf}. రెండవ సగం: ${review.secondHalf}. సానుకూలాలు: ${review.positives}. ప్రతికూలాలు: ${review.negatives}. మొత్తం మీద: ${review.overall}. రేటింగ్: ${review.rating} స్టార్స్.`}
               />
@@ -332,11 +298,10 @@ const ReviewDetail = () => {
             </CardContent>
           </Card>
 
+          {/* Rating Meter */}
           <Card className="bg-slate-100 border-2 border-primary shadow-[0_0_30px_rgba(255,215,0,0.5)] max-w-sm mx-auto mt-6 p-8">
             <div className="flex flex-col items-center gap-4">
-              <h3 className="text-2xl text-center text-slate-900 font-extrabold">
-                RATING METER
-              </h3>
+              <h3 className="text-2xl text-center text-slate-900 font-extrabold">RATING METER</h3>
               <ThreeDRatingMeter rating={parseFloat(review.rating)} size={160} />
             </div>
           </Card>
