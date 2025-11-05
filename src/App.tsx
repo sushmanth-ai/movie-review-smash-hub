@@ -9,11 +9,8 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import ReviewDetail from "./pages/ReviewDetail";
 import Footer from "./components/Footer";
-
 const queryClient = new QueryClient();
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
+const App = () => <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -29,11 +26,9 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
-          <Footer />
+          
         </div>
       </BrowserRouter>
     </TooltipProvider>
-  </QueryClientProvider>
-);
-
+  </QueryClientProvider>;
 export default App;
