@@ -8,7 +8,6 @@ import { movieReviewsData } from "@/data/movieReviews";
 import { CommentSection } from "@/components/CommentSection";
 import { ThreeDRatingMeter } from "@/components/ThreeDRatingMeter";
 import { TeluguVoiceReader } from "@/components/TeluguVoiceReader";
-import { useFirebaseOperations } from "@/hooks/useFirebaseOperations";
 import { onSnapshot, doc, updateDoc, increment } from "firebase/firestore";
 import { db } from "@/utils/firebase";
 import { useToast } from "@/hooks/use-toast";
@@ -26,21 +25,14 @@ const ReviewDetail = () => {
   const [showBookingOptions, setShowBookingOptions] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [showLikeEffect, setShowLikeEffect] = useState(false);
-
-  const { loadLikes, loadComments, handleComment, handleReply } = useFirebaseOperations();
-
-  const setReviewFromList = (updater) => {
-    setReview((prev) => {
-      const currentList = prev ? [prev] : [];
-      const nextList = typeof updater === "function" ? updater(currentList) : updater;
-      return nextList?.[0] ?? prev;
-    });
-  };
-
-  const noopSetNewComment = () => {};
+  const [hasLiked, setHasLiked] = useState(false);
 
   useEffect(() => {
     if (!id) return;
+
+    // Check local storage if user already liked
+    const likedKey = `liked_${id}`;
+    if (localStorage.getItem(likedKey)) setHasLiked(true);
 
     const trackView = async () => {
       if (db) {
@@ -60,23 +52,13 @@ const ReviewDetail = () => {
           const data = docSnap.data();
           setViewCount(data.views || 0);
           setLikeCount(data.likes || 0);
-          const firebaseReview = {
+          setReview({
             id: docSnap.id,
-            title: data.title,
-            image: data.image,
-            review: data.review,
-            firstHalf: data.firstHalf,
-            secondHalf: data.secondHalf,
-            positives: data.positives,
-            negatives: data.negatives,
-            overall: data.overall,
-            rating: data.rating,
-            likes: data.likes || 0,
-            comments: [],
-            views: data.views || 0,
-          };
-          setReview(firebaseReview);
-          loadComments(setReviewFromList);
+            ...data,
+          });
+        } else {
+          const staticReview = movieReviewsData.find((r) => r.id === id);
+          if (staticReview) setReview(staticReview);
         }
       });
 
@@ -93,28 +75,34 @@ const ReviewDetail = () => {
     );
   }
 
-  // ❤️ Like with animation & count
+  // ❤️ Like Button (tap once only)
   const handleLikeClick = async () => {
-    if (!review) return;
+    const likedKey = `liked_${id}`;
+    if (hasLiked || localStorage.getItem(likedKey)) {
+      // Already liked: show a small animation feedback only
+      setShowLikeEffect(true);
+      setTimeout(() => setShowLikeEffect(false), 500);
+      toast({
+        title: "Already Liked ❤️",
+        description: "You can like only once per review.",
+      });
+      return;
+    }
+
     try {
       const reviewRef = doc(db, "reviews", review.id);
       await updateDoc(reviewRef, { likes: increment(1) });
       setLikeCount((prev) => prev + 1);
       setShowLikeEffect(true);
+      setHasLiked(true);
+      localStorage.setItem(likedKey, "true");
       setTimeout(() => setShowLikeEffect(false), 800);
     } catch (error) {
       console.log("Like failed:", error);
     }
   };
 
-  // 💬 Comment
-  const handleCommentSubmit = () => {
-    if (!review || !newComment.trim()) return;
-    handleComment(review.id, newComment, setReviewFromList, noopSetNewComment);
-    setNewComment("");
-  };
-
-  // 📤 Share button functionality
+  // 📤 Share
   const handleShareClick = async () => {
     try {
       const shareData = {
@@ -141,7 +129,7 @@ const ReviewDetail = () => {
     setShowBookingOptions(false);
   };
   const handleOpenDistrictApp = () => {
-    window.open("https://www.district.in/", "_blank"); // ✅ Official District site
+    window.open("https://www.district.in/", "_blank");
     setShowBookingOptions(false);
   };
 
@@ -167,7 +155,7 @@ const ReviewDetail = () => {
         {/* Main Content */}
         <div className="container mx-auto px-4 pt-24 pb-8">
           <Card className="bg-card border-2 border-primary shadow-[0_0_30px_rgba(255,215,0,0.5)] max-w-4xl mx-auto">
-            {/* 🎬 Glowing Cinematic Title */}
+            {/* 🎬 Title */}
             <CardHeader className="text-center space-y-4 relative overflow-hidden">
               <h2
                 className="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text 
@@ -188,7 +176,6 @@ const ReviewDetail = () => {
             </div>
 
             <CardContent className="space-y-6">
-              {/* 🧾 Review */}
               <div className="border-t border-primary/30 pt-4">
                 <div className="bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-lg p-4 mb-4 border-2 border-primary/50 shadow-[0_0_20px_rgba(255,215,0,0.3)]">
                   <h3 className="text-center font-bold text-primary text-xl">REVIEW</h3>
@@ -196,28 +183,17 @@ const ReviewDetail = () => {
                 <p className="text-base text-slate-50 font-bold leading-relaxed">{review.review}</p>
               </div>
 
-              {/* 💬 Full Review Parts */}
-              {[
-                ["First Half", review.firstHalf],
-                ["Second Half", review.secondHalf],
-                ["Positives", review.positives],
-                ["Negatives", review.negatives],
-                ["Overall", review.overall],
-              ].map(([title, text]) => (
-                <div key={title} className="border-l-4 border-primary pl-4 py-2">
-                  <h4 className="text-primary font-bold text-lg mb-2">{title}:</h4>
-                  <p className="text-base text-slate-50 font-bold leading-relaxed">{text}</p>
-                </div>
-              ))}
-
               {/* ❤️ Like / 💬 Comment / 📤 Share */}
               <div className="flex justify-center gap-8 mt-8 relative">
                 <button
                   onClick={handleLikeClick}
-                  className="flex items-center gap-2 text-red-500 font-bold hover:scale-110 transition-transform relative"
+                  disabled={hasLiked}
+                  className={`flex items-center gap-2 font-bold hover:scale-110 transition-transform relative ${
+                    hasLiked ? "text-red-400 cursor-not-allowed" : "text-red-500"
+                  }`}
                 >
                   <ThumbsUp className={`w-6 h-6 ${showLikeEffect ? "animate-like-pop" : ""}`} />
-                  <span>Like</span>
+                  <span>{hasLiked ? "Liked" : "Like"}</span>
                   <span className="text-slate-200 text-sm">({likeCount})</span>
                   {showLikeEffect && (
                     <span className="absolute -top-6 text-red-400 font-bold animate-bubble">+1 ❤️</span>
@@ -239,7 +215,7 @@ const ReviewDetail = () => {
                 </button>
               </div>
 
-              {/* 🎟️ Book Ticket Button */}
+              {/* 🎟️ Book Ticket */}
               <div className="flex justify-center mt-8">
                 <Button
                   onClick={handleBookTicket}
@@ -278,30 +254,7 @@ const ReviewDetail = () => {
                   </div>
                 </div>
               )}
-
-              {/* 🎤 Telugu Voice Reader */}
-              <TeluguVoiceReader
-                reviewText={`${review.title}. సమీక్ష: ${review.review}. మొదటి సగం: ${review.firstHalf}. రెండవ సగం: ${review.secondHalf}. సానుకూలాలు: ${review.positives}. ప్రతికూలాలు: ${review.negatives}. మొత్తం మీద: ${review.overall}. రేటింగ్: ${review.rating} స్టార్స్.`}
-              />
-
-              {showComments && (
-                <CommentSection
-                  review={review}
-                  newComment={newComment}
-                  onCommentChange={setNewComment}
-                  onCommentSubmit={handleCommentSubmit}
-                  onReplySubmit={() => {}}
-                />
-              )}
             </CardContent>
-          </Card>
-
-          {/* Rating Meter */}
-          <Card className="bg-slate-100 border-2 border-primary shadow-[0_0_30px_rgba(255,215,0,0.5)] max-w-sm mx-auto mt-6 p-8">
-            <div className="flex flex-col items-center gap-4">
-              <h3 className="text-2xl text-center text-slate-900 font-extrabold">RATING METER</h3>
-              <ThreeDRatingMeter rating={parseFloat(review.rating)} size={160} />
-            </div>
           </Card>
         </div>
       </div>
