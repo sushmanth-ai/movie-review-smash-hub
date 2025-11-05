@@ -138,6 +138,10 @@ const Index = () => {
     handleComment(reviewId, commentText, setReviews, () => {});
   };
   const filteredReviews = reviews.filter(review => review.title.toLowerCase().includes(searchTerm.toLowerCase()) || review.review.toLowerCase().includes(searchTerm.toLowerCase()));
+  
+  // Categorize reviews (first 5 as new, rest as old)
+  const newReviews = filteredReviews.slice(0, 5);
+  const oldReviews = filteredReviews.slice(5);
   return <>
       <CurtainAnimation />
       <div className="min-h-screen bg-background">
@@ -168,10 +172,66 @@ const Index = () => {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 pt-0 pb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredReviews.map(review => <div key={review.id} id={`review-${review.id}`}>
-              <MovieCard review={review} />
-            </div>)}
+        {/* New Reviews Section */}
+        {newReviews.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-3xl font-bold text-primary mb-6 text-center">
+              🎬 New Reviews
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {newReviews.map(review => (
+                <div key={review.id} id={`review-${review.id}`}>
+                  <MovieCard review={review} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Old Reviews Section */}
+        {oldReviews.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-3xl font-bold text-primary mb-6 text-center">
+              📽️ Old Reviews
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {oldReviews.map(review => (
+                <div key={review.id} id={`review-${review.id}`}>
+                  <MovieCard review={review} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Contact Support Section */}
+        <div className="mt-16 mb-8">
+          <h2 className="text-3xl font-bold text-primary mb-8 text-center">
+            📞 Contact Us
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+            {/* Email Support */}
+            <a
+              href="mailto:support@smreviews.com"
+              className="bg-card border-2 border-primary p-6 rounded-lg shadow-[0_0_20px_rgba(255,215,0,0.3)] hover:shadow-[0_0_30px_rgba(255,215,0,0.5)] transition-all duration-300 flex flex-col items-center gap-4"
+            >
+              <div className="text-5xl">📧</div>
+              <h3 className="text-xl font-bold text-primary">Email Support</h3>
+              <p className="text-muted-foreground text-center">support@smreviews.com</p>
+            </a>
+
+            {/* WhatsApp Support */}
+            <a
+              href="https://wa.me/919876543210"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-card border-2 border-primary p-6 rounded-lg shadow-[0_0_20px_rgba(255,215,0,0.3)] hover:shadow-[0_0_30px_rgba(255,215,0,0.5)] transition-all duration-300 flex flex-col items-center gap-4"
+            >
+              <div className="text-5xl">💬</div>
+              <h3 className="text-xl font-bold text-primary">WhatsApp Chat</h3>
+              <p className="text-muted-foreground text-center">Chat with us instantly</p>
+            </a>
+          </div>
         </div>
       </div>
     </div>
