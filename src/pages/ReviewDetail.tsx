@@ -106,7 +106,7 @@ const ReviewDetail = () => {
     );
   }
 
-  // 🧡 Animated Like, Comment, Share Buttons
+  // 🔥 Animated Like Button
   const handleLikeClick = (reviewId) => {
     handleLike(reviewId, setReviewFromList);
     const likeButton = document.getElementById("like-btn");
@@ -121,12 +121,13 @@ const ReviewDetail = () => {
     handleComment(review.id, newComment, setReviewFromList, noopSetNewComment);
     setNewComment("");
   };
+
   const handleReplySubmit = (commentId, replyText) => {
     if (!review || !replyText.trim()) return;
     handleReply(review.id, commentId, replyText, setReviewFromList);
   };
 
-  // 🎟️ Ticket Booking Options
+  // 🎟️ Booking Options Modal
   const handleBookTicket = () => {
     setShowBookingOptions(true);
   };
@@ -160,7 +161,7 @@ const ReviewDetail = () => {
           </div>
         </div>
 
-        {/* Main Content */}
+        {/* Main Review Content */}
         <div className="container mx-auto px-4 pt-24 pb-8">
           <Card className="bg-card border-2 border-primary shadow-[0_0_30px_rgba(255,215,0,0.5)] max-w-4xl mx-auto">
             <CardHeader className="text-center space-y-4">
@@ -176,6 +177,7 @@ const ReviewDetail = () => {
             </div>
 
             <CardContent className="space-y-6">
+              {/* 🧾 Full Review Text */}
               <div className="border-t border-primary/30 pt-4">
                 <div className="bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-lg p-4 mb-4 border-2 border-primary/50 shadow-[0_0_20px_rgba(255,215,0,0.3)]">
                   <h3 className="text-center font-bold text-primary text-xl">REVIEW</h3>
@@ -183,7 +185,34 @@ const ReviewDetail = () => {
                 <p className="text-base text-slate-50 font-bold leading-relaxed">{review.review}</p>
               </div>
 
-              {/* 🔥 Animated Buttons */}
+              <div className="space-y-4">
+                <div className="border-l-4 border-primary pl-4 py-2">
+                  <h4 className="text-primary font-bold text-lg mb-2">First Half:</h4>
+                  <p className="text-base text-slate-50 font-bold leading-relaxed">{review.firstHalf}</p>
+                </div>
+
+                <div className="border-l-4 border-primary pl-4 py-2">
+                  <h4 className="text-primary font-bold text-lg mb-2">Second Half:</h4>
+                  <p className="text-base text-slate-50 font-bold leading-relaxed">{review.secondHalf}</p>
+                </div>
+
+                <div className="border-l-4 border-primary pl-4 py-2">
+                  <h4 className="text-primary font-bold text-lg mb-2">Positives:</h4>
+                  <p className="text-base text-slate-50 font-bold leading-relaxed">{review.positives}</p>
+                </div>
+
+                <div className="border-l-4 border-primary pl-4 py-2">
+                  <h4 className="text-primary font-bold text-lg mb-2">Negatives:</h4>
+                  <p className="text-base text-slate-50 font-bold leading-relaxed">{review.negatives}</p>
+                </div>
+
+                <div className="border-l-4 border-primary pl-4 py-2">
+                  <h4 className="text-primary font-bold text-lg mb-2">Overall:</h4>
+                  <p className="text-base text-slate-50 font-bold leading-relaxed">{review.overall}</p>
+                </div>
+              </div>
+
+              {/* ❤️ Animated Like / Comment / Share */}
               <div className="flex justify-center gap-6 mt-6">
                 <button
                   id="like-btn"
@@ -208,7 +237,7 @@ const ReviewDetail = () => {
                 </button>
               </div>
 
-              {/* 🎟️ Book Ticket Button */}
+              {/* 🎟️ Book Ticket */}
               <div className="flex justify-center mt-6">
                 <Button
                   onClick={handleBookTicket}
@@ -218,7 +247,7 @@ const ReviewDetail = () => {
                 </Button>
               </div>
 
-              {/* Popup Modal for Booking Options */}
+              {/* Popup for Booking Options */}
               {showBookingOptions && (
                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
                   <div className="bg-slate-900 border-2 border-yellow-400 rounded-2xl p-6 shadow-2xl max-w-md text-center space-y-4">
@@ -248,7 +277,7 @@ const ReviewDetail = () => {
                 </div>
               )}
 
-              {/* Telugu Voice Reader */}
+              {/* 🎤 Voice Reader + Comments */}
               <TeluguVoiceReader
                 reviewText={`${review.title}. సమీక్ష: ${review.review}. మొదటి సగం: ${review.firstHalf}. రెండవ సగం: ${review.secondHalf}. సానుకూలాలు: ${review.positives}. ప్రతికూలాలు: ${review.negatives}. మొత్తం మీద: ${review.overall}. రేటింగ్: ${review.rating} స్టార్స్.`}
               />
@@ -275,7 +304,7 @@ const ReviewDetail = () => {
         </div>
       </div>
 
-      {/* 🔥 Animation for Like Button */}
+      {/* ❤️ Like Animation */}
       <style>{`
         @keyframes ping-once {
           0% { transform: scale(1); }
