@@ -1,36 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { ArrowLeft } from 'lucide-react';
-import { MovieReview } from '@/data/movieReviews';
-import { movieReviewsData } from '@/data/movieReviews';
-import { InteractionButtons } from '@/components/InteractionButtons';
-import { CommentSection } from '@/components/CommentSection';
-import { ThreeDRatingMeter } from '@/components/ThreeDRatingMeter';
-import { TeluguVoiceReader } from '@/components/TeluguVoiceReader';
-import { useFirebaseOperations } from '@/hooks/useFirebaseOperations';
-import { onSnapshot, doc, updateDoc, increment } from 'firebase/firestore';
-import { db } from '@/utils/firebase';
-import { useToast } from '@/hooks/use-toast';
-import { CurtainAnimation } from '@/components/CurtainAnimation';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { ArrowLeft, ThumbsUp, MessageCircle, Share2 } from "lucide-react";
+import { MovieReview } from "@/data/movieReviews";
+import { movieReviewsData } from "@/data/movieReviews";
+import { CommentSection } from "@/components/CommentSection";
+import { ThreeDRatingMeter } from "@/components/ThreeDRatingMeter";
+import { TeluguVoiceReader } from "@/components/TeluguVoiceReader";
+import { useFirebaseOperations } from "@/hooks/useFirebaseOperations";
+import { onSnapshot, doc, updateDoc, increment } from "firebase/firestore";
+import { db } from "@/utils/firebase";
+import { useToast } from "@/hooks/use-toast";
+import { CurtainAnimation } from "@/components/CurtainAnimation";
 
 const ReviewDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const [review, setReview] = useState<MovieReview | null>(null);
-  const [newComment, setNewComment] = useState('');
+  const [review, setReview] = useState(null);
+  const [newComment, setNewComment] = useState("");
   const [showComments, setShowComments] = useState(false);
   const [viewCount, setViewCount] = useState(0);
+  const [showBookingOptions, setShowBookingOptions] = useState(false);
 
-  const { loadLikes, loadComments, handleLike, handleComment, handleReply, handleShare, likedReviews } = useFirebaseOperations();
+  const { loadLikes, loadComments, handleLike, handleComment, handleReply, handleShare, likedReviews } =
+    useFirebaseOperations();
 
-  const setReviewFromList = updater => {
-    setReview(prev => {
+  const setReviewFromList = (updater) => {
+    setReview((prev) => {
       const currentList = prev ? [prev] : [];
-      const nextList = typeof updater === 'function' ? updater(currentList) : updater;
+      const nextList = typeof updater === "function" ? updater(currentList) : updater;
       return nextList?.[0] ?? prev;
     });
   };
@@ -39,22 +40,20 @@ const ReviewDetail = () => {
 
   useEffect(() => {
     if (!id) return;
-
     const trackView = async () => {
       if (db) {
         try {
-          const reviewDoc = doc(db, 'reviews', id);
+          const reviewDoc = doc(db, "reviews", id);
           await updateDoc(reviewDoc, { views: increment(1) });
         } catch (error) {
-          console.log('View tracking error:', error);
+          console.log("View tracking error:", error);
         }
       }
     };
 
     if (db) {
-      const reviewDoc = doc(db, 'reviews', id);
-
-      const unsubscribe = onSnapshot(reviewDoc, docSnap => {
+      const reviewDoc = doc(db, "reviews", id);
+      const unsubscribe = onSnapshot(reviewDoc, (docSnap) => {
         if (docSnap.exists()) {
           const data = docSnap.data();
           setViewCount(data.views || 0);
@@ -77,7 +76,7 @@ const ReviewDetail = () => {
           loadLikes(setReviewFromList);
           loadComments(setReviewFromList);
         } else {
-          const staticReview = movieReviewsData.find(r => r.id === id);
+          const staticReview = movieReviewsData.find((r) => r.id === id);
           if (staticReview) {
             const reviewWithDefaults = { ...staticReview, likes: 0, comments: [] };
             setReview(reviewWithDefaults);
@@ -91,7 +90,7 @@ const ReviewDetail = () => {
       trackView();
       return () => unsubscribe();
     } else {
-      const staticReview = movieReviewsData.find(r => r.id === id);
+      const staticReview = movieReviewsData.find((r) => r.id === id);
       if (staticReview) {
         setReview({ ...staticReview, likes: 0, comments: [] });
         setViewCount(staticReview.views || 0);
@@ -107,37 +106,39 @@ const ReviewDetail = () => {
     );
   }
 
-  const handleLikeClick = reviewId => handleLike(reviewId, setReviewFromList);
+  // 🧡 Animated Like, Comment, Share Buttons
+  const handleLikeClick = (reviewId) => {
+    handleLike(reviewId, setReviewFromList);
+    const likeButton = document.getElementById("like-btn");
+    if (likeButton) {
+      likeButton.classList.add("animate-ping-once");
+      setTimeout(() => likeButton.classList.remove("animate-ping-once"), 400);
+    }
+  };
+
   const handleCommentSubmit = () => {
     if (!review || !newComment.trim()) return;
     handleComment(review.id, newComment, setReviewFromList, noopSetNewComment);
-    setNewComment('');
+    setNewComment("");
   };
   const handleReplySubmit = (commentId, replyText) => {
     if (!review || !replyText.trim()) return;
     handleReply(review.id, commentId, replyText, setReviewFromList);
   };
 
-  // 🎟️ Book Ticket Button Logic (City or Platform Only)
+  // 🎟️ Ticket Booking Options
   const handleBookTicket = () => {
-    const userCity = "hyderabad"; // You can make this dynamic later
-    const preferredPlatform = "bookmyshow"; // or "paytm", "pvr", "local"
+    setShowBookingOptions(true);
+  };
 
-    let bookingUrl = "";
+  const handleOpenBookMyShow = () => {
+    window.open("https://in.bookmyshow.com/hyderabad", "_blank");
+    setShowBookingOptions(false);
+  };
 
-    if (preferredPlatform === "bookmyshow") {
-      bookingUrl = `https://in.bookmyshow.com/${userCity}`;
-    } else if (preferredPlatform === "paytm") {
-      bookingUrl = `https://paytm.com/movies/${userCity}`;
-    } else if (preferredPlatform === "pvr") {
-      bookingUrl = `https://www.pvrcinemas.com/`;
-    } else if (preferredPlatform === "local") {
-      bookingUrl = `https://exampledistrictcinemas.com/${userCity}`;
-    } else {
-      bookingUrl = `https://in.bookmyshow.com/`;
-    }
-
-    window.open(bookingUrl, "_blank");
+  const handleOpenDistrictApp = () => {
+    window.open("https://exampledistrictcinemas.com/hyderabad", "_blank");
+    setShowBookingOptions(false);
   };
 
   return (
@@ -150,7 +151,7 @@ const ReviewDetail = () => {
             <Button
               variant="outline"
               size="icon"
-              onClick={() => navigate('/')}
+              onClick={() => navigate("/")}
               className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -182,44 +183,33 @@ const ReviewDetail = () => {
                 <p className="text-base text-slate-50 font-bold leading-relaxed">{review.review}</p>
               </div>
 
-              <div className="space-y-4">
-                <div className="border-l-4 border-primary pl-4 py-2">
-                  <h4 className="text-primary font-bold text-lg mb-2">First Half:</h4>
-                  <p className="text-base text-slate-50 font-bold leading-relaxed">{review.firstHalf}</p>
-                </div>
+              {/* 🔥 Animated Buttons */}
+              <div className="flex justify-center gap-6 mt-6">
+                <button
+                  id="like-btn"
+                  onClick={() => handleLikeClick(review.id)}
+                  className="flex items-center gap-2 text-red-500 font-bold hover:scale-110 transition-transform active:scale-95"
+                >
+                  <ThumbsUp className="w-6 h-6" /> Like
+                </button>
 
-                <div className="border-l-4 border-primary pl-4 py-2">
-                  <h4 className="text-primary font-bold text-lg mb-2">Second Half:</h4>
-                  <p className="text-base text-slate-50 font-bold leading-relaxed">{review.secondHalf}</p>
-                </div>
+                <button
+                  onClick={() => setShowComments((prev) => !prev)}
+                  className="flex items-center gap-2 text-yellow-400 font-bold hover:scale-110 transition-transform active:scale-95"
+                >
+                  <MessageCircle className="w-6 h-6" /> Comment
+                </button>
 
-                <div className="border-l-4 border-primary pl-4 py-2">
-                  <h4 className="text-primary font-bold text-lg mb-2">Positives:</h4>
-                  <p className="text-base text-slate-50 font-bold leading-relaxed">{review.positives}</p>
-                </div>
-
-                <div className="border-l-4 border-primary pl-4 py-2">
-                  <h4 className="text-primary font-bold text-lg mb-2">Negatives:</h4>
-                  <p className="text-base text-slate-50 font-bold leading-relaxed">{review.negatives}</p>
-                </div>
-
-                <div className="border-l-4 border-primary pl-4 py-2">
-                  <h4 className="text-primary font-bold text-lg mb-2">Overall Movie:</h4>
-                  <p className="text-base text-slate-50 font-bold leading-relaxed">{review.overall}</p>
-                </div>
+                <button
+                  onClick={() => handleShare(review.id)}
+                  className="flex items-center gap-2 text-blue-400 font-bold hover:scale-110 transition-transform active:scale-95"
+                >
+                  <Share2 className="w-6 h-6" /> Share
+                </button>
               </div>
 
-              {/* Buttons Section */}
-              <div className="flex flex-col items-center gap-4">
-                <InteractionButtons
-                  review={review}
-                  onLike={handleLikeClick}
-                  onToggleComments={() => setShowComments(prev => !prev)}
-                  onShare={handleShare}
-                  isLiked={likedReviews.has(review.id)}
-                />
-
-                {/* 🎟️ Book Ticket Button */}
+              {/* 🎟️ Book Ticket Button */}
+              <div className="flex justify-center mt-6">
                 <Button
                   onClick={handleBookTicket}
                   className="bg-gradient-to-r from-red-600 to-yellow-400 text-white font-bold px-8 py-4 rounded-xl hover:scale-105 transition-transform shadow-lg"
@@ -227,6 +217,36 @@ const ReviewDetail = () => {
                   🎟️ Book Your Ticket
                 </Button>
               </div>
+
+              {/* Popup Modal for Booking Options */}
+              {showBookingOptions && (
+                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+                  <div className="bg-slate-900 border-2 border-yellow-400 rounded-2xl p-6 shadow-2xl max-w-md text-center space-y-4">
+                    <h3 className="text-2xl text-yellow-400 font-bold mb-2">Choose Your Platform</h3>
+                    <div className="flex flex-col gap-4">
+                      <Button
+                        onClick={handleOpenBookMyShow}
+                        className="bg-gradient-to-r from-red-600 to-yellow-400 text-white font-bold py-3 rounded-xl hover:scale-105 transition-transform"
+                      >
+                        🎫 Book via BookMyShow
+                      </Button>
+                      <Button
+                        onClick={handleOpenDistrictApp}
+                        className="bg-gradient-to-r from-purple-600 to-pink-400 text-white font-bold py-3 rounded-xl hover:scale-105 transition-transform"
+                      >
+                        🏛️ Book via District App
+                      </Button>
+                      <Button
+                        onClick={() => setShowBookingOptions(false)}
+                        variant="outline"
+                        className="border-yellow-400 text-yellow-400 font-bold"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Telugu Voice Reader */}
               <TeluguVoiceReader
@@ -254,6 +274,18 @@ const ReviewDetail = () => {
           </Card>
         </div>
       </div>
+
+      {/* 🔥 Animation for Like Button */}
+      <style>{`
+        @keyframes ping-once {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.4); filter: drop-shadow(0 0 10px #ff0000); }
+          100% { transform: scale(1); }
+        }
+        .animate-ping-once {
+          animation: ping-once 0.4s ease-in-out;
+        }
+      `}</style>
     </>
   );
 };
