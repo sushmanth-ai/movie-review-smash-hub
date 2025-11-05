@@ -123,20 +123,22 @@ export const ThreeDRatingMeter: React.FC<ThreeDRatingMeterProps> = ({
         </svg>
       </div>
 
-      {/* Rating Number */}
-      <div
-        className="absolute flex flex-col items-center justify-center font-extrabold"
-        style={{
-          transform: "translateZ(35px) rotateX(-25deg)",
-          color: "#FFD700",
-          textShadow: "0 0 12px rgba(255, 215, 0, 0.8)",
-        }}
-      >
-        <span className="text-3xl">
-          {animatedRating.toFixed(1)}
-        </span>
-        <span className="text-sm text-gray-400">/5</span>
-      </div>
+      {/* Rating Number - Only show after animation starts */}
+      {animatedPercentage > 0 && (
+        <div
+          className="absolute flex flex-col items-center justify-center font-extrabold animate-fade-in"
+          style={{
+            transform: "translateZ(35px) rotateX(-25deg)",
+            color: "#FFD700",
+            textShadow: "0 0 12px rgba(255, 215, 0, 0.8)",
+          }}
+        >
+          <span className="text-3xl">
+            {animatedRating.toFixed(1)}
+          </span>
+          <span className="text-sm text-gray-400">/5</span>
+        </div>
+      )}
     </div>
   );
 };
