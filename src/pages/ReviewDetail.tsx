@@ -3,7 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ArrowLeft, ThumbsUp, MessageCircle, Share2 } from "lucide-react";
-import { MovieReview } from "@/data/movieReviews";
 import { movieReviewsData } from "@/data/movieReviews";
 import { CommentSection } from "@/components/CommentSection";
 import { ThreeDRatingMeter } from "@/components/ThreeDRatingMeter";
@@ -24,111 +23,96 @@ const ReviewDetail = () => {
   const [viewCount, setViewCount] = useState(0);
   const [showBookingOptions, setShowBookingOptions] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
-  const [showLikeEffect, setShowLikeEffect] = useState(false);
-  const [hasLiked, setHasLiked] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [animating, setAnimating] = useState(false);
 
+  // 🔹 Load review + view/like counts
   useEffect(() => {
     if (!id) return;
-
-    // Check local storage if user already liked
-    const likedKey = `liked_${id}`;
-    if (localStorage.getItem(likedKey)) setHasLiked(true);
 
     const trackView = async () => {
       if (db) {
         try {
           const reviewDoc = doc(db, "reviews", id);
           await updateDoc(reviewDoc, { views: increment(1) });
-        } catch (error) {
-          console.log("View tracking error:", error);
-        }
+        } catch {}
       }
     };
 
+    const likedKey = `liked_${id}`;
+    if (localStorage.getItem(likedKey)) setLiked(true);
+
     if (db) {
       const reviewDoc = doc(db, "reviews", id);
-      const unsubscribe = onSnapshot(reviewDoc, (docSnap) => {
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setViewCount(data.views || 0);
-          setLikeCount(data.likes || 0);
-          setReview({
-            id: docSnap.id,
-            ...data,
-          });
+      const unsub = onSnapshot(reviewDoc, (snap) => {
+        if (snap.exists()) {
+          const d = snap.data();
+          setReview({ id: snap.id, ...d });
+          setViewCount(d.views || 0);
+          setLikeCount(d.likes || 0);
         } else {
           const staticReview = movieReviewsData.find((r) => r.id === id);
           if (staticReview) setReview(staticReview);
         }
       });
-
       trackView();
-      return () => unsubscribe();
+      return () => unsub();
     }
   }, [id]);
 
-  if (!review) {
+  if (!review)
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <p className="text-primary text-xl">Loading review...</p>
       </div>
     );
-  }
 
-  // ❤️ Like Button (tap once only)
-  const handleLikeClick = async () => {
-    const likedKey = `liked_${id}`;
-    if (hasLiked || localStorage.getItem(likedKey)) {
-      // Already liked: show a small animation feedback only
-      setShowLikeEffect(true);
-      setTimeout(() => setShowLikeEffect(false), 500);
-      toast({
-        title: "Already Liked ❤️",
-        description: "You can like only once per review.",
-      });
-      return;
-    }
-
+  // ❤️ Toggle Like / Unlike
+  const handleToggleLike = async () => {
     try {
+      const likedKey = `liked_${id}`;
       const reviewRef = doc(db, "reviews", review.id);
-      await updateDoc(reviewRef, { likes: increment(1) });
-      setLikeCount((prev) => prev + 1);
-      setShowLikeEffect(true);
-      setHasLiked(true);
-      localStorage.setItem(likedKey, "true");
-      setTimeout(() => setShowLikeEffect(false), 800);
-    } catch (error) {
-      console.log("Like failed:", error);
+      setAnimating(true);
+
+      if (!liked) {
+        await updateDoc(reviewRef, { likes: increment(1) });
+        setLikeCount((c) => c + 1);
+        setLiked(true);
+        localStorage.setItem(likedKey, "true");
+      } else {
+        await updateDoc(reviewRef, { likes: increment(-1) });
+        setLikeCount((c) => Math.max(0, c - 1));
+        setLiked(false);
+        localStorage.removeItem(likedKey);
+      }
+
+      setTimeout(() => setAnimating(false), 600);
+    } catch {
+      toast({ title: "Error", description: "Like toggle failed.", variant: "destructive" });
     }
   };
 
   // 📤 Share
-  const handleShareClick = async () => {
+  const handleShare = async () => {
+    const shareData = {
+      title: `SM Reviews: ${review.title}`,
+      text: `${review.title} - Full review on SM Reviews`,
+      url: window.location.href,
+    };
     try {
-      const shareData = {
-        title: `SM Reviews: ${review.title}`,
-        text: `${review.title} - Read the full review on SM Reviews!`,
-        url: window.location.href,
-      };
-      if (navigator.share) {
-        await navigator.share(shareData);
-        toast({ title: "Shared Successfully!", description: "Your friends can see this review now!" });
-      } else {
-        await navigator.clipboard.writeText(shareData.url);
-        toast({ title: "Link Copied!", description: "You can paste and share it anywhere." });
-      }
-    } catch {
-      toast({ title: "Share Failed", description: "Try again!", variant: "destructive" });
-    }
+      if (navigator.share) await navigator.share(shareData);
+      else await navigator.clipboard.writeText(shareData.url);
+      toast({ title: "Shared!", description: "Link ready to share." });
+    } catch {}
   };
 
-  // 🎟️ Booking Modal
+  // 🎟️ Booking
   const handleBookTicket = () => setShowBookingOptions(true);
-  const handleOpenBookMyShow = () => {
+  const openBookMyShow = () => {
     window.open("https://in.bookmyshow.com/hyderabad", "_blank");
     setShowBookingOptions(false);
   };
-  const handleOpenDistrictApp = () => {
+  const openDistrict = () => {
     window.open("https://www.district.in/", "_blank");
     setShowBookingOptions(false);
   };
@@ -176,6 +160,7 @@ const ReviewDetail = () => {
             </div>
 
             <CardContent className="space-y-6">
+              {/* 🔹 Full Review Section */}
               <div className="border-t border-primary/30 pt-4">
                 <div className="bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-lg p-4 mb-4 border-2 border-primary/50 shadow-[0_0_20px_rgba(255,215,0,0.3)]">
                   <h3 className="text-center font-bold text-primary text-xl">REVIEW</h3>
@@ -183,32 +168,43 @@ const ReviewDetail = () => {
                 <p className="text-base text-slate-50 font-bold leading-relaxed">{review.review}</p>
               </div>
 
+              <div className="space-y-4">
+                {[
+                  ["First Half", review.firstHalf],
+                  ["Second Half", review.secondHalf],
+                  ["Positives", review.positives],
+                  ["Negatives", review.negatives],
+                  ["Overall", review.overall],
+                ].map(([t, v]) => (
+                  <div key={t} className="border-l-4 border-primary pl-4 py-2">
+                    <h4 className="text-primary font-bold text-lg mb-2">{t}:</h4>
+                    <p className="text-base text-slate-50 font-bold leading-relaxed">{v}</p>
+                  </div>
+                ))}
+              </div>
+
               {/* ❤️ Like / 💬 Comment / 📤 Share */}
               <div className="flex justify-center gap-8 mt-8 relative">
                 <button
-                  onClick={handleLikeClick}
-                  disabled={hasLiked}
+                  onClick={handleToggleLike}
                   className={`flex items-center gap-2 font-bold hover:scale-110 transition-transform relative ${
-                    hasLiked ? "text-red-400 cursor-not-allowed" : "text-red-500"
+                    liked ? "text-red-400" : "text-red-500"
                   }`}
                 >
-                  <ThumbsUp className={`w-6 h-6 ${showLikeEffect ? "animate-like-pop" : ""}`} />
-                  <span>{hasLiked ? "Liked" : "Like"}</span>
+                  <ThumbsUp className={`w-6 h-6 ${animating ? "animate-like-pop" : ""}`} />
+                  <span>{liked ? "Liked" : "Like"}</span>
                   <span className="text-slate-200 text-sm">({likeCount})</span>
-                  {showLikeEffect && (
-                    <span className="absolute -top-6 text-red-400 font-bold animate-bubble">+1 ❤️</span>
-                  )}
                 </button>
 
                 <button
-                  onClick={() => setShowComments((prev) => !prev)}
+                  onClick={() => setShowComments((p) => !p)}
                   className="flex items-center gap-2 text-yellow-400 font-bold hover:scale-110 transition-transform"
                 >
                   <MessageCircle className="w-6 h-6" /> Comment
                 </button>
 
                 <button
-                  onClick={handleShareClick}
+                  onClick={handleShare}
                   className="flex items-center gap-2 text-blue-400 font-bold hover:scale-110 transition-transform"
                 >
                   <Share2 className="w-6 h-6" /> Share
@@ -232,13 +228,13 @@ const ReviewDetail = () => {
                     <h3 className="text-2xl text-yellow-400 font-bold mb-2">Choose Your Platform</h3>
                     <div className="flex flex-col gap-4">
                       <Button
-                        onClick={handleOpenBookMyShow}
+                        onClick={openBookMyShow}
                         className="bg-gradient-to-r from-red-600 to-yellow-400 text-white font-bold py-3 rounded-xl hover:scale-105 transition-transform"
                       >
                         🎫 Book via BookMyShow
                       </Button>
                       <Button
-                        onClick={handleOpenDistrictApp}
+                        onClick={openDistrict}
                         className="bg-gradient-to-r from-purple-600 to-pink-400 text-white font-bold py-3 rounded-xl hover:scale-105 transition-transform"
                       >
                         🏛️ Book via District App
@@ -254,7 +250,30 @@ const ReviewDetail = () => {
                   </div>
                 </div>
               )}
+
+              {/* 🎤 Telugu Voice Reader + Comments */}
+              <TeluguVoiceReader
+                reviewText={`${review.title}. సమీక్ష: ${review.review}. మొదటి సగం: ${review.firstHalf}. రెండవ సగం: ${review.secondHalf}. సానుకూలాలు: ${review.positives}. ప్రతికూలాలు: ${review.negatives}. మొత్తం మీద: ${review.overall}. రేటింగ్: ${review.rating} స్టార్స్.`}
+              />
+
+              {showComments && (
+                <CommentSection
+                  review={review}
+                  newComment={newComment}
+                  onCommentChange={setNewComment}
+                  onCommentSubmit={() => {}}
+                  onReplySubmit={() => {}}
+                />
+              )}
             </CardContent>
+          </Card>
+
+          {/* Rating Meter */}
+          <Card className="bg-slate-100 border-2 border-primary shadow-[0_0_30px_rgba(255,215,0,0.5)] max-w-sm mx-auto mt-6 p-8">
+            <div className="flex flex-col items-center gap-4">
+              <h3 className="text-2xl text-center text-slate-900 font-extrabold">RATING METER</h3>
+              <ThreeDRatingMeter rating={parseFloat(review.rating)} size={160} />
+            </div>
           </Card>
         </div>
       </div>
@@ -266,31 +285,18 @@ const ReviewDetail = () => {
           50% { transform: scale(1.4); filter: drop-shadow(0 0 10px red); }
           100% { transform: scale(1); }
         }
-        .animate-like-pop {
-          animation: like-pop 0.5s ease-in-out;
-        }
-        @keyframes bubble {
-          0% { opacity: 1; transform: translateY(0); }
-          100% { opacity: 0; transform: translateY(-40px); }
-        }
-        .animate-bubble {
-          animation: bubble 0.8s ease-in-out;
-        }
+        .animate-like-pop { animation: like-pop 0.5s ease-in-out; }
         @keyframes title-glow {
-          0%, 100% { text-shadow: 0 0 20px gold, 0 0 40px orange; }
-          50% { text-shadow: 0 0 35px yellow, 0 0 60px red; }
+          0%,100%{text-shadow:0 0 20px gold,0 0 40px orange;}
+          50%{text-shadow:0 0 35px yellow,0 0 60px red;}
         }
-        .animate-title-glow {
-          animation: title-glow 3s infinite alternate;
+        .animate-title-glow{animation:title-glow 3s infinite alternate;}
+        @keyframes shine{
+          0%{transform:translateX(-100%);opacity:.2;}
+          50%{transform:translateX(50%);opacity:1;}
+          100%{transform:translateX(100%);opacity:0;}
         }
-        @keyframes shine {
-          0% { transform: translateX(-100%); opacity: 0.2; }
-          50% { transform: translateX(50%); opacity: 1; }
-          100% { transform: translateX(100%); opacity: 0; }
-        }
-        .animate-shine {
-          animation: shine 4s infinite linear;
-        }
+        .animate-shine{animation:shine 4s infinite linear;}
       `}</style>
     </>
   );
