@@ -329,12 +329,7 @@ const ReviewDetail = () => {
                 RATING METER
               </h3>
 
-              <Button
-                onClick={handleSpinClick}
-                className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold px-6 py-3 rounded-full hover:scale-105 transition-transform shadow-md"
-              >
-                🎡 See Rating
-              </Button>
+             
 
               <div
                 className={`transition-transform duration-[2500ms] ${
