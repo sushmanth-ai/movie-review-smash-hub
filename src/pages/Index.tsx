@@ -9,9 +9,7 @@ import { db } from '@/utils/firebase';
 import { TodayViews } from '@/components/TodayViews';
 import { ReviewCarousel } from '@/components/ReviewCarousel';
 import { CurtainAnimation } from '@/components/CurtainAnimation';
-import { useSound } from '@/hooks/useSound';
 const Index = () => {
-  const { playSound } = useSound();
   const [searchTerm, setSearchTerm] = useState('');
   const [reviews, setReviews] = useState<MovieReview[]>([]);
   const [newComment, setNewComment] = useState<{
@@ -192,10 +190,7 @@ const Index = () => {
             {newReviews.length > 3 && (
               <div className="flex justify-center mt-6">
                 <Button
-                  onClick={() => {
-                    playSound('click');
-                    setShowAllNewReviews(!showAllNewReviews);
-                  }}
+                  onClick={() => setShowAllNewReviews(!showAllNewReviews)}
                   className="bg-gradient-to-r from-primary via-yellow-500 to-primary text-primary-foreground font-bold px-8 py-3 rounded-full shadow-[0_0_20px_rgba(255,215,0,0.4)] hover:shadow-[0_0_30px_rgba(255,215,0,0.6)] transition-all duration-300"
                 >
                   {showAllNewReviews ? 'See Less' : 'See More New Reviews'}
@@ -221,10 +216,7 @@ const Index = () => {
             {oldReviews.length > 3 && (
               <div className="flex justify-center mt-6">
                 <Button
-                  onClick={() => {
-                    playSound('click');
-                    setShowAllOldReviews(!showAllOldReviews);
-                  }}
+                  onClick={() => setShowAllOldReviews(!showAllOldReviews)}
                   className="bg-gradient-to-r from-primary via-yellow-500 to-primary text-primary-foreground font-bold px-8 py-3 rounded-full shadow-[0_0_20px_rgba(255,215,0,0.4)] hover:shadow-[0_0_30px_rgba(255,215,0,0.6)] transition-all duration-300"
                 >
                   {showAllOldReviews ? 'See Less' : 'See More Old Reviews'}
