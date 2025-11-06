@@ -3,7 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ArrowLeft, ThumbsUp, MessageCircle, Share2 } from "lucide-react";
-import { MovieReview } from "@/data/movieReviews";
 import { movieReviewsData } from "@/data/movieReviews";
 import { CommentSection } from "@/components/CommentSection";
 import { ThreeDRatingMeter } from "@/components/ThreeDRatingMeter";
@@ -67,6 +66,7 @@ const ReviewDetail = () => {
             title: data.title,
             image: data.image,
             review: data.review,
+            fullReview: data.fullReview || data.review,
             firstHalf: data.firstHalf,
             secondHalf: data.secondHalf,
             positives: data.positives,
@@ -87,6 +87,7 @@ const ReviewDetail = () => {
               ...staticReview,
               likes: 0,
               comments: [],
+              fullReview: staticReview.fullReview || staticReview.review,
             };
             setReview(reviewWithDefaults);
             setViewCount(staticReview.views || 0);
@@ -101,7 +102,12 @@ const ReviewDetail = () => {
     } else {
       const staticReview = movieReviewsData.find((r) => r.id === id);
       if (staticReview) {
-        setReview({ ...staticReview, likes: 0, comments: [] });
+        setReview({
+          ...staticReview,
+          likes: 0,
+          comments: [],
+          fullReview: staticReview.fullReview || staticReview.review,
+        });
         setViewCount(staticReview.views || 0);
       }
     }
@@ -115,7 +121,6 @@ const ReviewDetail = () => {
     );
   }
 
-  // ❤️ Like Button Logic
   const handleLikeClick = (reviewId) => {
     playSound("bubble");
     handleLike(reviewId, setReviewFromList);
@@ -123,14 +128,12 @@ const ReviewDetail = () => {
     setTimeout(() => setShowLikeEffect(false), 800);
   };
 
-  // 💬 Comment Submit
   const handleCommentSubmit = () => {
     if (!review || !newComment.trim()) return;
     handleComment(review.id, newComment, setReviewFromList, noopSetNewComment);
     setNewComment("");
   };
 
-  // 📤 Share
   const handleShareClick = async () => {
     try {
       const shareData = {
@@ -160,7 +163,6 @@ const ReviewDetail = () => {
     }
   };
 
-  // 🎟️ Booking
   const handleBookTicket = () => {
     playSound("click");
     setShowBookingOptions(true);
@@ -170,7 +172,7 @@ const ReviewDetail = () => {
     setShowBookingOptions(false);
   };
   const handleOpenDistrictApp = () => {
-    window.open("https://districtcinemas.com", "_blank");
+    window.open("https://www.district.in/", "_blank");
     setShowBookingOptions(false);
   };
 
@@ -193,7 +195,7 @@ const ReviewDetail = () => {
           </div>
         </div>
 
-        {/* Main Content */}
+        {/* Main Review */}
         <div className="container mx-auto px-4 pt-24 pb-8">
           <Card className="relative bg-card border-2 border-primary shadow-[0_0_30px_rgba(255,215,0,0.5)] max-w-4xl mx-auto">
             <div className="absolute left-1/2 -translate-x-1/2 -top-[1.4rem] bg-yellow-400 text-black font-extrabold text-lg rounded-b-2xl border-x-2 border-b-2 border-primary shadow-[0_4px_10px_rgba(255,215,0,0.4)] px-[24px] py-[7px]">
@@ -216,8 +218,10 @@ const ReviewDetail = () => {
                     REVIEW
                   </h3>
                 </div>
-                <p className="text-base text-slate-50 font-bold leading-relaxed">
-                  {review.review}
+
+                {/* ✅ Always show full review */}
+                <p className="text-base text-slate-50 font-bold leading-relaxed whitespace-pre-line">
+                  {review.fullReview || review.review}
                 </p>
               </div>
 
@@ -241,11 +245,6 @@ const ReviewDetail = () => {
                   />{" "}
                   {review.likes}{" "}
                   {likedReviews.has(review.id) ? "Liked" : "Like"}
-                  {showLikeEffect && (
-                    <span className="absolute -top-6 text-red-400 font-bold animate-bubble">
-                      {likedReviews.has(review.id) ? "+1 ❤️" : "-1"}
-                    </span>
-                  )}
                 </button>
 
                 <button
@@ -281,7 +280,7 @@ const ReviewDetail = () => {
 
               {/* Telugu Voice + Comments */}
               <TeluguVoiceReader
-                reviewText={`${review.title}. సమీక్ష: ${review.review}. మొదటి సగం: ${review.firstHalf}. రెండవ సగం: ${review.secondHalf}. సానుకూలాలు: ${review.positives}. ప్రతికూలాలు: ${review.negatives}. మొత్తం మీద: ${review.overall}. రేటింగ్: ${review.rating} స్టార్స్.`}
+                reviewText={`${review.title}. సమీక్ష: ${review.fullReview}. మొత్తం మీద: ${review.overall}. రేటింగ్: ${review.rating} స్టార్స్.`}
               />
 
               {showComments && (
@@ -296,7 +295,7 @@ const ReviewDetail = () => {
             </CardContent>
           </Card>
 
-          {/* Rating Meter */}
+          {/* 🎡 Rating Meter */}
           <Card className="bg-slate-100 border-2 border-primary shadow-[0_0_30px_rgba(255,215,0,0.5)] max-w-sm mx-auto mt-6 p-8">
             <div className="flex flex-col items-center gap-4">
               <h3 className="text-2xl text-center text-slate-900 font-extrabold">
@@ -311,16 +310,14 @@ const ReviewDetail = () => {
         </div>
       </div>
 
-      {/* ✅ Book Ticket Popup */}
+      {/* ✅ Book Ticket Modal */}
       {showBookingOptions && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
           <div className="bg-card border-2 border-primary rounded-xl shadow-[0_0_30px_rgba(255,215,0,0.6)] p-8 text-center space-y-6 max-w-sm w-full mx-4">
             <h3 className="text-2xl font-bold text-primary">
               🎟️ Book Your Tickets
             </h3>
-            <p className="text-slate-200">
-              Choose your preferred platform:
-            </p>
+            <p className="text-slate-200">Choose your preferred platform:</p>
             <div className="flex flex-col gap-4">
               <Button
                 onClick={handleOpenBookMyShow}
@@ -345,21 +342,6 @@ const ReviewDetail = () => {
           </div>
         </div>
       )}
-
-      {/* Like Animation Styles */}
-      <style>{`
-        @keyframes like-pop {
-          0% { transform: scale(1); filter: drop-shadow(0 0 0 red); }
-          50% { transform: scale(1.4); filter: drop-shadow(0 0 10px red); }
-          100% { transform: scale(1); }
-        }
-        .animate-like-pop { animation: like-pop 0.5s ease-in-out; }
-        @keyframes bubble {
-          0% { opacity: 1; transform: translateY(0); }
-          100% { opacity: 0; transform: translateY(-40px); }
-        }
-        .animate-bubble { animation: bubble 0.8s ease-in-out; }
-      `}</style>
     </>
   );
 };
