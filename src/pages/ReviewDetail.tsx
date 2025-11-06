@@ -13,6 +13,7 @@ import { onSnapshot, doc, updateDoc, increment } from "firebase/firestore";
 import { db } from "@/utils/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { CurtainAnimation } from "@/components/CurtainAnimation";
+import { useSound } from "@/hooks/useSound";
 const ReviewDetail = () => {
   const {
     id
@@ -21,6 +22,7 @@ const ReviewDetail = () => {
   const {
     toast
   } = useToast();
+  const { playSound } = useSound();
   const [review, setReview] = useState(null);
   const [newComment, setNewComment] = useState("");
   const [showComments, setShowComments] = useState(false);
@@ -115,6 +117,7 @@ const ReviewDetail = () => {
       </div>;
   }
   const handleLikeClick = reviewId => {
+    playSound('bubble');
     handleLike(reviewId, setReviewFromList);
     setShowLikeEffect(true);
     setTimeout(() => setShowLikeEffect(false), 800);
@@ -241,7 +244,10 @@ const ReviewDetail = () => {
 
               {/* ❤️ Like / 💬 Comment / 📤 Share */}
               <div className="flex justify-center gap-6 mt-6 relative">
-                <button onClick={() => handleLikeClick(review.id)} className={`flex items-center gap-2 font-bold hover:scale-110 transition-transform relative ${
+                <button onClick={() => {
+                  playSound('click');
+                  handleLikeClick(review.id);
+                }} className={`flex items-center gap-2 font-bold hover:scale-110 transition-transform relative ${
                   likedReviews.has(review.id) ? 'text-red-500' : 'text-gray-400'
                 }`}>
                   <ThumbsUp className={`w-6 h-6 ${showLikeEffect ? "animate-like-pop" : ""} ${
@@ -253,11 +259,17 @@ const ReviewDetail = () => {
                     </span>}
                 </button>
 
-                <button onClick={() => setShowComments(prev => !prev)} className="flex items-center gap-2 text-yellow-400 font-bold hover:scale-110 transition-transform">
+                <button onClick={() => {
+                  playSound('click');
+                  setShowComments(prev => !prev);
+                }} className="flex items-center gap-2 text-yellow-400 font-bold hover:scale-110 transition-transform">
                   <MessageCircle className="w-6 h-6" /> Comment
                 </button>
 
-                <button onClick={handleShareClick} className="flex items-center gap-2 text-blue-400 font-bold hover:scale-110 transition-transform">
+                <button onClick={() => {
+                  playSound('click');
+                  handleShareClick();
+                }} className="flex items-center gap-2 text-blue-400 font-bold hover:scale-110 transition-transform">
                   <Share2 className="w-6 h-6" /> Share
                 </button>
               </div>
