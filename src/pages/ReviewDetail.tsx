@@ -31,7 +31,8 @@ const ReviewDetail = () => {
     loadLikes,
     loadComments,
     handleLike,
-    handleComment
+    handleComment,
+    likedReviews
   } = useFirebaseOperations();
   const setReviewFromList = updater => {
     setReview(prev => {
@@ -240,11 +241,15 @@ const ReviewDetail = () => {
 
               {/* ❤️ Like / 💬 Comment / 📤 Share */}
               <div className="flex justify-center gap-6 mt-6 relative">
-                <button onClick={() => handleLikeClick(review.id)} className="flex items-center gap-2 text-red-500 font-bold hover:scale-110 transition-transform relative">
-                  <ThumbsUp className={`w-6 h-6 ${showLikeEffect ? "animate-like-pop" : ""}`} />{" "}
-                  Like
+                <button onClick={() => handleLikeClick(review.id)} className={`flex items-center gap-2 font-bold hover:scale-110 transition-transform relative ${
+                  likedReviews.has(review.id) ? 'text-red-500' : 'text-gray-400'
+                }`}>
+                  <ThumbsUp className={`w-6 h-6 ${showLikeEffect ? "animate-like-pop" : ""} ${
+                    likedReviews.has(review.id) ? 'fill-current' : ''
+                  }`} />{" "}
+                  {review.likes} {likedReviews.has(review.id) ? 'Liked' : 'Like'}
                   {showLikeEffect && <span className="absolute -top-6 text-red-400 font-bold animate-bubble">
-                      +1 ❤️
+                      {likedReviews.has(review.id) ? '+1 ❤️' : '-1'}
                     </span>}
                 </button>
 
