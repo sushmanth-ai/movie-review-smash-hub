@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ArrowLeft, ThumbsUp, MessageCircle, Share2 } from "lucide-react";
+import { MovieReview } from "@/data/movieReviews";
 import { movieReviewsData } from "@/data/movieReviews";
 import { CommentSection } from "@/components/CommentSection";
 import { ThreeDRatingMeter } from "@/components/ThreeDRatingMeter";
@@ -26,9 +27,15 @@ const ReviewDetail = () => {
   const [viewCount, setViewCount] = useState(0);
   const [showBookingOptions, setShowBookingOptions] = useState(false);
   const [showLikeEffect, setShowLikeEffect] = useState(false);
+  const [isSpinning, setIsSpinning] = useState(false);
 
-  const { loadLikes, loadComments, handleLike, handleComment, likedReviews } =
-    useFirebaseOperations();
+  const {
+    loadLikes,
+    loadComments,
+    handleLike,
+    handleComment,
+    likedReviews,
+  } = useFirebaseOperations();
 
   const setReviewFromList = (updater) => {
     setReview((prev) => {
@@ -43,7 +50,6 @@ const ReviewDetail = () => {
 
   useEffect(() => {
     if (!id) return;
-
     const trackView = async () => {
       if (db) {
         try {
@@ -66,7 +72,6 @@ const ReviewDetail = () => {
             title: data.title,
             image: data.image,
             review: data.review,
-            fullReview: data.fullReview || data.review,
             firstHalf: data.firstHalf,
             secondHalf: data.secondHalf,
             positives: data.positives,
@@ -83,12 +88,7 @@ const ReviewDetail = () => {
         } else {
           const staticReview = movieReviewsData.find((r) => r.id === id);
           if (staticReview) {
-            const reviewWithDefaults = {
-              ...staticReview,
-              likes: 0,
-              comments: [],
-              fullReview: staticReview.fullReview || staticReview.review,
-            };
+            const reviewWithDefaults = { ...staticReview, likes: 0, comments: [] };
             setReview(reviewWithDefaults);
             setViewCount(staticReview.views || 0);
             loadLikes(setReviewFromList);
@@ -96,18 +96,12 @@ const ReviewDetail = () => {
           }
         }
       });
-
       trackView();
       return () => unsubscribe();
     } else {
       const staticReview = movieReviewsData.find((r) => r.id === id);
       if (staticReview) {
-        setReview({
-          ...staticReview,
-          likes: 0,
-          comments: [],
-          fullReview: staticReview.fullReview || staticReview.review,
-        });
+        setReview({ ...staticReview, likes: 0, comments: [] });
         setViewCount(staticReview.views || 0);
       }
     }
@@ -121,6 +115,7 @@ const ReviewDetail = () => {
     );
   }
 
+  // ✅ Like Button with Sound
   const handleLikeClick = (reviewId) => {
     playSound("bubble");
     handleLike(reviewId, setReviewFromList);
@@ -128,12 +123,14 @@ const ReviewDetail = () => {
     setTimeout(() => setShowLikeEffect(false), 800);
   };
 
+  // ✅ Comment Submission
   const handleCommentSubmit = () => {
     if (!review || !newComment.trim()) return;
     handleComment(review.id, newComment, setReviewFromList, noopSetNewComment);
     setNewComment("");
   };
 
+  // ✅ Share Review
   const handleShareClick = async () => {
     try {
       const shareData = {
@@ -163,17 +160,24 @@ const ReviewDetail = () => {
     }
   };
 
-  const handleBookTicket = () => {
-    playSound("click");
-    setShowBookingOptions(true);
-  };
+  // ✅ Ticket Booking Logic
+  const handleBookTicket = () => setShowBookingOptions(true);
   const handleOpenBookMyShow = () => {
     window.open("https://in.bookmyshow.com/hyderabad", "_blank");
     setShowBookingOptions(false);
   };
   const handleOpenDistrictApp = () => {
-    window.open("https://www.district.in/", "_blank");
+    window.open("https://districtcinemas.com", "_blank");
     setShowBookingOptions(false);
+  };
+
+  // ✅ Rating Spinner with Sound
+  const handleSpinClick = () => {
+    const spinSound = new Audio("/sounds/spin.mp3");
+    spinSound.currentTime = 0;
+    spinSound.play();
+    setIsSpinning(true);
+    setTimeout(() => setIsSpinning(false), 2500); // spin for 2.5s
   };
 
   return (
@@ -195,8 +199,9 @@ const ReviewDetail = () => {
           </div>
         </div>
 
-        {/* Main Review */}
+        {/* Main Content */}
         <div className="container mx-auto px-4 pt-24 pb-8">
+          {/* 🎬 Review Card */}
           <Card className="relative bg-card border-2 border-primary shadow-[0_0_30px_rgba(255,215,0,0.5)] max-w-4xl mx-auto">
             <div className="absolute left-1/2 -translate-x-1/2 -top-[1.4rem] bg-yellow-400 text-black font-extrabold text-lg rounded-b-2xl border-x-2 border-b-2 border-primary shadow-[0_4px_10px_rgba(255,215,0,0.4)] px-[24px] py-[7px]">
               {review.title}
@@ -218,11 +223,28 @@ const ReviewDetail = () => {
                     REVIEW
                   </h3>
                 </div>
-
-                {/* ✅ Always show full review */}
-                <p className="text-base text-slate-50 font-bold leading-relaxed whitespace-pre-line">
-                  {review.fullReview || review.review}
+                <p className="text-base text-slate-50 font-bold leading-relaxed">
+                  {review.review}
                 </p>
+              </div>
+
+              {/* Sections */}
+              <div className="space-y-4">
+                {["First Half", "Second Half", "Positives", "Negatives", "Overall"].map(
+                  (section) => (
+                    <div
+                      key={section}
+                      className="border-l-4 border-primary pl-4 py-2"
+                    >
+                      <h4 className="text-primary font-bold text-lg mb-2">
+                        {section}:
+                      </h4>
+                      <p className="text-base text-slate-50 font-bold leading-relaxed">
+                        {review[section.toLowerCase().replace(" ", "")]}
+                      </p>
+                    </div>
+                  )
+                )}
               </div>
 
               {/* ❤️ Like / 💬 Comment / 📤 Share */}
@@ -242,9 +264,14 @@ const ReviewDetail = () => {
                     className={`w-6 h-6 ${
                       showLikeEffect ? "animate-like-pop" : ""
                     } ${likedReviews.has(review.id) ? "fill-current" : ""}`}
-                  />{" "}
+                  />
                   {review.likes}{" "}
                   {likedReviews.has(review.id) ? "Liked" : "Like"}
+                  {showLikeEffect && (
+                    <span className="absolute -top-6 text-red-400 font-bold animate-bubble">
+                      {likedReviews.has(review.id) ? "+1 ❤️" : "-1"}
+                    </span>
+                  )}
                 </button>
 
                 <button
@@ -280,7 +307,7 @@ const ReviewDetail = () => {
 
               {/* Telugu Voice + Comments */}
               <TeluguVoiceReader
-                reviewText={`${review.title}. సమీక్ష: ${review.fullReview}. మొత్తం మీద: ${review.overall}. రేటింగ్: ${review.rating} స్టార్స్.`}
+                reviewText={`${review.title}. సమీక్ష: ${review.review}. మొదటి సగం: ${review.firstHalf}. రెండవ సగం: ${review.secondHalf}. సానుకూలాలు: ${review.positives}. ప్రతికూలాలు: ${review.negatives}. మొత్తం మీద: ${review.overall}. రేటింగ్: ${review.rating} స్టార్స్.`}
               />
 
               {showComments && (
@@ -295,35 +322,42 @@ const ReviewDetail = () => {
             </CardContent>
           </Card>
 
-          {/* 🎡 Rating Meter */}
+          {/* 🎡 Rating Meter with Sound */}
           <Card className="bg-slate-100 border-2 border-primary shadow-[0_0_30px_rgba(255,215,0,0.5)] max-w-sm mx-auto mt-6 p-8">
             <div className="flex flex-col items-center gap-4">
               <h3 className="text-2xl text-center text-slate-900 font-extrabold">
                 RATING METER
               </h3>
-              <ThreeDRatingMeter
-                rating={parseFloat(review.rating)}
-                size={160}
-              />
+
+             
+
+              <div
+                className={`transition-transform duration-[2500ms] ${
+                  isSpinning ? "rotate-[1080deg]" : ""
+                }`}
+              >
+                <ThreeDRatingMeter
+                  rating={parseFloat(review.rating)}
+                  size={160}
+                />
+              </div>
             </div>
           </Card>
         </div>
       </div>
 
-      {/* ✅ Book Ticket Modal */}
+      {/* 🎟️ Ticket Modal */}
       {showBookingOptions && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
           <div className="bg-card border-2 border-primary rounded-xl shadow-[0_0_30px_rgba(255,215,0,0.6)] p-8 text-center space-y-6 max-w-sm w-full mx-4">
-            <h3 className="text-2xl font-bold text-primary">
-              🎟️ Book Your Tickets
-            </h3>
+            <h3 className="text-2xl font-bold text-primary">Book Your Tickets</h3>
             <p className="text-slate-200">Choose your preferred platform:</p>
             <div className="flex flex-col gap-4">
               <Button
                 onClick={handleOpenBookMyShow}
                 className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg shadow-lg"
               >
-                🎬 BookMyShow
+                🎟️ BookMyShow
               </Button>
               <Button
                 onClick={handleOpenDistrictApp}
@@ -342,6 +376,21 @@ const ReviewDetail = () => {
           </div>
         </div>
       )}
+
+      {/* Like Animation Styles */}
+      <style>{`
+        @keyframes like-pop {
+          0% { transform: scale(1); filter: drop-shadow(0 0 0 red); }
+          50% { transform: scale(1.4); filter: drop-shadow(0 0 10px red); }
+          100% { transform: scale(1); }
+        }
+        .animate-like-pop { animation: like-pop 0.5s ease-in-out; }
+        @keyframes bubble {
+          0% { opacity: 1; transform: translateY(0); }
+          100% { opacity: 0; transform: translateY(-40px); }
+        }
+        .animate-bubble { animation: bubble 0.8s ease-in-out; }
+      `}</style>
     </>
   );
 };
