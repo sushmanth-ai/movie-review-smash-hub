@@ -199,7 +199,7 @@ const ReviewDetail = () => {
         <div className="container mx-auto px-4 pt-24 pb-8">
           {/* 🎬 Main Review Card */}
           <Card className="relative bg-card border-2 border-primary shadow-[0_0_30px_rgba(255,215,0,0.5)] max-w-4xl mx-auto">
-            <div className="absolute left-1/2 -translate-x-1/2 -top-[1.4rem] bg-yellow-400 text-black font-extrabold text-lg rounded-b-2xl border-x-2 border-b-2 border-primary shadow-[0_4px_10px_rgba(255,215,0,0.4)] mx-[3px] px-[24px] py-[7px] my-[25px]">
+            <div className="absolute left-1/2 -translate-x-1/2 -top-[1.4rem] bg-yellow-400 text-black font-extrabold text-sm sm:text-base md:text-lg rounded-b-2xl border-x-2 border-b-2 border-primary shadow-[0_4px_10px_rgba(255,215,0,0.4)] mx-[3px] px-3 sm:px-6 md:px-[24px] py-[7px] my-[25px] max-w-[90%] sm:max-w-none text-center">
               {review.title}
             </div>
 
