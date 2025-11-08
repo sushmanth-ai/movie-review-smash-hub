@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { useSound } from "@/hooks/useSound";
 
 interface ThreeDRatingMeterProps {
   rating: number; // Rating out of 5
@@ -13,11 +14,13 @@ export const ThreeDRatingMeter: React.FC<ThreeDRatingMeterProps> = ({
   const [showRating, setShowRating] = useState(false);
   const [animatedPercentage, setAnimatedPercentage] = useState(0);
   const [animatedRating, setAnimatedRating] = useState(0);
+  const { playSound } = useSound();
 
   const targetPercentage = Math.min(100, Math.max(0, (rating / 5) * 100));
 
   useEffect(() => {
     if (showRating) {
+      playSound('spin');
       let currentPercentage = 0;
       let currentRating = 0;
 
