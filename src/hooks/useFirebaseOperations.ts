@@ -54,14 +54,33 @@ export const useFirebaseOperations = () => {
     }
   };
 
-  const loadComments = (setReviews: React.Dispatch<React.SetStateAction<MovieReview[]>>) => {
+  const loadComments = (
+    setReviews: React.Dispatch<React.SetStateAction<MovieReview[]>>,
+    onNewReply?: (author: string, text: string) => void
+  ) => {
     if (!db) return;
+    
+    let isFirstLoad = true;
+    const currentUserName = localStorage.getItem('commenterName');
     
     try {
       const commentsQuery = query(collection(db, 'comments'), orderBy('timestamp', 'desc'));
       onSnapshot(commentsQuery, (snapshot) => {
         const commentsData: { [key: string]: Comment[] } = {};
         const repliesData: { [key: string]: Comment[] } = {};
+        
+        // Check for new replies from other users
+        if (!isFirstLoad && onNewReply) {
+          snapshot.docChanges().forEach((change) => {
+            if (change.type === 'added') {
+              const data = change.doc.data();
+              // Only notify for replies (has parentCommentId) from other users
+              if (data.parentCommentId && data.author !== currentUserName) {
+                onNewReply(data.author, data.text);
+              }
+            }
+          });
+        }
         
         // First pass: collect all comments and replies
         snapshot.forEach((doc) => {
@@ -105,6 +124,7 @@ export const useFirebaseOperations = () => {
           comments: commentsData[review.id] || []
         })));
         
+        isFirstLoad = false;
         console.log('Comments and replies loaded successfully');
       });
     } catch (error) {
