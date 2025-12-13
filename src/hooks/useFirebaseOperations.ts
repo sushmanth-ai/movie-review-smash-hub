@@ -219,15 +219,20 @@ export const useFirebaseOperations = () => {
       return;
     }
 
-    // Ask for user name
-    const userName = prompt("Please enter your name:");
+    // Check for saved name in localStorage or ask for it
+    let userName = localStorage.getItem('commenterName');
     if (!userName?.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter your name to post a comment.",
-        variant: "destructive"
-      });
-      return;
+      userName = prompt("Please enter your name:");
+      if (!userName?.trim()) {
+        toast({
+          title: "Error",
+          description: "Please enter your name to post a comment.",
+          variant: "destructive"
+        });
+        return;
+      }
+      // Save the name for future comments
+      localStorage.setItem('commenterName', userName.trim());
     }
 
     console.log('Comment submitted for:', reviewId, 'Text:', commentText, 'Author:', userName);
@@ -294,15 +299,20 @@ export const useFirebaseOperations = () => {
       return;
     }
 
-    // Ask for user name
-    const userName = prompt("Please enter your name:");
+    // Check for saved name in localStorage or ask for it
+    let userName = localStorage.getItem('commenterName');
     if (!userName?.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter your name to post a reply.",
-        variant: "destructive"
-      });
-      return;
+      userName = prompt("Please enter your name:");
+      if (!userName?.trim()) {
+        toast({
+          title: "Error",
+          description: "Please enter your name to post a reply.",
+          variant: "destructive"
+        });
+        return;
+      }
+      // Save the name for future comments
+      localStorage.setItem('commenterName', userName.trim());
     }
 
     console.log('Reply submitted for comment:', parentCommentId, 'Text:', replyText, 'Author:', userName);
