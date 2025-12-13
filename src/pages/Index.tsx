@@ -10,8 +10,10 @@ import { TodayViews } from '@/components/TodayViews';
 import { ReviewCarousel } from '@/components/ReviewCarousel';
 import { CurtainAnimation } from '@/components/CurtainAnimation';
 import { useSound } from '@/hooks/useSound';
+import { useToast } from '@/hooks/use-toast';
 const Index = () => {
   const { playSound } = useSound();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [reviews, setReviews] = useState<MovieReview[]>([]);
   const [newComment, setNewComment] = useState<{
@@ -82,7 +84,13 @@ const Index = () => {
 
       // Load likes, comments, and views for all reviews
       loadLikes(setReviews);
-      loadComments(setReviews);
+      loadComments(setReviews, (author, text) => {
+        playSound('popup');
+        toast({
+          title: `🔔 ${author} replied!`,
+          description: text.length > 50 ? text.substring(0, 50) + '...' : text,
+        });
+      });
       loadReviewViews(setReviews);
     });
     return () => unsubscribe();

@@ -83,7 +83,13 @@ const ReviewDetail = () => {
           };
           setReview(firebaseReview);
           loadLikes(setReviewFromList);
-          loadComments(setReviewFromList);
+          loadComments(setReviewFromList, (author, text) => {
+            playSound('popup');
+            toast({
+              title: `🔔 ${author} replied!`,
+              description: text.length > 50 ? text.substring(0, 50) + '...' : text,
+            });
+          });
         } else {
           const staticReview = movieReviewsData.find((r) => r.id === id);
           if (staticReview) {
@@ -95,7 +101,13 @@ const ReviewDetail = () => {
             setReview(reviewWithDefaults);
             setViewCount(staticReview.views || 0);
             loadLikes(setReviewFromList);
-            loadComments(setReviewFromList);
+            loadComments(setReviewFromList, (author, text) => {
+              playSound('popup');
+              toast({
+                title: `🔔 ${author} replied!`,
+                description: text.length > 50 ? text.substring(0, 50) + '...' : text,
+              });
+            });
           }
         }
       });
