@@ -1,9 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, Reply } from 'lucide-react';
+import { Send, Reply, Bell } from 'lucide-react';
 import { MovieReview, Comment } from '@/data/movieReviews';
+import { useSound } from '@/hooks/useSound';
+import { useToast } from '@/hooks/use-toast';
 
 interface CommentSectionProps {
   review: MovieReview;
@@ -22,6 +24,36 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
 }) => {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
+  const { playSound } = useSound();
+  const { toast } = useToast();
+  const prevCommentsRef = useRef<number>(0);
+  const currentUserName = localStorage.getItem('commenterName');
+
+  // Track new replies and show notification
+  useEffect(() => {
+    const totalReplies = review.comments.reduce((acc, comment) => 
+      acc + (comment.replies?.length || 0), 0
+    );
+    const totalComments = review.comments.length + totalReplies;
+    
+    if (prevCommentsRef.current > 0 && totalComments > prevCommentsRef.current) {
+      // Check if the new comment/reply is from someone else
+      const latestComment = review.comments[0];
+      const latestReply = review.comments.find(c => c.replies?.length)?.replies?.[0];
+      
+      const isOwnComment = latestComment?.author === currentUserName;
+      const isOwnReply = latestReply?.author === currentUserName;
+      
+      if (!isOwnComment && !isOwnReply) {
+        playSound('popup');
+        toast({
+          title: "🔔 New Reply!",
+          description: "Someone replied to a comment.",
+        });
+      }
+    }
+    prevCommentsRef.current = totalComments;
+  }, [review.comments, playSound, toast, currentUserName]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
