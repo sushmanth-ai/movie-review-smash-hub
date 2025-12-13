@@ -31,6 +31,7 @@ const ReviewDetail = () => {
     loadComments,
     handleLike,
     handleComment,
+    handleReply,
     likedReviews,
   } = useFirebaseOperations();
 
@@ -132,6 +133,11 @@ const ReviewDetail = () => {
     if (!review || !newComment.trim()) return;
     handleComment(review.id, newComment, setReviewFromList, noopSetNewComment);
     setNewComment("");
+  };
+
+  const handleReplySubmit = (commentId: string, replyText: string) => {
+    if (!review) return;
+    handleReply(review.id, commentId, replyText, setReviewFromList);
   };
 
   const handleShareClick = async () => {
@@ -341,7 +347,7 @@ const ReviewDetail = () => {
                   newComment={newComment}
                   onCommentChange={setNewComment}
                   onCommentSubmit={handleCommentSubmit}
-                  onReplySubmit={() => {}}
+                  onReplySubmit={handleReplySubmit}
                 />
               )}
             </CardContent>
