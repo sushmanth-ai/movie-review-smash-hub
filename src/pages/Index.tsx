@@ -8,6 +8,7 @@ import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '@/utils/firebase';
 import { TodayViews } from '@/components/TodayViews';
 import { ReviewCarousel } from '@/components/ReviewCarousel';
+import { CurtainAnimation } from '@/components/CurtainAnimation';
 import { useSound } from '@/hooks/useSound';
 import { useToast } from '@/hooks/use-toast';
 const Index = () => {
@@ -154,6 +155,7 @@ const Index = () => {
   const newReviews = filteredReviews.slice(0, 5);
   const oldReviews = filteredReviews.slice(5);
   return <>
+      <CurtainAnimation />
       <div className="min-h-screen bg-background">
       {/* Fixed Header with Black and Gold Theme */}
       <div className="fixed top-0 left-0 w-full z-50 p-2 shadow-[0_4px_20px_rgba(255,215,0,0.3)] border-b-2 border-primary bg-background">

@@ -12,6 +12,7 @@ import { useFirebaseOperations } from "@/hooks/useFirebaseOperations";
 import { onSnapshot, doc, updateDoc, increment } from "firebase/firestore";
 import { db } from "@/utils/firebase";
 import { useToast } from "@/hooks/use-toast";
+import { CurtainAnimation } from "@/components/CurtainAnimation";
 import { useSound } from "@/hooks/useSound";
 
 const ReviewDetail = () => {
@@ -195,6 +196,7 @@ const ReviewDetail = () => {
 
   return (
     <>
+      <CurtainAnimation />
       <div className="min-h-screen bg-background">
         {/* Header */}
         <div className="fixed top-0 left-0 w-full z-50 p-4 shadow-[0_4px_20px_rgba(255,215,0,0.3)] border-b-2 border-primary bg-background">
