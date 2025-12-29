@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { MovieReview } from '@/data/movieReviews';
 import { ChevronRight, Eye } from 'lucide-react';
 import { useFirebaseOperations } from '@/hooks/useFirebaseOperations';
+import { FestivalBadge } from '@/components/festival';
 
 interface MovieCardProps {
   review: MovieReview;
@@ -20,10 +21,11 @@ export const MovieCard: React.FC<MovieCardProps> = ({ review }) => {
 
   return (
     <Card
-      className="bg-card border-2 border-primary shadow-[0_0_20px_rgba(255,215,0,0.3)] h-full transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,215,0,0.5)] cursor-pointer"
+      className="bg-card border-2 border-primary shadow-[0_0_20px_rgba(255,215,0,0.3)] h-full transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,215,0,0.5)] cursor-pointer festival-enhanced"
       onClick={handleCardClick}
     >
-      <CardHeader className="text-center">
+      <CardHeader className="text-center relative">
+        <FestivalBadge className="absolute top-2 right-2 festival-badge" />
         <h3 className="text-xl font-bold text-primary">
           {review.title}
         </h3>
