@@ -6,6 +6,7 @@ import { LogOut, Plus, Home } from 'lucide-react';
 import { ReviewList } from '@/components/admin/ReviewList';
 import { ReviewForm } from '@/components/admin/ReviewForm';
 import { useAdminReviews } from '@/hooks/useAdminReviews';
+import { AdminRatings } from '@/types/ratings';
 
 export interface ReviewFormData {
   title: string;
@@ -17,6 +18,7 @@ export interface ReviewFormData {
   negatives: string;
   overall: string;
   rating: string;
+  adminRatings?: AdminRatings;
 }
 
 const AdminDashboard = () => {

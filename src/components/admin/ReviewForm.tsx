@@ -4,7 +4,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
+import { Star } from 'lucide-react';
 import { ReviewFormData } from '@/pages/AdminDashboard';
+import { AdminRatings, calculateAdminOverall } from '@/types/ratings';
 
 interface ReviewFormProps {
   initialData?: ReviewFormData;
@@ -12,6 +15,15 @@ interface ReviewFormProps {
   onCancel: () => void;
   isEditing: boolean;
 }
+
+const RATING_CATEGORIES: { key: keyof AdminRatings; label: string; emoji: string }[] = [
+  { key: 'story', label: 'Story', emoji: '📖' },
+  { key: 'acting', label: 'Acting', emoji: '🎭' },
+  { key: 'music', label: 'Music', emoji: '🎵' },
+  { key: 'direction', label: 'Direction', emoji: '🎬' },
+  { key: 'cinematography', label: 'Cinematography', emoji: '📷' },
+  { key: 'rewatchValue', label: 'Rewatch Value', emoji: '🔄' },
+];
 
 export const ReviewForm: React.FC<ReviewFormProps> = ({
   initialData,
@@ -28,12 +40,30 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
     positives: '',
     negatives: '',
     overall: '',
-    rating: ''
+    rating: '',
+    adminRatings: {
+      story: 3,
+      acting: 3,
+      music: 3,
+      direction: 3,
+      cinematography: 3,
+      rewatchValue: 3,
+    }
   });
 
   useEffect(() => {
     if (initialData) {
-      setFormData(initialData);
+      setFormData({
+        ...initialData,
+        adminRatings: initialData.adminRatings || {
+          story: 3,
+          acting: 3,
+          music: 3,
+          direction: 3,
+          cinematography: 3,
+          rewatchValue: 3,
+        }
+      });
     }
   }, [initialData]);
 
@@ -41,10 +71,43 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleRatingChange = (category: keyof AdminRatings, value: number[]) => {
+    setFormData(prev => ({
+      ...prev,
+      adminRatings: {
+        ...prev.adminRatings!,
+        [category]: value[0]
+      }
+    }));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    // Calculate overall rating from admin ratings
+    const adminOverall = calculateAdminOverall(formData.adminRatings!);
+    onSubmit({
+      ...formData,
+      rating: `${adminOverall} STARS`
+    });
   };
+
+  const renderStars = (value: number) => {
+    return (
+      <div className="flex items-center gap-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star
+            key={star}
+            className={`w-4 h-4 ${
+              star <= value ? 'fill-yellow-500 text-yellow-500' : 'text-gray-300'
+            }`}
+          />
+        ))}
+        <span className="ml-2 font-bold text-primary">{value}/5</span>
+      </div>
+    );
+  };
+
+  const adminOverall = formData.adminRatings ? calculateAdminOverall(formData.adminRatings) : 0;
 
   return (
     <Card className="bg-white/95">
@@ -149,15 +212,47 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
             />
           </div>
 
-          <div>
-            <Label htmlFor="rating">⭐ Overall Rating</Label>
-            <Input
-              id="rating"
-              value={formData.rating}
-              onChange={(e) => handleChange('rating', e.target.value)}
-              required
-              placeholder="e.g., 4 STARS or 3.5 STARS"
-            />
+          {/* Category-wise Ratings Section */}
+          <div className="border-2 border-primary/30 rounded-lg p-4 bg-gradient-to-r from-primary/5 to-primary/10">
+            <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
+              ⭐ Category-Wise Ratings (Critic Score)
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {RATING_CATEGORIES.map(({ key, label, emoji }) => (
+                <div key={key} className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <Label className="text-sm font-medium">
+                      {emoji} {label}
+                    </Label>
+                    {renderStars(formData.adminRatings?.[key] || 3)}
+                  </div>
+                  <Slider
+                    value={[formData.adminRatings?.[key] || 3]}
+                    onValueChange={(value) => handleRatingChange(key, value)}
+                    min={1}
+                    max={5}
+                    step={0.5}
+                    className="w-full"
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Overall Critic Score */}
+            <div className="mt-6 pt-4 border-t border-primary/20">
+              <div className="flex items-center justify-between">
+                <span className="text-lg font-bold text-primary">
+                  🎬 Overall Critic Rating:
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-3xl font-extrabold text-primary">
+                    {adminOverall}
+                  </span>
+                  <span className="text-lg text-muted-foreground">/5 STARS</span>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="flex gap-4 pt-4">
