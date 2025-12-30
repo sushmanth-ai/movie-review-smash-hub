@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Send, Reply } from 'lucide-react';
 import { MovieReview, Comment } from '@/data/movieReviews';
+import { CommentReactionsComponent } from './CommentReactions';
 
 interface CommentSectionProps {
   review: MovieReview;
@@ -44,9 +45,15 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   };
 
   const renderComment = (comment: Comment, isReply = false) => (
-    <div key={comment.id} className={`bg-gray-800 p-2 rounded text-sm ${isReply ? 'ml-4 mt-1' : ''}`}>
-      <p className="text-gray-300">{comment.text}</p>
-      <div className="flex items-center justify-between mt-1">
+    <div key={comment.id} className={`bg-gray-800 p-3 rounded-lg text-sm ${isReply ? 'ml-4 mt-2' : ''}`}>
+      <p className="text-gray-300 mb-2">{comment.text}</p>
+      
+      {/* Comment Reactions */}
+      <div className="mb-2">
+        <CommentReactionsComponent commentId={comment.id} compact />
+      </div>
+      
+      <div className="flex items-center justify-between">
         <p className="text-xs text-gray-500">
           {comment.author} • {comment.timestamp.toLocaleString()}
         </p>
@@ -107,7 +114,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
         </Button>
       </div>
       
-      <div className="space-y-2 max-h-40 overflow-y-auto">
+      <div className="space-y-3 max-h-60 overflow-y-auto">
         {review.comments.map((comment) => renderComment(comment))}
       </div>
     </div>

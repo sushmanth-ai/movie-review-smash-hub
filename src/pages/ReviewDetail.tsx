@@ -9,11 +9,14 @@ import { CommentSection } from "@/components/CommentSection";
 import { ThreeDRatingMeter } from "@/components/ThreeDRatingMeter";
 import { TeluguVoiceReader } from "@/components/TeluguVoiceReader";
 import { useFirebaseOperations } from "@/hooks/useFirebaseOperations";
-import { onSnapshot, doc, updateDoc, increment } from "firebase/firestore";
+import { onSnapshot, doc, updateDoc, increment, getDoc } from "firebase/firestore";
 import { db } from "@/utils/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { CurtainAnimation } from "@/components/CurtainAnimation";
 import { useSound } from "@/hooks/useSound";
+import { UserStarRating } from "@/components/UserStarRating";
+import { AdminRatingsDisplay } from "@/components/AdminRatingsDisplay";
+import { RatingComparison } from "@/components/RatingComparison";
 
 const ReviewDetail = () => {
   const { id } = useParams();
@@ -26,6 +29,8 @@ const ReviewDetail = () => {
   const [viewCount, setViewCount] = useState(0);
   const [showBookingOptions, setShowBookingOptions] = useState(false);
   const [showLikeEffect, setShowLikeEffect] = useState(false);
+  const [audienceRating, setAudienceRating] = useState(0);
+  const [audienceCount, setAudienceCount] = useState(0);
   const {
     loadLikes,
     loadComments,
@@ -364,6 +369,33 @@ const ReviewDetail = () => {
               )}
             </CardContent>
           </Card>
+
+          {/* Rating Section */}
+          <div className="max-w-4xl mx-auto mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Admin Ratings */}
+            <AdminRatingsDisplay 
+              adminRatings={review.adminRatings}
+              legacyRating={review.rating}
+            />
+            
+            {/* User Rating */}
+            <UserStarRating 
+              movieId={review.id}
+              onRatingChange={(avg, count) => {
+                setAudienceRating(avg);
+                setAudienceCount(count);
+              }}
+            />
+          </div>
+
+          {/* Rating Comparison */}
+          <div className="max-w-md mx-auto mt-4">
+            <RatingComparison
+              criticRating={parseFloat(review.rating?.match(/[\d.]+/)?.[0] || '0')}
+              audienceRating={audienceRating}
+              audienceCount={audienceCount}
+            />
+          </div>
 
           {/* Rating Meter */}
           <Card className="bg-slate-100 border-2 border-primary shadow-[0_0_30px_rgba(255,215,0,0.5)] max-w-sm mx-auto mt-6 p-8">

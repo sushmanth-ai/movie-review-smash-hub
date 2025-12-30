@@ -13,8 +13,7 @@ import {
   FestivalProvider, 
   FestivalBanner, 
   FestivalParticles, 
-  FestivalOverlay, 
-  FestivalToggle 
+  FestivalOverlay
 } from "./components/festival";
 
 const queryClient = new QueryClient();
@@ -30,7 +29,6 @@ const App = () => (
         <FestivalOverlay />
         <FestivalParticles />
         <FestivalBanner />
-        <FestivalToggle />
         
         <BrowserRouter>
           <div className="flex flex-col min-h-screen relative z-10">
