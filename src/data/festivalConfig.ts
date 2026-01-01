@@ -424,13 +424,41 @@ export const festivalsConfig: Festival[] = [
     bannerEmoji: '🎄',
   },
 
-  // December/January - New Year
+  // December/January - New Year 2026
   {
     id: 'new-year',
     name: 'New Year',
     months: [12, 1],
     startDate: '2025-12-30',
     endDate: '2026-01-03',
+    colors: {
+      primary: '45 100% 51%',
+      secondary: '220 100% 55%',
+      accent: '280 100% 55%',
+      glow: '45 100% 70%',
+    },
+    theme: {
+      gradient: {
+        from: '220 70% 20%',
+        via: '260 60% 25%',
+        to: '45 80% 45%',
+      },
+      particles: ['✦', '✧', '◆'],
+      particleCount: 30,
+      glowColor: '45 100% 75%',
+      overlayOpacity: 0.05,
+    },
+    bannerText: 'New Year Special Reviews',
+    bannerEmoji: '🎉',
+  },
+
+  // December/January - New Year 2027
+  {
+    id: 'new-year-2027',
+    name: 'New Year',
+    months: [12, 1],
+    startDate: '2026-12-30',
+    endDate: '2027-01-03',
     colors: {
       primary: '45 100% 51%',
       secondary: '220 100% 55%',
