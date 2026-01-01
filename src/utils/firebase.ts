@@ -1,6 +1,7 @@
 
 import { initializeApp, getApps } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
+import { getDatabase } from 'firebase/database';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBgw0O4B_NbCvGfxOzSgEtNNYYYLoxFpic",
@@ -15,13 +16,15 @@ const firebaseConfig = {
 
 let app;
 let db;
+let database;
 
 try {
   app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
   db = getFirestore(app);
+  database = getDatabase(app);
   console.log('Firebase initialized successfully');
 } catch (error) {
   console.error('Firebase initialization error:', error);
 }
 
-export { db };
+export { db, database };
