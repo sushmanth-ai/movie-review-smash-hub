@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Send, Reply } from 'lucide-react';
 import { MovieReview, Comment } from '@/data/movieReviews';
-import { CommentReactionsComponent } from './CommentReactions';
+import { DialogueStickerReactions } from './DialogueStickerReactions';
 
 interface CommentSectionProps {
   review: MovieReview;
@@ -45,22 +44,22 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   };
 
   const renderComment = (comment: Comment, isReply = false) => (
-    <div key={comment.id} className={`bg-gray-800 p-3 rounded-lg text-sm ${isReply ? 'ml-4 mt-2' : ''}`}>
-      <p className="text-gray-300 mb-2">{comment.text}</p>
+    <div key={comment.id} className={`bg-secondary/50 p-3 rounded-lg text-sm ${isReply ? 'ml-4 mt-2' : ''}`}>
+      <p className="text-muted-foreground mb-3">{comment.text}</p>
       
-      {/* Comment Reactions */}
-      <div className="mb-2">
-        <CommentReactionsComponent commentId={comment.id} compact />
+      {/* Dialogue Sticker Reactions */}
+      <div className="mb-3">
+        <DialogueStickerReactions targetId={comment.id} targetType="comment" />
       </div>
       
       <div className="flex items-center justify-between">
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-muted-foreground/70">
           {comment.author} • {comment.timestamp.toLocaleString()}
         </p>
         <Button
           size="sm"
           variant="ghost"
-          className="h-6 px-2 text-xs text-gray-400 hover:text-white"
+          className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
           onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
         >
           <Reply className="w-3 h-3 mr-1" />
@@ -74,13 +73,13 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
             placeholder={`Reply to ${comment.author}...`}
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}
-            className="flex-1 bg-gray-700 border-gray-600 text-white text-xs h-8"
+            className="flex-1 bg-secondary border-border/30 text-foreground text-xs h-8"
             onKeyPress={(e) => handleReplyKeyPress(e, comment.id)}
           />
           <Button
             size="sm"
             onClick={() => handleReplySubmit(comment.id)}
-            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 h-8 px-2"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-2"
           >
             <Send className="w-3 h-3" />
           </Button>
@@ -96,19 +95,19 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   );
 
   return (
-    <div className="mt-4 space-y-3 border-t border-gray-700 pt-4">
+    <div className="mt-4 space-y-3 border-t border-border/30 pt-4">
       <div className="flex gap-2">
         <Input
           placeholder="Add a comment..."
           value={newComment}
           onChange={(e) => onCommentChange(e.target.value)}
-          className="flex-1 bg-gray-800 border-gray-600 text-white"
+          className="flex-1 bg-secondary border-border/30 text-foreground"
           onKeyPress={handleKeyPress}
         />
         <Button
           size="sm"
           onClick={onCommentSubmit}
-          className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+          className="bg-primary text-primary-foreground hover:bg-primary/90"
         >
           <Send className="w-4 h-4" />
         </Button>
