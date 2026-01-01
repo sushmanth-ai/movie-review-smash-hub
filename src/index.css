@@ -2,9 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Design System - All colors MUST be HSL */
 
 /* Festival CSS Variables */
 :root {
@@ -12,6 +10,32 @@ All colors MUST be HSL.
   --festival-secondary: 0 0% 15%;
   --festival-accent: 45 100% 51%;
   --festival-glow: 45 100% 60%;
+}
+
+/* Premium Particle Animation */
+@keyframes premium-fall {
+  0% {
+    transform: translateY(-5vh) translateX(0) rotate(0deg) scale(0.8);
+    opacity: 0;
+  }
+  5% {
+    opacity: var(--particle-opacity, 0.3);
+  }
+  50% {
+    transform: translateY(50vh) translateX(var(--drift, 15px)) rotate(180deg) scale(1);
+  }
+  95% {
+    opacity: var(--particle-opacity, 0.2);
+  }
+  100% {
+    transform: translateY(105vh) translateX(calc(var(--drift, 15px) * -1)) rotate(360deg) scale(0.6);
+    opacity: 0;
+  }
+}
+
+.animate-premium-fall {
+  animation: premium-fall linear infinite;
+  will-change: transform, opacity;
 }
 
 /* Spin animation for 3D elements */
@@ -23,40 +47,18 @@ All colors MUST be HSL.
   animation: spin-slow 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
-/* Festival Falling Particles Animation */
-@keyframes festival-fall {
-  0% {
-    transform: translateY(-10vh) rotate(0deg) scale(1);
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  90% {
-    opacity: 0.8;
-  }
-  100% {
-    transform: translateY(110vh) rotate(360deg) scale(0.8);
-    opacity: 0;
-  }
-}
-
-.animate-festival-fall {
-  animation: festival-fall linear infinite;
-}
-
 /* Festival Glow Pulse */
 @keyframes festival-glow {
   0%, 100% {
-    box-shadow: 0 0 20px hsl(var(--festival-glow) / 0.4);
+    box-shadow: 0 0 20px hsl(var(--festival-glow) / 0.3);
   }
   50% {
-    box-shadow: 0 0 40px hsl(var(--festival-glow) / 0.6);
+    box-shadow: 0 0 35px hsl(var(--festival-glow) / 0.5);
   }
 }
 
 .animate-festival-glow {
-  animation: festival-glow 2s ease-in-out infinite;
+  animation: festival-glow 3s ease-in-out infinite;
 }
 
 /* Festival Shimmer Effect */
@@ -73,17 +75,27 @@ All colors MUST be HSL.
   background: linear-gradient(
     90deg,
     transparent,
-    hsl(var(--festival-glow) / 0.2),
+    hsl(var(--festival-glow) / 0.15),
     transparent
   );
   background-size: 200% 100%;
-  animation: festival-shimmer 3s ease-in-out infinite;
+  animation: festival-shimmer 4s ease-in-out infinite;
+}
+
+/* Reaction bounce animation */
+@keyframes reaction-bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+.animate-reaction-bounce {
+  animation: reaction-bounce 0.3s ease-out;
 }
 
 /* Festival-aware styling */
 [data-festival] .festival-enhanced {
-  box-shadow: 0 0 20px hsl(var(--festival-glow) / 0.3);
-  border-color: hsl(var(--festival-primary));
+  box-shadow: 0 0 15px hsl(var(--festival-glow) / 0.2);
+  border-color: hsl(var(--festival-primary) / 0.5);
 }
 
 [data-festival] .festival-badge {
@@ -96,9 +108,10 @@ All colors MUST be HSL.
 
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
-  .animate-festival-fall,
+  .animate-premium-fall,
   .animate-festival-glow,
-  .animate-festival-shimmer {
+  .animate-festival-shimmer,
+  .animate-reaction-bounce {
     animation: none;
   }
 }
@@ -136,19 +149,12 @@ All colors MUST be HSL.
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 10%;
-
     --sidebar-foreground: 45 100% 51%;
-
     --sidebar-primary: 45 100% 51%;
-
     --sidebar-primary-foreground: 0 0% 0%;
-
     --sidebar-accent: 0 0% 15%;
-
     --sidebar-accent-foreground: 45 100% 51%;
-
     --sidebar-border: 45 100% 51%;
-
     --sidebar-ring: 45 100% 51%;
   }
 

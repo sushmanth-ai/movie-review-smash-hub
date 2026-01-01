@@ -12,48 +12,23 @@ interface FestivalState {
 const TIMEZONE = 'Asia/Kolkata';
 const STORAGE_KEY = 'sm-reviews-decorations-enabled';
 
-// Parse date string in YYYY-MM-DD format to Date object in IST
-const parseDate = (dateStr: string): Date => {
-  const [year, month, day] = dateStr.split('-').map(Number);
-  // Create date at midnight IST
-  const date = new Date(Date.UTC(year, month - 1, day, -5, -30)); // IST is UTC+5:30
-  return date;
-};
-
-// Get current date in IST
-const getCurrentDateIST = (): Date => {
-  const now = new Date();
-  return new Date(now.toLocaleString('en-US', { timeZone: TIMEZONE }));
-};
-
-// Check if current date is within festival period
-const isDateInRange = (current: Date, startStr: string, endStr: string): boolean => {
-  const start = parseDate(startStr);
-  const end = parseDate(endStr);
-  
-  // Set end to end of day
-  end.setHours(23, 59, 59, 999);
-  
-  const currentDate = new Date(current.getFullYear(), current.getMonth(), current.getDate());
-  const startDate = new Date(start.getFullYear(), start.getMonth(), start.getDate());
-  const endDate = new Date(end.getFullYear(), end.getMonth(), end.getDate());
-  
-  return currentDate >= startDate && currentDate <= endDate;
+// Get current date string in IST timezone (YYYY-MM-DD)
+const getCurrentDateStrIST = (): string => {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: TIMEZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+  return formatter.format(new Date());
 };
 
 // Get active festival based on current date
 const getActiveFestival = (): Festival | null => {
-  const now = getCurrentDateIST();
-  const currentMonth = now.getMonth() + 1; // 1-12
+  const dateStr = getCurrentDateStrIST();
   
-  // Filter festivals that could be active this month
-  const potentialFestivals = festivalsConfig.filter(festival => 
-    festival.months.includes(currentMonth)
-  );
-  
-  // Check each potential festival for exact date match
-  for (const festival of potentialFestivals) {
-    if (isDateInRange(now, festival.startDate, festival.endDate)) {
+  for (const festival of festivalsConfig) {
+    if (dateStr >= festival.startDate && dateStr <= festival.endDate) {
       return festival;
     }
   }
@@ -81,25 +56,24 @@ export const useFestival = (): FestivalState => {
       const festival = getActiveFestival();
       setActiveFestival(festival);
       
-      // Apply CSS variables for active festival
+      const theme = festival?.colors || defaultTheme.colors;
+      
+      // Apply CSS variables
+      document.documentElement.style.setProperty('--festival-primary', theme.primary);
+      document.documentElement.style.setProperty('--festival-secondary', theme.secondary);
+      document.documentElement.style.setProperty('--festival-accent', theme.accent);
+      document.documentElement.style.setProperty('--festival-glow', theme.glow);
+      
       if (festival && decorationsEnabled) {
-        document.documentElement.style.setProperty('--festival-primary', festival.colors.primary);
-        document.documentElement.style.setProperty('--festival-secondary', festival.colors.secondary);
-        document.documentElement.style.setProperty('--festival-accent', festival.colors.accent);
-        document.documentElement.style.setProperty('--festival-glow', festival.colors.glow);
         document.documentElement.setAttribute('data-festival', festival.id);
       } else {
-        document.documentElement.style.removeProperty('--festival-primary');
-        document.documentElement.style.removeProperty('--festival-secondary');
-        document.documentElement.style.removeProperty('--festival-accent');
-        document.documentElement.style.removeProperty('--festival-glow');
         document.documentElement.removeAttribute('data-festival');
       }
     };
     
     checkFestival();
     
-    // Check every hour for festival changes (in case user keeps page open)
+    // Check every hour for festival changes
     const interval = setInterval(checkFestival, 60 * 60 * 1000);
     
     return () => clearInterval(interval);
