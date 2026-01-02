@@ -278,30 +278,28 @@ const ReviewDetail = () => {
                 </div>
               </div>
 
-              {/* ❤️ Like / 😊 React / 📤 Share */}
-              <div className="flex flex-col items-center gap-4 mt-6">
-                <div className="flex justify-center items-center gap-6 relative">
-                  <button onClick={() => {
-                    playSound("click");
-                    handleLikeClick(review.id);
-                  }} className={`flex items-center gap-2 font-bold hover:scale-110 transition-transform relative ${likedReviews.has(review.id) ? "text-red-500" : "text-gray-400"}`}>
-                    <ThumbsUp className={`w-6 h-6 ${showLikeEffect ? "animate-like-pop" : ""} ${likedReviews.has(review.id) ? "fill-current" : ""}`} />{" "}
-                    {review.likes}{" "}
-                    {likedReviews.has(review.id) ? "Liked" : "Like"}
-                    {showLikeEffect && <span className="absolute -top-6 text-red-400 font-bold animate-bubble">
-                        {likedReviews.has(review.id) ? "+1 ❤️" : "-1"}
-                      </span>}
-                  </button>
+              {/* ❤️ Like / 💬 Comment / 📤 Share */}
+              <div className="flex justify-center gap-6 mt-6 relative">
+                <button onClick={() => {
+                playSound("click");
+                handleLikeClick(review.id);
+              }} className={`flex items-center gap-2 font-bold hover:scale-110 transition-transform relative ${likedReviews.has(review.id) ? "text-red-500" : "text-gray-400"}`}>
+                  <ThumbsUp className={`w-6 h-6 ${showLikeEffect ? "animate-like-pop" : ""} ${likedReviews.has(review.id) ? "fill-current" : ""}`} />{" "}
+                  {review.likes}{" "}
+                  {likedReviews.has(review.id) ? "Liked" : "Like"}
+                  {showLikeEffect && <span className="absolute -top-6 text-red-400 font-bold animate-bubble">
+                      {likedReviews.has(review.id) ? "+1 ❤️" : "-1"}
+                    </span>}
+                </button>
 
-                  <WhatsAppEmojiReactions targetId={review.id} targetType="review" />
+                <WhatsAppEmojiReactions targetId={review.id} targetType="review" />
 
-                  <button onClick={() => {
-                    playSound("click");
-                    handleShareClick();
-                  }} className="flex items-center gap-2 text-blue-400 font-bold hover:scale-110 transition-transform">
-                    <Share2 className="w-6 h-6" /> Share
-                  </button>
-                </div>
+                <button onClick={() => {
+                playSound("click");
+                handleShareClick();
+              }} className="flex items-center gap-2 text-blue-400 font-bold hover:scale-110 transition-transform">
+                  <Share2 className="w-6 h-6" /> Share
+                </button>
               </div>
 
               {/* 🎟️ Book Your Ticket */}
