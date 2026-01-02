@@ -117,63 +117,80 @@ export const WhatsAppEmojiReactions: React.FC<WhatsAppEmojiReactionsProps> = ({
   };
 
   const totalReactions = Object.values(reactions).reduce((sum, count) => sum + count, 0);
-  const topEmojis = Object.entries(reactions)
+  
+  // Get emojis with counts > 0, sorted by count
+  const activeReactions = Object.entries(reactions)
     .filter(([_, count]) => count > 0)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 3)
-    .map(([emoji]) => emoji);
+    .sort((a, b) => b[1] - a[1]);
 
   return (
-    <div className="relative inline-flex items-center">
-      {/* Emoji trigger button */}
-      <button
-        ref={buttonRef}
-        onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 font-bold hover:scale-110 transition-transform ${
-          userReaction ? 'text-primary' : 'text-muted-foreground'
-        }`}
-        title="React"
-      >
-        {userReaction ? (
-          <span className="text-2xl">{userReaction}</span>
-        ) : (
-          <Smile className="w-6 h-6" />
-        )}
-        {totalReactions > 0 && (
-          <span className="text-sm">
-            {topEmojis.join('')} {totalReactions}
-          </span>
-        )}
-      </button>
-
-      {/* WhatsApp-style floating emoji panel */}
-      {isOpen && (
-        <div
-          ref={panelRef}
-          className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-50 ${
-            isAnimating ? 'animate-scale-out' : 'animate-scale-in'
-          }`}
-        >
-          <div className="flex items-center gap-1 px-3 py-2 bg-card/95 backdrop-blur-lg border border-border/50 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-            {EMOJI_LIST.map((emoji, index) => (
-              <button
-                key={emoji}
-                onClick={() => handleEmojiClick(emoji)}
-                className={`text-2xl p-2 rounded-full transition-all duration-200 hover:scale-125 hover:bg-primary/20 ${
-                  userReaction === emoji ? 'bg-primary/30 scale-110' : ''
-                }`}
-                style={{
-                  animationDelay: `${index * 50}ms`
-                }}
-              >
-                {emoji}
-              </button>
-            ))}
-          </div>
-          {/* Pointer arrow */}
-          <div className="absolute left-1/2 -translate-x-1/2 -bottom-2 w-4 h-4 bg-card/95 border-r border-b border-border/50 rotate-45" />
+    <div className="flex flex-col items-center gap-2">
+      {/* Reaction counts display */}
+      {activeReactions.length > 0 && (
+        <div className="flex flex-wrap justify-center gap-2">
+          {activeReactions.map(([emoji, count]) => (
+            <div
+              key={emoji}
+              className={`flex items-center gap-1 px-2 py-1 rounded-full text-sm transition-all ${
+                userReaction === emoji 
+                  ? 'bg-primary/30 border border-primary/50' 
+                  : 'bg-secondary/50 border border-border/30'
+              }`}
+            >
+              <span className="text-base">{emoji}</span>
+              <span className="font-medium text-foreground">{count}</span>
+            </div>
+          ))}
         </div>
       )}
+
+      {/* Emoji trigger button */}
+      <div className="relative inline-flex items-center">
+        <button
+          ref={buttonRef}
+          onClick={() => setIsOpen(!isOpen)}
+          className={`flex items-center gap-2 font-bold hover:scale-110 transition-transform ${
+            userReaction ? 'text-primary' : 'text-muted-foreground'
+          }`}
+          title="React"
+        >
+          {userReaction ? (
+            <span className="text-2xl animate-scale-in">{userReaction}</span>
+          ) : (
+            <Smile className="w-6 h-6" />
+          )}
+          <span className="text-sm">
+            {userReaction ? 'Reacted' : 'React'}
+          </span>
+        </button>
+
+        {/* WhatsApp-style floating emoji panel */}
+        {isOpen && (
+          <div
+            ref={panelRef}
+            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-50 animate-scale-in"
+          >
+            <div className="flex items-center gap-1 px-3 py-2 bg-card/95 backdrop-blur-lg border border-border/50 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+              {EMOJI_LIST.map((emoji, index) => (
+                <button
+                  key={emoji}
+                  onClick={() => handleEmojiClick(emoji)}
+                  className={`text-2xl p-2 rounded-full transition-all duration-200 hover:scale-125 hover:bg-primary/20 ${
+                    userReaction === emoji ? 'bg-primary/30 scale-110 ring-2 ring-primary' : ''
+                  }`}
+                  style={{
+                    animationDelay: `${index * 50}ms`
+                  }}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+            {/* Pointer arrow */}
+            <div className="absolute left-1/2 -translate-x-1/2 -bottom-2 w-4 h-4 bg-card/95 border-r border-b border-border/50 rotate-45" />
+          </div>
+        )}
+      </div>
     </div>
   );
 };
