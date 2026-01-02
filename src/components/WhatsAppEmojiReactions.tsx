@@ -27,9 +27,10 @@ export const WhatsAppEmojiReactions: React.FC<WhatsAppEmojiReactionsProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [reactions, setReactions] = useState<EmojiReactions>({});
   const [userReaction, setUserReaction] = useState<string | null>(null);
-  const [isAnimating, setIsAnimating] = useState<string | null>(null);
+  const [animatingEmoji, setAnimatingEmoji] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
 
   const deviceId = getDeviceId();
   const storageKey = `emoji_reaction_${targetType}_${targetId}`;
@@ -88,12 +89,26 @@ export const WhatsAppEmojiReactions: React.FC<WhatsAppEmojiReactionsProps> = ({
     };
   }, [isOpen]);
 
+  // Long press handlers for mobile
+  const handleTouchStart = useCallback(() => {
+    longPressTimer.current = setTimeout(() => {
+      setIsOpen(true);
+    }, 500);
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  }, []);
+
   const handleEmojiClick = useCallback(async (emoji: string) => {
     const previousReaction = userReaction;
     const isRemovingReaction = previousReaction === emoji;
     
-    // Optimistic update - update UI immediately
-    setIsAnimating(emoji);
+    // Trigger animation
+    setAnimatingEmoji(emoji);
     
     if (isRemovingReaction) {
       setUserReaction(null);
@@ -107,20 +122,18 @@ export const WhatsAppEmojiReactions: React.FC<WhatsAppEmojiReactionsProps> = ({
       localStorage.setItem(storageKey, emoji);
       setReactions(prev => {
         const newReactions = { ...prev };
-        // Decrement previous reaction
         if (previousReaction && newReactions[previousReaction]) {
           newReactions[previousReaction] = Math.max(0, newReactions[previousReaction] - 1);
         }
-        // Increment new reaction
         newReactions[emoji] = (newReactions[emoji] || 0) + 1;
         return newReactions;
       });
     }
 
     setIsOpen(false);
-    setTimeout(() => setIsAnimating(null), 400);
+    setTimeout(() => setAnimatingEmoji(null), 300);
 
-    // Update Firebase with transaction for atomic updates
+    // Update Firebase
     if (database) {
       try {
         const reactionsRef = ref(database, `emojiReactions/${targetType}/${targetId}`);
@@ -128,18 +141,14 @@ export const WhatsAppEmojiReactions: React.FC<WhatsAppEmojiReactionsProps> = ({
         await runTransaction(reactionsRef, (currentData: ReactionData | null) => {
           const data = currentData || { counts: {}, users: {} };
           
-          // Decrement previous reaction if changing
           if (previousReaction && data.counts[previousReaction]) {
             data.counts[previousReaction] = Math.max(0, (data.counts[previousReaction] || 0) - 1);
           }
           
           if (isRemovingReaction) {
-            // Remove user from users map
             delete data.users[deviceId];
           } else {
-            // Increment new reaction
             data.counts[emoji] = (data.counts[emoji] || 0) + 1;
-            // Store user's reaction
             data.users[deviceId] = emoji;
           }
           
@@ -147,99 +156,131 @@ export const WhatsAppEmojiReactions: React.FC<WhatsAppEmojiReactionsProps> = ({
         });
       } catch (error: any) {
         console.log('Firebase sync failed (changes saved locally):', error.message);
-        // Changes are already applied optimistically, so user sees instant feedback
       }
     }
   }, [userReaction, storageKey, targetType, targetId, deviceId]);
 
-  const totalReactions = Object.values(reactions).reduce((sum, count) => sum + count, 0);
-  
-  // Get emojis with counts > 0, sorted by count
+  // Get emojis with counts > 0
   const activeReactions = Object.entries(reactions)
     .filter(([_, count]) => count > 0)
     .sort((a, b) => b[1] - a[1]);
 
   return (
-    <div className="flex flex-col items-center gap-3">
-      {/* Reaction counts display - WhatsApp style pills */}
-      {activeReactions.length > 0 && (
-        <div className="flex flex-wrap justify-center gap-2 animate-fade-in">
-          {activeReactions.map(([emoji, count]) => (
-            <button
-              key={emoji}
-              onClick={() => handleEmojiClick(emoji)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all duration-200 hover:scale-105 active:scale-95 ${
-                userReaction === emoji 
-                  ? 'bg-primary/30 border-2 border-primary shadow-lg shadow-primary/20' 
-                  : 'bg-card/80 border border-border/40 hover:bg-card'
-              } ${isAnimating === emoji ? 'animate-scale-in' : ''}`}
-            >
-              <span className="text-lg">{emoji}</span>
-              <span className={`font-semibold ${userReaction === emoji ? 'text-primary' : 'text-foreground'}`}>
-                {count}
-              </span>
-            </button>
-          ))}
-          {totalReactions > 0 && (
-            <div className="flex items-center px-2 py-1 text-xs text-muted-foreground">
-              {totalReactions} {totalReactions === 1 ? 'reaction' : 'reactions'}
-            </div>
-          )}
-        </div>
-      )}
+    <div className="relative inline-flex flex-col items-start gap-2">
+      {/* Emoji trigger button - Icon only, no text */}
+      <button
+        ref={buttonRef}
+        onClick={() => setIsOpen(!isOpen)}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
+        className={`flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 hover:scale-110 active:scale-95 ${
+          userReaction 
+            ? 'bg-primary/20 text-primary' 
+            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+        }`}
+        title="React"
+        aria-label="Add reaction"
+      >
+        {userReaction ? (
+          <span className="text-xl">{userReaction}</span>
+        ) : (
+          <Smile className="w-5 h-5" />
+        )}
+      </button>
 
-      {/* Emoji trigger button */}
-      <div className="relative inline-flex items-center">
-        <button
-          ref={buttonRef}
-          onClick={() => setIsOpen(!isOpen)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold transition-all duration-200 hover:scale-110 active:scale-95 ${
-            userReaction 
-              ? 'bg-primary/20 text-primary border border-primary/30' 
-              : 'bg-card/60 text-muted-foreground border border-border/30 hover:bg-card hover:text-foreground'
-          }`}
-          title="React"
+      {/* WhatsApp-style floating emoji popup */}
+      {isOpen && (
+        <div
+          ref={panelRef}
+          className="fixed inset-0 z-[9999] pointer-events-none"
+          style={{ isolation: 'isolate' }}
         >
-          {userReaction ? (
-            <span className="text-2xl animate-scale-in">{userReaction}</span>
-          ) : (
-            <Smile className="w-6 h-6" />
-          )}
-          <span className="text-sm">
-            {userReaction ? 'Reacted' : 'React'}
-          </span>
-        </button>
-
-        {/* WhatsApp-style floating emoji panel */}
-        {isOpen && (
-          <div
-            ref={panelRef}
-            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-50 animate-scale-in"
+          <div 
+            className="pointer-events-auto absolute"
+            style={{
+              bottom: buttonRef.current 
+                ? `${window.innerHeight - buttonRef.current.getBoundingClientRect().top + 8}px` 
+                : '100px',
+              left: buttonRef.current 
+                ? `${Math.max(16, buttonRef.current.getBoundingClientRect().left - 80)}px` 
+                : '50%',
+            }}
           >
-            <div className="flex items-center gap-1 px-4 py-3 bg-card/95 backdrop-blur-xl border border-border/50 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+            <div 
+              className="flex items-center gap-1 px-3 py-2 bg-card border border-border rounded-full shadow-2xl"
+              style={{
+                animation: 'popupAppear 0.2s ease-out forwards',
+              }}
+            >
               {EMOJI_LIST.map((emoji, index) => (
                 <button
                   key={emoji}
                   onClick={() => handleEmojiClick(emoji)}
-                  className={`text-3xl p-2 rounded-full transition-all duration-200 hover:scale-150 hover:bg-primary/20 active:scale-90 ${
-                    userReaction === emoji ? 'bg-primary/30 scale-125 ring-2 ring-primary ring-offset-2 ring-offset-card' : ''
+                  className={`text-2xl p-2 rounded-full transition-all duration-150 hover:scale-150 hover:bg-primary/20 active:scale-90 ${
+                    userReaction === emoji ? 'bg-primary/30 scale-110' : ''
                   }`}
                   style={{
-                    animationDelay: `${index * 40}ms`,
-                    animation: 'scale-in 0.2s ease-out forwards',
+                    animation: `emojiPop 0.15s ease-out ${index * 0.03}s forwards`,
                     opacity: 0,
-                    transform: 'scale(0.5)'
+                    transform: 'scale(0.5) translateY(10px)',
                   }}
                 >
                   {emoji}
                 </button>
               ))}
             </div>
-            {/* Pointer arrow */}
-            <div className="absolute left-1/2 -translate-x-1/2 -bottom-2 w-4 h-4 bg-card/95 border-r border-b border-border/50 rotate-45" />
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* Reaction chips display - WhatsApp style inline chips */}
+      {activeReactions.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          {activeReactions.map(([emoji, count]) => (
+            <button
+              key={emoji}
+              onClick={() => handleEmojiClick(emoji)}
+              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-all duration-200 hover:scale-105 active:scale-95 ${
+                userReaction === emoji 
+                  ? 'bg-primary/25 border border-primary/50' 
+                  : 'bg-muted/60 border border-border/30 hover:bg-muted'
+              } ${animatingEmoji === emoji ? 'scale-110' : ''}`}
+            >
+              <span className="text-sm">{emoji}</span>
+              <span className={`font-medium tabular-nums ${
+                userReaction === emoji ? 'text-primary' : 'text-muted-foreground'
+              }`}>
+                {count}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* CSS Keyframes */}
+      <style>{`
+        @keyframes popupAppear {
+          from {
+            opacity: 0;
+            transform: scale(0.9) translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+        @keyframes emojiPop {
+          from {
+            opacity: 0;
+            transform: scale(0.5) translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 };
