@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { ArrowLeft, ThumbsUp, MessageCircle, Share2 } from "lucide-react";
+import { ArrowLeft, ThumbsUp, Share2 } from "lucide-react";
+import { WhatsAppEmojiReactions } from "@/components/WhatsAppEmojiReactions";
 import { MovieReview } from "@/data/movieReviews";
 import { movieReviewsData } from "@/data/movieReviews";
 import { CommentSection } from "@/components/CommentSection";
@@ -30,7 +31,7 @@ const ReviewDetail = () => {
   } = useSound();
   const [review, setReview] = useState(null);
   const [newComment, setNewComment] = useState("");
-  const [showComments, setShowComments] = useState(false);
+  
   const [viewCount, setViewCount] = useState(0);
   const [showBookingOptions, setShowBookingOptions] = useState(false);
   const [showLikeEffect, setShowLikeEffect] = useState(false);
@@ -291,12 +292,7 @@ const ReviewDetail = () => {
                     </span>}
                 </button>
 
-                <button onClick={() => {
-                playSound("click");
-                setShowComments(prev => !prev);
-              }} className="flex items-center gap-2 text-yellow-400 font-bold hover:scale-110 transition-transform">
-                  <MessageCircle className="w-6 h-6" /> Comment
-                </button>
+                <WhatsAppEmojiReactions targetId={review.id} targetType="review" />
 
                 <button onClick={() => {
                 playSound("click");
@@ -316,7 +312,7 @@ const ReviewDetail = () => {
               {/* Telugu Voice + Comments */}
               <TeluguVoiceReader reviewText={`${review.title}. సమీక్ష: ${review.review}. మొదటి సగం: ${review.firstHalf}. రెండవ సగం: ${review.secondHalf}. సానుకూలాలు: ${review.positives}. ప్రతికూలాలు: ${review.negatives}. మొత్తం మీద: ${review.overall}. రేటింగ్: ${review.rating} స్టార్స్.`} />
 
-              {showComments && <CommentSection review={review} newComment={newComment} onCommentChange={setNewComment} onCommentSubmit={handleCommentSubmit} onReplySubmit={handleReplySubmit} />}
+              <CommentSection review={review} newComment={newComment} onCommentChange={setNewComment} onCommentSubmit={handleCommentSubmit} onReplySubmit={handleReplySubmit} />
             </CardContent>
           </Card>
 
