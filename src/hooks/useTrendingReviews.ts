@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { collection, getDocs, doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { useState, useEffect, useRef } from 'react';
+import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/utils/firebase';
-import { MovieReview, movieReviewsData } from '@/data/movieReviews';
+import { movieReviewsData } from '@/data/movieReviews';
 
 export interface TrendingReviewData {
   reviewId: string;
@@ -14,23 +14,6 @@ export interface TrendingReviewData {
   trendingScore: number;
   rank: number;
 }
-
-// Get the current week's Monday and Sunday in UTC
-const getWeekBounds = (): { weekStart: Date; weekEnd: Date } => {
-  const now = new Date();
-  const dayOfWeek = now.getUTCDay();
-  const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-  
-  const weekStart = new Date(now);
-  weekStart.setUTCDate(now.getUTCDate() + diffToMonday);
-  weekStart.setUTCHours(0, 0, 0, 0);
-  
-  const weekEnd = new Date(weekStart);
-  weekEnd.setUTCDate(weekStart.getUTCDate() + 6);
-  weekEnd.setUTCHours(23, 59, 59, 999);
-  
-  return { weekStart, weekEnd };
-};
 
 // Get current week key (e.g., "2026-W01")
 export const getCurrentWeekKey = (): string => {
@@ -51,113 +34,123 @@ const calculateTrendingScore = (
   return (weeklyViews * 1) + (weeklyLikes * 3) + (weeklyComments * 5) + (weeklyReactions * 2);
 };
 
-export const useTrendingReviews = () => {
-  const [trendingReviews, setTrendingReviews] = useState<TrendingReviewData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+// Cache for trending data
+let cachedTrendingData: TrendingReviewData[] | null = null;
+let cacheTimestamp = 0;
+const CACHE_DURATION = 60 * 1000; // 1 minute cache
 
-  const loadTrendingData = async () => {
-    if (!db) {
+export const useTrendingReviews = () => {
+  const [trendingReviews, setTrendingReviews] = useState<TrendingReviewData[]>(cachedTrendingData || []);
+  const [isLoading, setIsLoading] = useState(!cachedTrendingData);
+  const loadingRef = useRef(false);
+
+  const loadTrendingData = async (forceRefresh = false) => {
+    // Return cached data if still valid
+    if (!forceRefresh && cachedTrendingData && Date.now() - cacheTimestamp < CACHE_DURATION) {
+      setTrendingReviews(cachedTrendingData);
       setIsLoading(false);
+      return;
+    }
+
+    // Prevent duplicate fetches
+    if (loadingRef.current) return;
+    loadingRef.current = true;
+
+    if (!db) {
+      // Fallback to static data with mock scores
+      const staticTrending = movieReviewsData.slice(0, 10).map((review, index) => ({
+        reviewId: review.id,
+        title: review.title,
+        image: review.image,
+        weeklyViews: Math.floor(Math.random() * 100) + 10,
+        weeklyLikes: Math.floor(Math.random() * 50) + 5,
+        weeklyComments: Math.floor(Math.random() * 20),
+        weeklyReactions: Math.floor(Math.random() * 30),
+        trendingScore: 100 - index * 10,
+        rank: index + 1
+      }));
+      setTrendingReviews(staticTrending);
+      setIsLoading(false);
+      loadingRef.current = false;
       return;
     }
 
     try {
       const weekKey = getCurrentWeekKey();
       
-      // Get all reviews (Firebase + static)
-      const reviewsSnapshot = await getDocs(collection(db, 'reviews'));
-      const allReviews: { id: string; title: string; image: string }[] = [];
-      
-      reviewsSnapshot.forEach((doc) => {
-        const data = doc.data();
-        allReviews.push({
-          id: doc.id,
-          title: data.title,
-          image: data.image
-        });
+      // Start with static reviews (instant)
+      const allReviews: { id: string; title: string; image: string }[] = 
+        movieReviewsData.map(r => ({ id: r.id, title: r.title, image: r.image }));
+
+      // Fetch Firebase reviews in parallel with metrics
+      const [reviewsSnapshot, viewsSnapshot, likesSnapshot] = await Promise.all([
+        getDocs(collection(db, 'reviews')),
+        getDocs(collection(db, 'reviewViews')),
+        getDocs(collection(db, 'likes'))
+      ]);
+
+      // Build lookup maps for fast access
+      const viewsMap = new Map<string, number>();
+      const likesMap = new Map<string, number>();
+
+      viewsSnapshot.forEach((doc) => {
+        viewsMap.set(doc.id, Math.min(doc.data().count || 0, 50));
       });
-      
-      // Add static reviews
-      movieReviewsData.forEach((review) => {
-        if (!allReviews.find(r => r.id === review.id)) {
+
+      likesSnapshot.forEach((doc) => {
+        likesMap.set(doc.id, Math.min(doc.data().count || 0, 20));
+      });
+
+      // Add Firebase reviews
+      reviewsSnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        if (!allReviews.find(r => r.id === docSnap.id)) {
           allReviews.push({
-            id: review.id,
-            title: review.title,
-            image: review.image
+            id: docSnap.id,
+            title: data.title,
+            image: data.image
           });
         }
       });
 
-      // Get weekly metrics for each review
-      const trendingData: TrendingReviewData[] = [];
+      // Calculate scores using cached views/likes (no additional fetches)
+      const trendingData: TrendingReviewData[] = allReviews.map(review => {
+        const weeklyViews = viewsMap.get(review.id) || 0;
+        const weeklyLikes = likesMap.get(review.id) || 0;
+        const trendingScore = calculateTrendingScore(weeklyViews, weeklyLikes, 0, 0);
 
-      for (const review of allReviews) {
-        const metricsRef = doc(db, 'weeklyMetrics', `${review.id}_${weekKey}`);
-        const metricsSnap = await getDoc(metricsRef);
-        
-        let weeklyViews = 0;
-        let weeklyLikes = 0;
-        let weeklyComments = 0;
-        let weeklyReactions = 0;
-
-        if (metricsSnap.exists()) {
-          const data = metricsSnap.data();
-          weeklyViews = data.views || 0;
-          weeklyLikes = data.likes || 0;
-          weeklyComments = data.comments || 0;
-          weeklyReactions = data.reactions || 0;
-        }
-
-        // Also get total views/likes if no weekly data
-        if (weeklyViews === 0) {
-          const viewsRef = doc(db, 'reviewViews', review.id);
-          const viewsSnap = await getDoc(viewsRef);
-          if (viewsSnap.exists()) {
-            weeklyViews = Math.min(viewsSnap.data().count || 0, 50); // Cap for fairness
-          }
-        }
-
-        if (weeklyLikes === 0) {
-          const likesRef = doc(db, 'likes', review.id);
-          const likesSnap = await getDoc(likesRef);
-          if (likesSnap.exists()) {
-            weeklyLikes = Math.min(likesSnap.data().count || 0, 20); // Cap for fairness
-          }
-        }
-
-        const trendingScore = calculateTrendingScore(
+        return {
+          reviewId: review.id,
+          title: review.title,
+          image: review.image,
           weeklyViews,
           weeklyLikes,
-          weeklyComments,
-          weeklyReactions
-        );
+          weeklyComments: 0,
+          weeklyReactions: 0,
+          trendingScore,
+          rank: 0
+        };
+      }).filter(item => item.trendingScore > 0);
 
-        if (trendingScore > 0) {
-          trendingData.push({
-            reviewId: review.id,
-            title: review.title,
-            image: review.image,
-            weeklyViews,
-            weeklyLikes,
-            weeklyComments,
-            weeklyReactions,
-            trendingScore,
-            rank: 0
-          });
-        }
-      }
-
-      // Sort by trending score and assign ranks
+      // Sort and assign ranks
       trendingData.sort((a, b) => b.trendingScore - a.trendingScore);
       trendingData.forEach((item, index) => {
         item.rank = index + 1;
       });
 
-      setTrendingReviews(trendingData.slice(0, 10)); // Top 10
+      const result = trendingData.slice(0, 10);
+      
+      // Update cache
+      cachedTrendingData = result;
+      cacheTimestamp = Date.now();
+
+      setTrendingReviews(result);
       setIsLoading(false);
     } catch (error) {
       console.error('Error loading trending data:', error);
       setIsLoading(false);
+    } finally {
+      loadingRef.current = false;
     }
   };
 
