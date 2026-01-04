@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 interface TrendingReviewsProps {
   reviews: TrendingReviewData[];
   isLoading: boolean;
+  limit?: number;
 }
 const RankBadge: React.FC<{
   rank: number;
@@ -101,8 +102,10 @@ const TrendingSkeleton: React.FC = () => <div className="flex gap-3 p-3 bg-card/
   </div>;
 export const TrendingReviews: React.FC<TrendingReviewsProps> = ({
   reviews,
-  isLoading
+  isLoading,
+  limit
 }) => {
+  const displayReviews = limit ? reviews.slice(0, limit) : reviews;
   if (isLoading) {
     return <section className="mb-12">
         <div className="flex items-center gap-3 mb-6">
@@ -113,8 +116,8 @@ export const TrendingReviews: React.FC<TrendingReviewsProps> = ({
             </h2>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[...Array(6)].map((_, i) => <TrendingSkeleton key={i} />)}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[...Array(limit || 2)].map((_, i) => <TrendingSkeleton key={i} />)}
         </div>
       </section>;
   }
@@ -143,8 +146,8 @@ export const TrendingReviews: React.FC<TrendingReviewsProps> = ({
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {reviews.map(review => <TrendingCard key={review.reviewId} review={review} />)}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {displayReviews.map(review => <TrendingCard key={review.reviewId} review={review} />)}
       </div>
 
       {/* Formula legend */}
