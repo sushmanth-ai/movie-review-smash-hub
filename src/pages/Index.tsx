@@ -188,7 +188,7 @@ const Index = () => {
 
       {/* Trending This Week Section */}
       <div className="container mx-auto px-4 pt-6">
-        <TrendingReviews reviews={trendingReviews} isLoading={trendingLoading} />
+        <TrendingReviews reviews={trendingReviews} isLoading={trendingLoading} limit={2} />
       </div>
 
       {/* Main Content */}
