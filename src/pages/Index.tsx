@@ -9,8 +9,11 @@ import { db } from '@/utils/firebase';
 import { TodayViews } from '@/components/TodayViews';
 import { ReviewCarousel } from '@/components/ReviewCarousel';
 import { CurtainAnimation } from '@/components/CurtainAnimation';
+import { TrendingReviews } from '@/components/TrendingReviews';
+import { useTrendingReviews } from '@/hooks/useTrendingReviews';
 import { useSound } from '@/hooks/useSound';
 import { useToast } from '@/hooks/use-toast';
+
 const Index = () => {
   const { playSound } = useSound();
   const { toast } = useToast();
@@ -40,6 +43,7 @@ const Index = () => {
     loadReviewViews
   } = useFirebaseOperations();
   const [realTimeViewCount, setRealTimeViewCount] = useState(todayViews);
+  const { trendingReviews, isLoading: trendingLoading } = useTrendingReviews();
 
   // Load reviews from Firebase and merge with static data
   useEffect(() => {
@@ -180,6 +184,11 @@ const Index = () => {
       {/* 3D Carousel */}
       <div className="container mx-auto px-4 pt-4">
         <ReviewCarousel reviews={filteredReviews} />
+      </div>
+
+      {/* Trending This Week Section */}
+      <div className="container mx-auto px-4 pt-6">
+        <TrendingReviews reviews={trendingReviews} isLoading={trendingLoading} />
       </div>
 
       {/* Main Content */}
