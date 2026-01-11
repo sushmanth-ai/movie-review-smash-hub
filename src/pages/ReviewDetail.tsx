@@ -34,8 +34,6 @@ const ReviewDetail = () => {
   const [viewCount, setViewCount] = useState(0);
   const [showBookingOptions, setShowBookingOptions] = useState(false);
   const [showLikeEffect, setShowLikeEffect] = useState(false);
-  const [audienceRating, setAudienceRating] = useState(0);
-  const [audienceCount, setAudienceCount] = useState(0);
   const {
     loadLikes,
     loadComments,
@@ -326,15 +324,15 @@ const ReviewDetail = () => {
             <AdminRatingsDisplay adminRatings={review.adminRatings} legacyRating={review.rating} />
             
             {/* User Rating */}
-            <UserStarRating movieId={review.id} onRatingChange={(avg, count) => {
-            setAudienceRating(avg);
-            setAudienceCount(count);
-          }} />
+            <UserStarRating movieId={review.id} />
           </div>
 
           {/* Rating Comparison */}
           <div className="max-w-md mx-auto mt-4">
-            <RatingComparison criticRating={parseFloat(review.rating?.match(/[\d.]+/)?.[0] || '0')} audienceRating={audienceRating} audienceCount={audienceCount} />
+            <RatingComparison 
+              criticRating={parseFloat(review.rating?.match(/[\d.]+/)?.[0] || '0')} 
+              movieId={review.id} 
+            />
           </div>
 
           {/* Rating Meter */}
