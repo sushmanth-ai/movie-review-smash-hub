@@ -16,18 +16,32 @@ const RankBadge: React.FC<{
   const getBadgeStyle = () => {
     switch (rank) {
       case 1:
-        return 'bg-gradient-to-br from-yellow-400 via-yellow-500 to-amber-600 text-yellow-950 shadow-[0_0_20px_rgba(255,215,0,0.6)]';
+        return 'bg-gradient-to-br from-yellow-400 via-yellow-500 to-amber-600 text-yellow-950 shadow-[0_0_30px_rgba(255,215,0,0.8)] animate-pulse';
       case 2:
-        return 'bg-gradient-to-br from-slate-300 via-slate-400 to-slate-500 text-slate-950 shadow-[0_0_15px_rgba(200,200,200,0.5)]';
+        return 'bg-gradient-to-br from-slate-300 via-slate-400 to-slate-500 text-slate-950 shadow-[0_0_25px_rgba(200,200,200,0.7)] animate-pulse';
       case 3:
         return 'bg-gradient-to-br from-amber-600 via-amber-700 to-amber-800 text-amber-100 shadow-[0_0_15px_rgba(180,120,60,0.5)]';
       default:
         return 'bg-muted text-muted-foreground';
     }
   };
-  return <div className={`absolute -top-2 -left-2 w-8 h-8 rounded-full flex items-center justify-center font-black text-sm z-10 ${getBadgeStyle()}`}>
+  
+  const getSizeStyle = () => {
+    switch (rank) {
+      case 1:
+        return 'w-14 h-14 -top-4 -left-4 text-xl';
+      case 2:
+        return 'w-12 h-12 -top-3 -left-3 text-lg';
+      default:
+        return 'w-8 h-8 -top-2 -left-2 text-sm';
+    }
+  };
+  
+  return (
+    <div className={`absolute rounded-full flex items-center justify-center font-black z-10 ${getBadgeStyle()} ${getSizeStyle()}`}>
       #{rank}
-    </div>;
+    </div>
+  );
 };
 const TrendingCard: React.FC<{
   review: TrendingReviewData;
