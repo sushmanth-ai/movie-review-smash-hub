@@ -162,22 +162,81 @@ const Index = () => {
       <CurtainAnimation />
       <div className="min-h-screen bg-background">
       {/* Fixed Header with Black and Gold Theme */}
-      <div className="fixed top-0 left-0 w-full z-50 p-2 shadow-[0_4px_20px_rgba(255,215,0,0.3)] border-b-2 border-primary bg-background">
-       <div className="flex justify-center items-center mb-2">
-  <img src="https://res.cloudinary.com/dvdmk59a1/image/upload/v1762242791/SM_Image_m8js8c.jpg" alt="SM Reviews Logo" className="h-14 w-14 md:h-16 md:w-16 object-cover rounded-full border-2 border-yellow-400 shadow-[0_0_20px_rgba(255,215,0,0.6)]" />
-  <span className="text-primary font-extrabold ml-3 mt-1 tracking-wide text-2xl">
-    REVIEWS 3.0
-  </span>
+      <div className="fixed top-0 left-0 w-full z-50 shadow-[0_4px_30px_rgba(255,215,0,0.4)] border-b-2 border-primary bg-gradient-to-b from-background via-background to-background/95">
+        {/* Beautiful Heading Container */}
+        <div className="relative py-4 px-4 overflow-hidden">
+          {/* Decorative Background Elements */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
+          
+          {/* Main Logo and Title Container */}
+          <div className="relative flex justify-center items-center gap-4">
+            {/* Golden Film Reel Decoration - Left */}
+            <div className="hidden md:flex items-center gap-2">
+              <span className="text-2xl animate-pulse">🎬</span>
+              <div className="w-12 h-0.5 bg-gradient-to-r from-transparent via-primary to-primary rounded-full" />
+            </div>
+            
+            {/* Logo with Premium Glow */}
+            <div className="relative group">
+              <div className="absolute -inset-2 bg-gradient-to-r from-yellow-400 via-primary to-yellow-400 rounded-full blur-lg opacity-60 group-hover:opacity-100 transition-opacity duration-500 animate-pulse" />
+              <img 
+                src="https://res.cloudinary.com/dvdmk59a1/image/upload/v1762242791/SM_Image_m8js8c.jpg" 
+                alt="SM Reviews Logo" 
+                className="relative h-16 w-16 md:h-20 md:w-20 object-cover rounded-full border-3 border-yellow-400 shadow-[0_0_30px_rgba(255,215,0,0.8)]" 
+              />
+            </div>
+            
+            {/* Brand Name */}
+            <div className="flex flex-col items-start">
+              <div className="flex items-baseline gap-1">
+                <span className="text-3xl md:text-4xl font-black bg-gradient-to-r from-yellow-300 via-primary to-yellow-300 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(255,215,0,0.5)] tracking-tight">
+                  SM
+                </span>
+                <span className="text-2xl md:text-3xl font-bold text-primary tracking-wide">
+                  Reviews
+                </span>
+              </div>
+              <div className="flex items-center gap-2 -mt-1">
+                <div className="h-0.5 w-8 bg-gradient-to-r from-primary to-transparent rounded-full" />
+                <span className="text-xs md:text-sm font-bold bg-gradient-to-r from-yellow-400 to-primary bg-clip-text text-transparent tracking-[0.3em] uppercase">
+                  3.0
+                </span>
+                <div className="flex gap-0.5">
+                  <span className="text-yellow-400 text-xs">★</span>
+                  <span className="text-yellow-400 text-xs">★</span>
+                  <span className="text-yellow-400 text-xs">★</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Golden Film Reel Decoration - Right */}
+            <div className="hidden md:flex items-center gap-2">
+              <div className="w-12 h-0.5 bg-gradient-to-l from-transparent via-primary to-primary rounded-full" />
+              <span className="text-2xl animate-pulse">🎬</span>
+            </div>
+          </div>
+          
+          {/* Bottom Decorative Line */}
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-64 h-0.5 bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
         </div>
 
-
-        <div className="flex gap-2 mb-2">
-          <Input type="text" placeholder="Search for movie Reviews..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="flex-1 bg-input text-foreground border-primary focus:ring-primary" />
+        {/* Search Bar */}
+        <div className="px-4 pb-3">
+          <div className="max-w-2xl mx-auto">
+            <Input 
+              type="text" 
+              placeholder="🔍 Search for movie Reviews..." 
+              value={searchTerm} 
+              onChange={e => setSearchTerm(e.target.value)} 
+              className="w-full bg-input/80 backdrop-blur-sm text-foreground border-2 border-primary/50 focus:border-primary focus:ring-primary rounded-full px-5 py-2 shadow-[0_0_15px_rgba(255,215,0,0.2)]" 
+            />
+          </div>
         </div>
       </div>
 
       {/* Today Views Card - Outside Header */}
-      <div className="container mx-auto px-4 pt-24">
+      <div className="container mx-auto px-4 pt-36 md:pt-40">
         <TodayViews viewCount={realTimeViewCount} />
       </div>
 
