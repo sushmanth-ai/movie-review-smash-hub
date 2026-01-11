@@ -128,8 +128,26 @@ export const UserStarRating: React.FC<UserStarRatingProps> = ({ movieId, onRatin
   return (
     <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg p-4 border border-blue-500/30">
       <div className="flex flex-col items-center gap-3">
-        <h4 className="text-sm font-bold text-blue-400 uppercase tracking-wide">
-          👥 Your Rating
+        
+        {/* Audience Stats - Show First */}
+        {ratingCount > 0 && (
+          <div className="text-center w-full pb-3 border-b border-blue-500/20">
+            <h4 className="text-sm font-bold text-blue-400 uppercase tracking-wide mb-2">
+              👥 Audience Rating
+            </h4>
+            <div className="flex items-center justify-center gap-2">
+              <span className="text-2xl font-bold text-blue-400">{averageRating}</span>
+              <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {ratingCount} {ratingCount === 1 ? 'user' : 'users'} rated
+            </p>
+          </div>
+        )}
+        
+        {/* User's Rating Input - Show After */}
+        <h4 className="text-sm font-bold text-purple-400 uppercase tracking-wide">
+          ⭐ Rate This Movie
         </h4>
         
         {/* Star Rating Input */}
@@ -157,22 +175,9 @@ export const UserStarRating: React.FC<UserStarRatingProps> = ({ movieId, onRatin
         </div>
         
         {userRating && (
-          <p className="text-xs text-blue-300">
+          <p className="text-xs text-purple-300">
             You rated: {userRating}/5 stars
           </p>
-        )}
-        
-        {/* Aggregate Stats */}
-        {ratingCount > 0 && (
-          <div className="text-center mt-2 pt-2 border-t border-blue-500/20 w-full">
-            <div className="flex items-center justify-center gap-2">
-              <span className="text-2xl font-bold text-blue-400">{averageRating}</span>
-              <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {ratingCount} {ratingCount === 1 ? 'user' : 'users'} rated
-            </p>
-          </div>
         )}
       </div>
     </div>
