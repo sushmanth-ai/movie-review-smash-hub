@@ -2,13 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
-import { LogOut, Plus, Home, ShieldAlert } from 'lucide-react';
+import { LogOut, Plus, Home } from 'lucide-react';
 import { ReviewList } from '@/components/admin/ReviewList';
 import { ReviewForm } from '@/components/admin/ReviewForm';
 import { useAdminReviews } from '@/hooks/useAdminReviews';
 import { AdminRatings } from '@/types/ratings';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 export interface ReviewFormData {
   title: string;
@@ -27,37 +25,25 @@ export interface ReviewFormData {
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, loading, isAdmin, signOut } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [editingReview, setEditingReview] = useState<{ id: string; data: ReviewFormData } | null>(null);
   
-  const { reviews, loading: reviewsLoading, addReview, updateReview, deleteReview } = useAdminReviews();
+  const { reviews, loading, addReview, updateReview, deleteReview } = useAdminReviews();
 
   useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        navigate('/auth');
-      } else if (!isAdmin) {
-        // User is logged in but not admin - will show access denied
-      }
+    // Check if logged in
+    if (sessionStorage.getItem('adminAuth') !== 'true') {
+      navigate('/admin/login');
     }
-  }, [user, loading, isAdmin, navigate]);
+  }, [navigate]);
 
-  const handleLogout = async () => {
-    const { error } = await signOut();
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to log out",
-        variant: "destructive"
-      });
-    } else {
-      toast({
-        title: "Logged Out",
-        description: "You have been logged out successfully",
-      });
-      navigate('/');
-    }
+  const handleLogout = () => {
+    sessionStorage.removeItem('adminAuth');
+    toast({
+      title: "Logged Out",
+      description: "You have been logged out successfully",
+    });
+    navigate('/admin/login');
   };
 
   const handleAddNew = () => {
@@ -90,51 +76,6 @@ const AdminDashboard = () => {
     setShowForm(false);
     setEditingReview(null);
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-500 via-red-500 to-orange-500">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
-      </div>
-    );
-  }
-
-  // Show access denied if not admin
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{
-        background: 'linear-gradient(90deg, hsla(333, 100%, 53%, 1) 0%, hsla(33, 94%, 57%, 1) 100%)'
-      }}>
-        <Card className="w-full max-w-md mx-4">
-          <CardHeader>
-            <div className="flex flex-col items-center gap-4">
-              <ShieldAlert className="w-16 h-16 text-destructive" />
-              <h1 className="text-2xl font-bold text-center">Access Denied</h1>
-              <p className="text-sm text-muted-foreground text-center">
-                You don't have admin privileges to access this area.
-              </p>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Button
-              onClick={() => navigate('/')}
-              className="w-full"
-            >
-              Return to Home
-            </Button>
-            <Button
-              onClick={handleLogout}
-              variant="outline"
-              className="w-full"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-500 via-red-500 to-orange-500">
@@ -182,7 +123,7 @@ const AdminDashboard = () => {
 
             <ReviewList
               reviews={reviews}
-              loading={reviewsLoading}
+              loading={loading}
               onEdit={handleEdit}
               onDelete={handleDelete}
             />
