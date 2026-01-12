@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { ArrowLeft, ThumbsUp, MessageCircle, Share2 } from "lucide-react";
+import { ArrowLeft, ThumbsUp, MessageCircle, Share2, Play, X } from "lucide-react";
 import { MovieReview } from "@/data/movieReviews";
 import { movieReviewsData } from "@/data/movieReviews";
 import { CommentSection } from "@/components/CommentSection";
@@ -17,6 +17,15 @@ import { useSound } from "@/hooks/useSound";
 import { UserStarRating } from "@/components/UserStarRating";
 import { AdminRatingsDisplay } from "@/components/AdminRatingsDisplay";
 import { RatingComparison } from "@/components/RatingComparison";
+
+// Helper function to extract YouTube video ID
+const getYouTubeVideoId = (url: string): string => {
+  if (!url) return '';
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : '';
+};
+
 const ReviewDetail = () => {
   const {
     id
@@ -34,6 +43,7 @@ const ReviewDetail = () => {
   const [viewCount, setViewCount] = useState(0);
   const [showBookingOptions, setShowBookingOptions] = useState(false);
   const [showLikeEffect, setShowLikeEffect] = useState(false);
+  const [showTrailer, setShowTrailer] = useState(false);
   const {
     loadLikes,
     loadComments,
@@ -81,6 +91,7 @@ const ReviewDetail = () => {
             negatives: data.negatives,
             overall: data.overall,
             rating: data.rating,
+            trailerUrl: data.trailerUrl || '',
             likes: 0,
             comments: [],
             views: data.views || 0
@@ -213,7 +224,59 @@ const ReviewDetail = () => {
             <CardHeader className="text-center pt-10"></CardHeader>
 
             <div className="px-6">
-              <img src={review.image} alt={review.title} className="w-full max-h-[500px] object-cover rounded-lg mb-6 border-2 border-primary/30" />
+              <div className="relative group">
+                <img 
+                  src={review.image} 
+                  alt={review.title} 
+                  className={`w-full max-h-[500px] object-cover rounded-lg mb-6 border-2 border-primary/30 transition-all duration-300 ${showTrailer ? 'hidden' : 'block'}`} 
+                />
+                
+                {/* Play Trailer Button Overlay */}
+                {review.trailerUrl && !showTrailer && (
+                  <button 
+                    onClick={() => {
+                      playSound('click');
+                      setShowTrailer(true);
+                    }}
+                    className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg mb-6"
+                  >
+                    <div className="bg-red-600 hover:bg-red-700 rounded-full p-4 shadow-[0_0_30px_rgba(255,0,0,0.6)] transform hover:scale-110 transition-transform">
+                      <Play className="w-12 h-12 text-white fill-white" />
+                    </div>
+                    <span className="absolute bottom-8 text-white font-bold text-lg drop-shadow-lg">
+                      ▶️ Watch Trailer
+                    </span>
+                  </button>
+                )}
+
+                {/* Embedded YouTube Player */}
+                {showTrailer && review.trailerUrl && (
+                  <div className="relative mb-6">
+                    <button 
+                      onClick={() => setShowTrailer(false)}
+                      className="absolute -top-2 -right-2 z-10 bg-red-600 hover:bg-red-700 rounded-full p-2 shadow-lg"
+                    >
+                      <X className="w-5 h-5 text-white" />
+                    </button>
+                    <div className="relative pt-[56.25%] rounded-lg overflow-hidden border-2 border-primary/30">
+                      <iframe
+                        className="absolute inset-0 w-full h-full"
+                        src={`https://www.youtube.com/embed/${getYouTubeVideoId(review.trailerUrl)}?autoplay=1&rel=0`}
+                        title={`${review.title} Trailer`}
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                    <button 
+                      onClick={() => setShowTrailer(false)}
+                      className="mt-3 mx-auto flex items-center gap-2 bg-primary/20 hover:bg-primary/30 text-primary font-bold px-4 py-2 rounded-lg transition-colors"
+                    >
+                      🖼️ Back to Poster
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
             <CardContent className="space-y-6">

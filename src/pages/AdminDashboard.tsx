@@ -18,6 +18,7 @@ export interface ReviewFormData {
   negatives: string;
   overall: string;
   rating: string;
+  trailerUrl?: string;
   adminRatings?: AdminRatings;
 }
 
