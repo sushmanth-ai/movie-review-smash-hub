@@ -46,7 +46,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ review }) => {
         </div>
       </CardHeader>
 
-      <div className="px-4 pb-4">
+      <div className="px-4 pt-3 pb-4">
         <img
           src={review.image}
           alt={review.title}
