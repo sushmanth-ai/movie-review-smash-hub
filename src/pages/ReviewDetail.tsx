@@ -231,19 +231,19 @@ const ReviewDetail = () => {
                   className={`w-full max-h-[500px] object-cover rounded-lg mb-6 border-2 border-primary/30 transition-all duration-300 ${showTrailer ? 'hidden' : 'block'}`} 
                 />
                 
-                {/* Play Trailer Button Overlay */}
+                {/* Play Trailer Button Overlay - Always visible on mobile */}
                 {review.trailerUrl && !showTrailer && (
                   <button 
                     onClick={() => {
                       playSound('click');
                       setShowTrailer(true);
                     }}
-                    className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg mb-6"
+                    className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 rounded-lg mb-6"
                   >
-                    <div className="bg-red-600 hover:bg-red-700 rounded-full p-4 shadow-[0_0_30px_rgba(255,0,0,0.6)] transform hover:scale-110 transition-transform">
-                      <Play className="w-12 h-12 text-white fill-white" />
+                    <div className="bg-red-600 hover:bg-red-700 rounded-full p-3 sm:p-4 shadow-[0_0_30px_rgba(255,0,0,0.6)] transform hover:scale-110 transition-transform animate-pulse">
+                      <Play className="w-8 h-8 sm:w-12 sm:h-12 text-white fill-white" />
                     </div>
-                    <span className="absolute bottom-8 text-white font-bold text-lg drop-shadow-lg">
+                    <span className="absolute bottom-4 sm:bottom-8 text-white font-bold text-sm sm:text-lg drop-shadow-lg bg-black/50 px-3 py-1 rounded-full">
                       ▶️ Watch Trailer
                     </span>
                   </button>
