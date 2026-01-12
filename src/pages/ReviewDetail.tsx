@@ -217,26 +217,8 @@ const ReviewDetail = () => {
         <div className="container mx-auto px-4 pt-24 pb-8">
           {/* 🎬 Main Review Card */}
           <Card className="relative bg-card border-2 border-primary shadow-[0_0_30px_rgba(255,215,0,0.5)] max-w-4xl mx-auto">
-            {/* Premium Title Container */}
-            <div className="absolute left-1/2 -translate-x-1/2 -top-[1rem] z-20 w-[85%] sm:w-auto max-w-[90%]">
-              <div className="relative bg-gradient-to-r from-yellow-500/30 via-amber-400/50 to-yellow-500/30 rounded-xl px-4 sm:px-8 md:px-12 py-3 border-2 border-primary/60 shadow-[0_0_25px_rgba(255,215,0,0.5)] overflow-hidden">
-                {/* Animated shimmer effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[shimmer_2s_infinite]" style={{ backgroundSize: '200% 100%' }} />
-                
-                {/* Decorative corner accents */}
-                <div className="absolute top-0 left-0 w-4 h-4 border-l-2 border-t-2 border-primary rounded-tl-lg" />
-                <div className="absolute top-0 right-0 w-4 h-4 border-r-2 border-t-2 border-primary rounded-tr-lg" />
-                <div className="absolute bottom-0 left-0 w-4 h-4 border-l-2 border-b-2 border-primary rounded-bl-lg" />
-                <div className="absolute bottom-0 right-0 w-4 h-4 border-r-2 border-b-2 border-primary rounded-br-lg" />
-                
-                {/* Inner glow effect */}
-                <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-black/10 rounded-xl" />
-                
-                {/* Title with gradient text */}
-                <h2 className="relative z-10 text-center font-extrabold text-base sm:text-lg md:text-xl lg:text-2xl bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-200 bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(255,215,0,0.7)]">
-                  {review.title}
-                </h2>
-              </div>
+            <div className="absolute left-1/2 -translate-x-1/2 -top-[1.4rem] bg-yellow-400 text-black font-extrabold text-sm sm:text-base md:text-lg rounded-b-2xl border-x-2 border-b-2 border-primary shadow-[0_4px_10px_rgba(255,215,0,0.4)] mx-[3px] px-3 sm:px-6 md:px-[24px] py-[7px] my-[25px] max-w-[90%] sm:max-w-none text-center">
+              {review.title}
             </div>
 
             <CardHeader className="text-center pt-10"></CardHeader>
