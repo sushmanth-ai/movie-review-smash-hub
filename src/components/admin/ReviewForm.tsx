@@ -41,6 +41,7 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
     negatives: '',
     overall: '',
     rating: '',
+    trailerUrl: '',
     adminRatings: {
       story: 3,
       acting: 3,
@@ -138,6 +139,19 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
               required
               placeholder="https://example.com/image.jpg"
             />
+          </div>
+
+          <div>
+            <Label htmlFor="trailerUrl">🎬 YouTube Trailer URL</Label>
+            <Input
+              id="trailerUrl"
+              value={formData.trailerUrl || ''}
+              onChange={(e) => handleChange('trailerUrl', e.target.value)}
+              placeholder="https://www.youtube.com/watch?v=..."
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Paste YouTube video URL (e.g., https://www.youtube.com/watch?v=xxxxx)
+            </p>
           </div>
 
           <div>
