@@ -316,13 +316,13 @@ const ReviewDetail = () => {
               {/* Section Cards */}
               <div className="space-y-4">
                 {/* First Half */}
-                <div className="rounded-xl p-[2px] bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 hover:shadow-[0_0_15px_rgba(59,130,246,0.3)] transition-all duration-300">
+                <div className="rounded-xl p-[2px] bg-gradient-to-r from-sky-400 via-teal-300 to-cyan-400 hover:shadow-[0_0_15px_rgba(56,189,248,0.3)] transition-all duration-300">
                   <div className="bg-card rounded-[10px] p-4">
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="bg-blue-500/20 p-1.5 rounded-lg">
-                        <Film className="w-4 h-4 text-blue-400" />
+                      <div className="bg-sky-500/20 p-1.5 rounded-lg">
+                        <Film className="w-4 h-4 text-sky-300" />
                       </div>
-                      <h4 className="text-blue-400 font-bold text-lg">{t('firstHalf')}</h4>
+                      <h4 className="text-sky-300 font-bold text-lg">{t('firstHalf')}</h4>
                     </div>
                     <p className="text-base text-white font-medium leading-relaxed pl-9">
                       {review.firstHalf}
