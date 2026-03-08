@@ -7,7 +7,6 @@ import { MovieCard } from '@/components/MovieCard';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '@/utils/firebase';
 import { TodayViews } from '@/components/TodayViews';
-import { ReviewCarousel } from '@/components/ReviewCarousel';
 import { CurtainAnimation } from '@/components/CurtainAnimation';
 import { TrendingReviews } from '@/components/TrendingReviews';
 import { useTrendingReviews } from '@/hooks/useTrendingReviews';
