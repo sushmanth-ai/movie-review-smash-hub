@@ -29,8 +29,43 @@ const AdminDashboard = () => {
   const [showForm, setShowForm] = useState(false);
   const [showPolls, setShowPolls] = useState(false);
   const [editingReview, setEditingReview] = useState<{ id: string; data: ReviewFormData } | null>(null);
+  const [sendingDigest, setSendingDigest] = useState(false);
   
   const { reviews, loading, addReview, updateReview, deleteReview } = useAdminReviews();
+
+  const handleSendWeeklyDigest = async () => {
+    setSendingDigest(true);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/weekly-digest`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ source: "admin" }),
+        }
+      );
+      const data = await response.json();
+      if (data.success) {
+        toast({
+          title: "📬 Weekly Digest Sent!",
+          description: `Sent to ${data.pushResult?.sent || 0} subscribers. Top: ${data.top3?.map((r: any) => r.title).join(", ")}`,
+        });
+      } else {
+        throw new Error(data.error || "Failed");
+      }
+    } catch (err) {
+      toast({
+        title: "Failed to send digest",
+        description: err instanceof Error ? err.message : "Unknown error",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingDigest(false);
+    }
+  };
 
   useEffect(() => {
     // Check if logged in
