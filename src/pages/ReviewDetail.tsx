@@ -331,13 +331,13 @@ const ReviewDetail = () => {
                 </div>
 
                 {/* Second Half */}
-                <div className="rounded-xl p-[2px] bg-gradient-to-r from-purple-500 via-violet-400 to-purple-500 hover:shadow-[0_0_15px_rgba(147,51,234,0.3)] transition-all duration-300">
+                <div className="rounded-xl p-[2px] bg-gradient-to-r from-fuchsia-400 via-pink-300 to-violet-400 hover:shadow-[0_0_15px_rgba(232,121,249,0.3)] transition-all duration-300">
                   <div className="bg-card rounded-[10px] p-4">
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="bg-purple-500/20 p-1.5 rounded-lg">
-                        <Film className="w-4 h-4 text-purple-400" />
+                      <div className="bg-fuchsia-500/20 p-1.5 rounded-lg">
+                        <Film className="w-4 h-4 text-fuchsia-300" />
                       </div>
-                      <h4 className="text-purple-400 font-bold text-lg">{t('secondHalf')}</h4>
+                      <h4 className="text-fuchsia-300 font-bold text-lg">{t('secondHalf')}</h4>
                     </div>
                     <p className="text-base text-white font-medium leading-relaxed pl-9">
                       {review.secondHalf}
