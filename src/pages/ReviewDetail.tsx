@@ -18,6 +18,7 @@ import { UserStarRating } from "@/components/UserStarRating";
 import { AdminRatingsDisplay } from "@/components/AdminRatingsDisplay";
 import { RatingComparison } from "@/components/RatingComparison";
 import { NotificationBell } from "@/components/NotificationBell";
+import { ReviewPolls } from "@/components/ReviewPolls";
 
 // Helper function to extract YouTube video ID
 const getYouTubeVideoId = (url: string): string => {
@@ -375,6 +376,9 @@ const ReviewDetail = () => {
                   🎟️ Book Your Ticket
                 </Button>
               </div>
+
+              {/* Polls */}
+              <ReviewPolls movieId={review.id} />
 
               {/* Telugu Voice + Comments */}
               <TeluguVoiceReader reviewText={`${review.title}. సమీక్ష: ${review.review}. మొదటి సగం: ${review.firstHalf}. రెండవ సగం: ${review.secondHalf}. సానుకూలాలు: ${review.positives}. ప్రతికూలాలు: ${review.negatives}. మొత్తం మీద: ${review.overall}. రేటింగ్: ${review.rating} స్టార్స్.`} />
