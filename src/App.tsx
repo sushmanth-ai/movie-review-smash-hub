@@ -18,6 +18,7 @@ import {
   FestivalParticles, 
   FestivalOverlay
 } from "./components/festival";
+import { InstallBanner } from "./components/InstallBanner";
 
 const queryClient = new QueryClient();
 
