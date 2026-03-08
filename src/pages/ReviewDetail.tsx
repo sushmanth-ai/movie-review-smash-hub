@@ -346,13 +346,13 @@ const ReviewDetail = () => {
                 </div>
 
                 {/* Positives */}
-                <div className="rounded-xl p-[2px] bg-gradient-to-r from-emerald-500 via-green-400 to-emerald-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all duration-300">
+                <div className="rounded-xl p-[2px] bg-gradient-to-r from-lime-400 via-emerald-300 to-teal-400 hover:shadow-[0_0_15px_rgba(52,211,153,0.3)] transition-all duration-300">
                   <div className="bg-card rounded-[10px] p-4">
                     <div className="flex items-center gap-2 mb-3">
                       <div className="bg-emerald-500/20 p-1.5 rounded-lg">
-                        <TrendingUp className="w-4 h-4 text-emerald-400" />
+                        <TrendingUp className="w-4 h-4 text-emerald-300" />
                       </div>
-                      <h4 className="text-emerald-400 font-bold text-lg">{t('positives')}</h4>
+                      <h4 className="text-emerald-300 font-bold text-lg">{t('positives')}</h4>
                     </div>
                     <p className="text-base text-white font-medium leading-relaxed pl-9">
                       {review.positives}
