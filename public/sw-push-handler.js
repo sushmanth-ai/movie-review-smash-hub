@@ -8,6 +8,7 @@ self.addEventListener('push', (event) => {
     icon: '/pwa-icon-192.png',
     url: '/',
     tag: 'sm-review-update',
+    image: null,
   };
 
   try {
@@ -33,6 +34,11 @@ self.addEventListener('push', (event) => {
       { action: 'dismiss', title: '✖️ Dismiss' },
     ],
   };
+
+  // Add large image if provided
+  if (data.image) {
+    options.image = data.image;
+  }
 
   event.waitUntil(self.registration.showNotification(data.title, options));
 });

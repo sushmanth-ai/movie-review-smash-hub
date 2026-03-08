@@ -62,7 +62,8 @@ export const useAdminReviews = () => {
           `🎬 New Review: ${data.title}`,
           `${data.rating} — ${data.review?.slice(0, 80) || 'Check out the latest review!'}`,
           '/',
-          `review-${Date.now()}`
+          `review-${Date.now()}`,
+          data.image || undefined
         );
       } catch (e) {
         console.error('Push notification failed:', e);
