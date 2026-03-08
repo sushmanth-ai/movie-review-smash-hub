@@ -361,7 +361,7 @@ const ReviewDetail = () => {
                 playSound("click");
                 setShowComments(prev => !prev);
               }} className="flex items-center gap-2 text-yellow-400 font-bold hover:scale-110 transition-transform">
-                  <MessageCircle className="w-6 h-6" /> Comment
+                  <MessageCircle className="w-6 h-6" /> {t('comment')}
                 </button>
 
                 <button onClick={() => {
