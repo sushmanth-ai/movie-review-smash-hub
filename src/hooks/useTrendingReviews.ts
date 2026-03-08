@@ -115,7 +115,7 @@ export const useTrendingReviews = () => {
       });
 
       // Calculate scores using weekly metrics
-      const trendingData: TrendingReviewData[] = allReviews.map(review => {
+      let trendingData: TrendingReviewData[] = allReviews.map(review => {
         const metrics = weeklyMap.get(review.id) || { views: 0, likes: 0, comments: 0, reactions: 0 };
         const trendingScore = calculateTrendingScore(metrics.views, metrics.likes, metrics.comments, metrics.reactions);
 
@@ -130,7 +130,20 @@ export const useTrendingReviews = () => {
           trendingScore,
           rank: 0
         };
-      }).filter(item => item.trendingScore > 0);
+      });
+
+      // Filter to only reviews with scores, but fallback to latest reviews if none
+      const withScores = trendingData.filter(item => item.trendingScore > 0);
+      if (withScores.length > 0) {
+        trendingData = withScores;
+      } else {
+        // Fallback: show latest Firebase reviews with a base score
+        trendingData = trendingData.slice(0, 5).map((item, i) => ({
+          ...item,
+          trendingScore: 10 - i,
+          weeklyViews: 1,
+        }));
+      }
 
       // Sort and assign ranks
       trendingData.sort((a, b) => b.trendingScore - a.trendingScore);
