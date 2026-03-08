@@ -268,7 +268,7 @@ const Index = () => {
       </div>
 
       {/* Today Views Card - Outside Header */}
-      <div className="container mx-auto px-4 pt-36 md:pt-40">
+      <div className="container mx-auto px-4 pt-44 md:pt-48">
         <TodayViews viewCount={realTimeViewCount} />
       </div>
 
