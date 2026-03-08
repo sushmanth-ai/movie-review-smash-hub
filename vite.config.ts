@@ -20,6 +20,7 @@ export default defineConfig(({ mode }) => ({
       workbox: {
         navigateFallbackDenylist: [/^\/~oauth/],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,mp3,wav}'],
+        importScripts: ['/sw-push-handler.js'],
       },
       manifest: {
         name: 'SM Review 3.0 - Movie Reviews',
