@@ -179,7 +179,8 @@ const Index = () => {
           {/* Main Logo and Title Container */}
            <div className="relative flex justify-center items-center gap-4">
             {/* Notification Bell - Top Right */}
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 z-10">
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 z-10 flex items-center gap-2">
+              <LanguageSwitcher />
               <NotificationBell />
             </div>
             {/* Golden Film Reel Decoration - Left */}
