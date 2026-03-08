@@ -295,8 +295,8 @@ const Index = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 pt-0 pb-8">
         {/* New Reviews Section */}
-        {newReviews.length > 0 && (
-          <div className="mb-12">
+          {newReviews.length > 0 && (
+            <div id="new-reviews-section" className="mb-12">
             <h2 className="text-3xl font-bold text-primary mb-6 text-center">
               🎬 New Reviews
             </h2>
