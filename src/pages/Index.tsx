@@ -163,7 +163,6 @@ const Index = () => {
   const newReviews = filteredReviews.slice(0, 5);
   const oldReviews = filteredReviews.slice(5);
   return <>
-      <PushDebugPanel />
       <CurtainAnimation />
       <div className="min-h-screen bg-background">
       {/* Fixed Header with Black and Gold Theme */}
