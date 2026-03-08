@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Volume2, VolumeX, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -12,24 +12,102 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const cancelledRef = useRef(false);
   const { toast } = useToast();
 
-  const stopAudio = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      audioRef.current = null;
-    }
-    // Also stop browser speech synthesis if running
+  // Preload voices
+  useEffect(() => {
+    if (!("speechSynthesis" in window)) return;
+    const loadVoices = () => setVoices(window.speechSynthesis.getVoices());
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+  }, []);
+
+  const stopSpeech = () => {
+    cancelledRef.current = true;
     if ("speechSynthesis" in window) {
       window.speechSynthesis.cancel();
     }
     setIsPlaying(false);
   };
 
-  const playWithEdgeFunction = async (): Promise<boolean> => {
+  const getTeluguVoice = (): SpeechSynthesisVoice | null => {
+    // Priority: Telugu > Hindi > any Indian voice
+    return (
+      voices.find((v) => v.lang.startsWith("te")) ||
+      voices.find((v) => v.lang.startsWith("hi")) ||
+      voices.find((v) => v.lang.includes("IN")) ||
+      null
+    );
+  };
+
+  const speakTeluguText = (teluguText: string) => {
+    const synth = window.speechSynthesis;
+    const voice = getTeluguVoice();
+
+    // Split into smaller chunks for mobile reliability
+    const chunks = teluguText.match(/[^।.!?]+[।.!?]*/g) || [teluguText];
+    let i = 0;
+    cancelledRef.current = false;
+
+    const speakNext = () => {
+      if (cancelledRef.current || i >= chunks.length) {
+        setIsPlaying(false);
+        return;
+      }
+
+      const chunk = chunks[i].trim();
+      if (!chunk) { i++; speakNext(); return; }
+
+      const utter = new SpeechSynthesisUtterance(chunk);
+      if (voice) {
+        utter.voice = voice;
+        utter.lang = voice.lang;
+      } else {
+        utter.lang = "te-IN";
+      }
+      utter.rate = 0.85;
+      utter.pitch = 1;
+      utter.volume = 1;
+
+      utter.onend = () => {
+        i++;
+        setTimeout(speakNext, 80);
+      };
+      utter.onerror = (e) => {
+        console.error("Speech error:", e);
+        setIsPlaying(false);
+      };
+
+      synth.speak(utter);
+      // Chrome mobile workaround
+      setTimeout(() => synth.resume(), 200);
+    };
+
+    setIsPlaying(true);
+    speakNext();
+  };
+
+  const handleToggle = async () => {
+    if (isPlaying) {
+      stopSpeech();
+      return;
+    }
+
+    if (!("speechSynthesis" in window)) {
+      toast({
+        title: "Not Supported",
+        description: "Voice playback is not supported on this device.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
     try {
+      // Call edge function to translate review to pure Telugu
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/text-to-speech`,
         {
@@ -43,130 +121,45 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
         }
       );
 
-      if (!response.ok) {
-        console.error("Edge function TTS failed:", response.status);
-        return false;
+      if (response.ok) {
+        const data = await response.json();
+        if (data.teluguText) {
+          setIsLoading(false);
+          speakTeluguText(data.teluguText);
+          return;
+        }
       }
 
-      const data = await response.json();
-      if (!data.audioContent) return false;
-
-      const audioUrl = `data:audio/mpeg;base64,${data.audioContent}`;
-      const audio = new Audio(audioUrl);
-      audioRef.current = audio;
-
-      audio.onended = () => {
-        setIsPlaying(false);
-        audioRef.current = null;
-      };
-      audio.onerror = () => {
-        setIsPlaying(false);
-        audioRef.current = null;
-      };
-
-      await audio.play();
-      return true;
-    } catch (error) {
-      console.error("Edge function TTS error:", error);
-      return false;
-    }
-  };
-
-  const playWithBrowserTTS = (): boolean => {
-    if (!("speechSynthesis" in window)) return false;
-
-    const synth = window.speechSynthesis;
-    const voices = synth.getVoices();
-    const teluguVoice =
-      voices.find((v) => v.lang.toLowerCase().includes("te")) ||
-      voices.find((v) => v.lang.toLowerCase().includes("hi-in")) ||
-      voices.find((v) => v.lang.toLowerCase().includes("en-in")) ||
-      voices[0];
-
-    if (!teluguVoice) return false;
-
-    // Split into chunks for reliability on mobile
-    const chunks = reviewText.match(/.{1,200}[.!?।]*/g) || [reviewText];
-    let i = 0;
-
-    const speakNext = () => {
-      if (i >= chunks.length) {
-        setIsPlaying(false);
-        return;
-      }
-      const utter = new SpeechSynthesisUtterance(chunks[i]);
-      utter.voice = teluguVoice;
-      utter.lang = teluguVoice.lang;
-      utter.rate = 0.85;
-      utter.pitch = 1;
-      utter.volume = 1;
-      utter.onend = () => {
-        i++;
-        setTimeout(speakNext, 50);
-      };
-      utter.onerror = () => setIsPlaying(false);
-      synth.speak(utter);
-      // Chrome mobile fix: resume after pause
-      setTimeout(() => synth.resume(), 250);
-    };
-
-    speakNext();
-    return true;
-  };
-
-  const handleToggle = async () => {
-    if (isPlaying) {
-      stopAudio();
-      return;
+      console.warn("Edge function failed, using original text");
+    } catch (err) {
+      console.warn("Edge function error:", err);
     }
 
-    setIsLoading(true);
-    setIsPlaying(true);
-
-    // Try edge function (Google Cloud TTS) first, then browser fallback
-    const edgeSuccess = await playWithEdgeFunction();
-
-    if (!edgeSuccess) {
-      console.log("Falling back to browser TTS");
-      // Preload voices on first attempt
-      if ("speechSynthesis" in window && window.speechSynthesis.getVoices().length === 0) {
-        window.speechSynthesis.getVoices();
-        await new Promise((r) => setTimeout(r, 500));
-      }
-      const browserSuccess = playWithBrowserTTS();
-      if (!browserSuccess) {
-        setIsPlaying(false);
-        toast({
-          title: "Voice Not Available",
-          description: "Audio playback is not supported on this device.",
-          variant: "destructive",
-        });
-      }
-    }
-
+    // Fallback: speak original text with Telugu voice
     setIsLoading(false);
+    speakTeluguText(reviewText);
   };
 
   return (
     <div className="flex justify-center mt-6">
       <Button
         onClick={handleToggle}
-        disabled={isLoading && !isPlaying}
+        disabled={isLoading}
         variant="outline"
         className="flex items-center gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground font-bold px-6 py-3 rounded-xl shadow-[0_0_15px_rgba(255,215,0,0.3)] transition-all"
       >
-        {isLoading && !isPlaying ? (
+        {isLoading ? (
           <Loader2 className="w-5 h-5 animate-spin" />
         ) : isPlaying ? (
           <VolumeX className="w-5 h-5" />
         ) : (
           <Volume2 className="w-5 h-5" />
         )}
-        {isLoading && !isPlaying
-          ? "Loading..."
+        {isLoading
+          ? "తెలుగులో మారుస్తోంది..."
           : isPlaying
-          ? "🔇 Stop Voice"
-          : "🔊 Listen in Telugu"}
+          ? "🔇 ఆపు"
+          : "🔊 తెలుగులో వినండి"}
       </Button>
     </div>
   );
