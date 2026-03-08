@@ -127,7 +127,8 @@ export const sendPushNotification = async (
   title: string,
   message: string,
   url?: string,
-  tag?: string
+  tag?: string,
+  image?: string
 ) => {
-  return callPushFunction('send', 'POST', { title, message, url, tag });
+  return callPushFunction('send', 'POST', { title, message, url, tag, image });
 };
