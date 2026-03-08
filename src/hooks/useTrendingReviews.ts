@@ -132,13 +132,37 @@ export const useTrendingReviews = () => {
         };
       });
 
-      // Filter to only reviews with scores, but fallback to latest reviews if none
+      // Filter to reviews with engagement scores
       const withScores = trendingData.filter(item => item.trendingScore > 0);
+      
       if (withScores.length > 0) {
         trendingData = withScores;
       } else {
-        // Fallback: show latest Firebase reviews with a base score
-        trendingData = trendingData.slice(0, 5).map((item, i) => ({
+        // Fallback: show latest added reviews from this week as "trending"
+        // Get reviews added in the last 7 days from Firebase
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+        
+        const recentReviews: TrendingReviewData[] = [];
+        reviewsSnapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          const createdAt = data.createdAt?.toDate?.() || new Date(data.createdAt);
+          if (createdAt >= oneWeekAgo) {
+            recentReviews.push({
+              reviewId: docSnap.id,
+              title: data.title,
+              image: data.image,
+              weeklyViews: 1,
+              weeklyLikes: 0,
+              weeklyComments: 0,
+              weeklyReactions: 0,
+              trendingScore: 10,
+              rank: 0
+            });
+          }
+        });
+        
+        trendingData = recentReviews.length > 0 ? recentReviews : trendingData.slice(0, 5).map((item, i) => ({
           ...item,
           trendingScore: 10 - i,
           weeklyViews: 1,
