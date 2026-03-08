@@ -171,7 +171,11 @@ const Index = () => {
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
           
           {/* Main Logo and Title Container */}
-          <div className="relative flex justify-center items-center gap-4">
+           <div className="relative flex justify-center items-center gap-4">
+            {/* Notification Bell - Top Right */}
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 z-10">
+              <NotificationBell />
+            </div>
             {/* Golden Film Reel Decoration - Left */}
             <div className="hidden md:flex items-center gap-2">
               <span className="text-2xl animate-pulse">🎬</span>
