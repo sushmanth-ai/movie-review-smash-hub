@@ -145,6 +145,17 @@ const ReviewDetail = () => {
       }
     }
   }, [id]);
+  const originalTexts = review ? {
+    review: review.review || '',
+    firstHalf: review.firstHalf || '',
+    secondHalf: review.secondHalf || '',
+    positives: review.positives || '',
+    negatives: review.negatives || '',
+    overall: review.overall || '',
+  } : { review: '', firstHalf: '', secondHalf: '', positives: '', negatives: '', overall: '' };
+
+  const { translated, isTranslating } = useTranslateReview(id || '', originalTexts);
+
   if (!review) {
     return <CurtainAnimation alwaysPlay />;
   }
