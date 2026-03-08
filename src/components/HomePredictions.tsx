@@ -48,7 +48,7 @@ export const HomePredictions: React.FC = () => {
         {movies.map(movie => (
           <button
             key={movie.id}
-            onClick={() => navigate('/auth')}
+            onClick={() => navigate('/predictions')}
             className="shrink-0 w-40 bg-card border border-primary/20 rounded-xl overflow-hidden hover:border-primary/50 transition-all hover:shadow-[0_0_15px_rgba(255,215,0,0.15)] group"
           >
             <div className="h-24 overflow-hidden">
