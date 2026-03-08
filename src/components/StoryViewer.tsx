@@ -219,7 +219,7 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({ reviews, initialIndex,
           {SLIDES.map((_, i) => (
             <div key={i} className="flex-1 h-[3px] bg-white/25 rounded-full overflow-hidden">
               <div
-                className="h-full bg-primary rounded-full transition-all duration-100"
+                className="h-full bg-gradient-to-r from-red-500 to-orange-500 rounded-full transition-all duration-100"
                 style={{
                   width: i < currentSlide ? '100%' : i === currentSlide ? `${progress}%` : '0%',
                 }}
