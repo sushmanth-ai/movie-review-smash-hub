@@ -351,7 +351,7 @@ const ReviewDetail = () => {
               }} className={`flex items-center gap-2 font-bold hover:scale-110 transition-transform relative ${likedReviews.has(review.id) ? "text-red-500" : "text-gray-400"}`}>
                   <ThumbsUp className={`w-6 h-6 ${showLikeEffect ? "animate-like-pop" : ""} ${likedReviews.has(review.id) ? "fill-current" : ""}`} />{" "}
                   {review.likes}{" "}
-                  {likedReviews.has(review.id) ? "Liked" : "Like"}
+                  {likedReviews.has(review.id) ? t('liked') : t('like')}
                   {showLikeEffect && <span className="absolute -top-6 text-red-400 font-bold animate-bubble">
                       {likedReviews.has(review.id) ? "+1 ❤️" : "-1"}
                     </span>}
