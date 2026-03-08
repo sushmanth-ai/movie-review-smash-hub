@@ -20,6 +20,7 @@ import { StoryCircles } from '@/components/StoryCircles';
 import { HomePredictions } from '@/components/HomePredictions';
 
 const Index = () => {
+  const navigate = useNavigate();
   const { playSound } = useSound();
   const { toast } = useToast();
   useAutoSubscribe();
