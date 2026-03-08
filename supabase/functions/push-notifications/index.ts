@@ -111,7 +111,7 @@ Deno.serve(async (req) => {
 
     // Send notification to all subscribers
     if (action === "send") {
-      const { title, message, icon, url: notifUrl, tag } = body;
+      const { title, message, icon, url: notifUrl, tag, image } = body;
 
       const keys = await getOrCreateVapidKeys(supabase);
 
@@ -143,6 +143,7 @@ Deno.serve(async (req) => {
         icon: icon || "/pwa-icon-192.png",
         url: notifUrl || "/",
         tag: tag || "sm-review-update",
+        image: image || null,
       });
 
       let sent = 0;
