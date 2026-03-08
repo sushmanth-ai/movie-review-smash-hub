@@ -273,7 +273,7 @@ const Index = () => {
         {newReviews.length > 0 && (
           <div className="mb-12">
             <h2 className="text-3xl font-bold text-primary mb-6 text-center">
-              🎬 New Reviews
+              {t('newReviews')}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {(showAllNewReviews ? newReviews : newReviews.slice(0, 3)).map(review => (
