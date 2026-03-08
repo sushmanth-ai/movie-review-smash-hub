@@ -54,7 +54,7 @@ export const StoryCircles: React.FC<StoryCirclesProps> = ({ reviews }) => {
                     "w-[72px] h-[72px] rounded-full p-[3px] transition-all duration-300",
                     isViewed
                       ? "bg-muted-foreground/30"
-                      : "bg-gradient-to-br from-primary via-yellow-400 to-primary shadow-[0_0_15px_rgba(255,215,0,0.4)]"
+                      : "bg-gradient-to-br from-red-500 via-orange-500 to-yellow-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]"
                   )}
                 >
                   <div className="w-full h-full rounded-full overflow-hidden border-2 border-background">

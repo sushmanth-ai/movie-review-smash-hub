@@ -115,15 +115,15 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({ reviews, initialIndex,
         return (
           <div className="flex flex-col items-center justify-center h-full text-center px-6 animate-fade-in">
             <div className="text-6xl mb-4">🎬</div>
-            <h2 className="text-3xl font-black text-primary mb-3 drop-shadow-[0_0_20px_rgba(255,215,0,0.6)]">
+            <h2 className="text-3xl font-black text-orange-400 mb-3 drop-shadow-[0_0_20px_rgba(251,146,60,0.6)]">
               {review.title}
             </h2>
-            <p className="text-foreground/80 text-lg leading-relaxed max-w-sm">
+            <p className="text-white/80 text-lg leading-relaxed max-w-sm">
               {review.review}
             </p>
-            <div className="flex items-center gap-2 mt-6 bg-primary/20 px-5 py-2.5 rounded-full border border-primary/40">
-              <Star className="w-5 h-5 text-primary fill-primary" />
-              <span className="text-primary font-bold text-xl">{review.rating}</span>
+            <div className="flex items-center gap-2 mt-6 bg-red-500/20 px-5 py-2.5 rounded-full border border-orange-500/40">
+              <Star className="w-5 h-5 text-orange-400 fill-orange-400" />
+              <span className="text-orange-400 font-bold text-xl">{review.rating}</span>
             </div>
             {review.views && (
               <div className="flex items-center gap-1.5 mt-3 text-muted-foreground text-sm">
@@ -136,12 +136,12 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({ reviews, initialIndex,
       case 'firstHalf':
         return (
           <div className="flex flex-col justify-center h-full px-6 animate-fade-in">
-            <div className="bg-card/60 backdrop-blur-md rounded-2xl p-6 border border-primary/30 shadow-[0_0_30px_rgba(255,215,0,0.15)]">
+            <div className="bg-card/60 backdrop-blur-md rounded-2xl p-6 border border-orange-500/30 shadow-[0_0_30px_rgba(251,146,60,0.15)]">
               <div className="flex items-center gap-2 mb-4">
                 <span className="text-2xl">🎬</span>
-                <h3 className="text-xl font-bold text-primary">First Half</h3>
+                <h3 className="text-xl font-bold text-orange-400">First Half</h3>
               </div>
-              <p className="text-foreground/90 leading-relaxed text-base">
+              <p className="text-white/90 leading-relaxed text-base">
                 {review.firstHalf}
               </p>
             </div>
@@ -150,12 +150,12 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({ reviews, initialIndex,
       case 'secondHalf':
         return (
           <div className="flex flex-col justify-center h-full px-6 animate-fade-in">
-            <div className="bg-card/60 backdrop-blur-md rounded-2xl p-6 border border-primary/30 shadow-[0_0_30px_rgba(255,215,0,0.15)]">
+            <div className="bg-card/60 backdrop-blur-md rounded-2xl p-6 border border-red-500/30 shadow-[0_0_30px_rgba(239,68,68,0.15)]">
               <div className="flex items-center gap-2 mb-4">
                 <span className="text-2xl">🎥</span>
-                <h3 className="text-xl font-bold text-primary">Second Half</h3>
+                <h3 className="text-xl font-bold text-red-400">Second Half</h3>
               </div>
-              <p className="text-foreground/90 leading-relaxed text-base">
+              <p className="text-white/90 leading-relaxed text-base">
                 {review.secondHalf}
               </p>
             </div>
@@ -170,21 +170,21 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({ reviews, initialIndex,
                   <ThumbsUp className="w-5 h-5 text-emerald-400" />
                   <h3 className="text-lg font-bold text-emerald-400">Positives</h3>
                 </div>
-                <p className="text-foreground/90 text-sm leading-relaxed">{review.positives}</p>
+                <p className="text-white/90 text-sm leading-relaxed">{review.positives}</p>
               </div>
               <div className="bg-red-500/10 backdrop-blur-md rounded-2xl p-5 border border-red-500/30">
                 <div className="flex items-center gap-2 mb-3">
                   <ThumbsDown className="w-5 h-5 text-red-400" />
                   <h3 className="text-lg font-bold text-red-400">Negatives</h3>
                 </div>
-                <p className="text-foreground/90 text-sm leading-relaxed">{review.negatives}</p>
+                <p className="text-white/90 text-sm leading-relaxed">{review.negatives}</p>
               </div>
-              <div className="bg-primary/10 backdrop-blur-md rounded-2xl p-5 border border-primary/30">
-                <p className="text-primary font-bold text-center text-lg">"{review.overall}"</p>
+              <div className="bg-orange-500/10 backdrop-blur-md rounded-2xl p-5 border border-orange-500/30">
+                <p className="text-orange-400 font-bold text-center text-lg">"{review.overall}"</p>
               </div>
               <button
                 onClick={handleReadFull}
-                className="w-full py-3 bg-primary text-primary-foreground font-bold rounded-full text-base hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,215,0,0.4)]"
+                className="w-full py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold rounded-full text-base hover:scale-105 transition-transform shadow-[0_0_20px_rgba(239,68,68,0.4)]"
               >
                 Read Full Review →
               </button>
@@ -219,7 +219,7 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({ reviews, initialIndex,
           {SLIDES.map((_, i) => (
             <div key={i} className="flex-1 h-[3px] bg-white/25 rounded-full overflow-hidden">
               <div
-                className="h-full bg-primary rounded-full transition-all duration-100"
+                className="h-full bg-gradient-to-r from-red-500 to-orange-500 rounded-full transition-all duration-100"
                 style={{
                   width: i < currentSlide ? '100%' : i === currentSlide ? `${progress}%` : '0%',
                 }}
@@ -231,7 +231,7 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({ reviews, initialIndex,
         {/* Header */}
         <div className="absolute top-8 left-4 right-4 flex items-center justify-between z-20">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center">
+            <div className="w-9 h-9 rounded-full bg-red-500/20 border-2 border-orange-500 flex items-center justify-center">
               <span className="text-sm">🎬</span>
             </div>
             <div>
