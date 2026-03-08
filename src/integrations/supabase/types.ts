@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      push_settings: {
+        Row: {
+          created_at: string | null
+          id: string
+          private_key: string
+          public_key: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          private_key: string
+          public_key: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          private_key?: string
+          public_key?: string
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string | null
+          device_hash: string | null
+          endpoint: string
+          id: string
+          p256dh: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string | null
+          device_hash?: string | null
+          endpoint: string
+          id?: string
+          p256dh: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string | null
+          device_hash?: string | null
+          endpoint?: string
+          id?: string
+          p256dh?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
