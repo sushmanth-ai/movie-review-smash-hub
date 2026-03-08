@@ -426,7 +426,7 @@ const ReviewDetail = () => {
                 🏠 District Cinemas
               </Button>
               <Button onClick={() => setShowBookingOptions(false)} variant="outline" className="border-primary text-primary font-bold py-3 rounded-lg">
-                ✖️ Cancel
+                {t('cancel')}
               </Button>
             </div>
           </div>
