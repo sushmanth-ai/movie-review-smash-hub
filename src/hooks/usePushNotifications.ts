@@ -72,10 +72,10 @@ export const usePushNotifications = () => {
 
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as BufferSource,
       });
 
-      const deviceHash = await getDeviceFingerprint();
+      const deviceHash = await generateDeviceFingerprint();
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
 
       const response = await fetch(
