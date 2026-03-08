@@ -16,7 +16,6 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
   const cancelledRef = useRef(false);
   const { toast } = useToast();
 
-  // Preload voices
   useEffect(() => {
     if (!("speechSynthesis" in window)) return;
     const loadVoices = () => setVoices(window.speechSynthesis.getVoices());
@@ -32,22 +31,26 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
     setIsPlaying(false);
   };
 
-  const getTeluguVoice = (): SpeechSynthesisVoice | null => {
-    // Priority: Telugu > Hindi > any Indian voice
+  const getVoice = (): SpeechSynthesisVoice | null => {
+    // Tenglish is Roman script, so English-India voice works best
     return (
-      voices.find((v) => v.lang.startsWith("te")) ||
-      voices.find((v) => v.lang.startsWith("hi")) ||
+      voices.find((v) => v.lang === "en-IN") ||
+      voices.find((v) => v.lang.startsWith("en-IN")) ||
       voices.find((v) => v.lang.includes("IN")) ||
+      voices.find((v) => v.lang.startsWith("en")) ||
       null
     );
   };
 
-  const speakTeluguText = (teluguText: string) => {
+  const speakText = (text: string) => {
     const synth = window.speechSynthesis;
-    const voice = getTeluguVoice();
+    const voice = getVoice();
 
-    // Split into smaller chunks for mobile reliability
-    const chunks = teluguText.match(/[^।.!?]+[।.!?]*/g) || [teluguText];
+    // Split by sentences for reliability
+    const chunks = text
+      .split(/(?<=[.!?])\s+/)
+      .filter((c) => c.trim().length > 0);
+
     let i = 0;
     cancelledRef.current = false;
 
@@ -58,26 +61,31 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
       }
 
       const chunk = chunks[i].trim();
-      if (!chunk) { i++; speakNext(); return; }
+      if (!chunk) {
+        i++;
+        speakNext();
+        return;
+      }
 
       const utter = new SpeechSynthesisUtterance(chunk);
       if (voice) {
         utter.voice = voice;
         utter.lang = voice.lang;
       } else {
-        utter.lang = "te-IN";
+        utter.lang = "en-IN";
       }
-      utter.rate = 0.85;
+      utter.rate = 0.9;
       utter.pitch = 1;
       utter.volume = 1;
 
       utter.onend = () => {
         i++;
-        setTimeout(speakNext, 80);
+        setTimeout(speakNext, 100);
       };
       utter.onerror = (e) => {
         console.error("Speech error:", e);
-        setIsPlaying(false);
+        i++;
+        setTimeout(speakNext, 100);
       };
 
       synth.speak(utter);
@@ -107,7 +115,6 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
     setIsLoading(true);
 
     try {
-      // Call edge function to translate review to pure Telugu
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/text-to-speech`,
         {
@@ -125,19 +132,20 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
         const data = await response.json();
         if (data.teluguText) {
           setIsLoading(false);
-          speakTeluguText(data.teluguText);
+          speakText(data.teluguText);
           return;
         }
       }
 
+      // If edge function fails, speak original text
       console.warn("Edge function failed, using original text");
+      setIsLoading(false);
+      speakText(reviewText);
     } catch (err) {
       console.warn("Edge function error:", err);
+      setIsLoading(false);
+      speakText(reviewText);
     }
-
-    // Fallback: speak original text with Telugu voice
-    setIsLoading(false);
-    speakTeluguText(reviewText);
   };
 
   return (
@@ -156,10 +164,10 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
           <Volume2 className="w-5 h-5" />
         )}
         {isLoading
-          ? "తెలుగులో మారుస్తోంది..."
+          ? "Loading..."
           : isPlaying
-          ? "🔇 ఆపు"
-          : "🔊 తెలుగులో వినండి"}
+          ? "🔇 Stop"
+          : "🔊 Review Vinandi"}
       </Button>
     </div>
   );

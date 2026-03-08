@@ -22,9 +22,8 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    console.log('Translating review to Telugu using AI, text length:', text.length);
+    console.log('Converting review to Tenglish, text length:', text.length);
 
-    // Use Lovable AI to ensure the text is proper Telugu
     const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -36,11 +35,23 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a Telugu language expert. Your job is to take movie review text (which may be in English or mixed Telugu-English) and convert it ENTIRELY into natural, fluent Telugu script. Output ONLY the Telugu text, nothing else. No English words, no explanations. Use proper Telugu script (తెలుగు). Keep the meaning and tone intact.'
+            content: `You are a Telugu movie reviewer who speaks in Tenglish (Telugu written in English/Roman script mixed with English words). Convert movie reviews into natural Tenglish that sounds like how Telugu people chat on WhatsApp.
+
+Rules:
+- Write Telugu words in English/Roman script (e.g., "cinema baagundi", "first half lo director")
+- Keep English movie terms as-is (screenplay, twist, climax, thriller, direction, acting)
+- Sound natural and conversational like a friend telling you about a movie
+- Use common Tenglish phrases like "enti ante", "chala baagundi", "worth watch", "pakka hit"
+- Add natural fillers like "ante", "kadha", "mari", "inka"
+- Output ONLY the Tenglish text, nothing else
+- No Telugu script characters at all - everything in Roman/English letters
+- Keep section labels like "Review:", "First Half:", "Second Half:", "Positives:", "Negatives:", "Overall:", "Rating:"
+
+Example style: "Cinema chala baagundi ra! First half lo koddiga slow ga anipinchina, second half lo director pakka mass ga handle chesadu. Twists inka screenplay top notch. Overall ga cheppali ante, idi oka solid thriller!"`,
           },
           {
             role: 'user',
-            content: `Convert this movie review to pure Telugu:\n\n${text}`
+            content: `Convert this movie review to Tenglish:\n\n${text}`
           }
         ],
       }),
@@ -64,12 +75,12 @@ serve(async (req) => {
     }
 
     const aiData = await aiResponse.json();
-    const teluguText = aiData.choices?.[0]?.message?.content?.trim() || text;
+    const tenglishText = aiData.choices?.[0]?.message?.content?.trim() || text;
 
-    console.log('Telugu translation done, length:', teluguText.length);
+    console.log('Tenglish conversion done, length:', tenglishText.length);
 
     return new Response(
-      JSON.stringify({ teluguText }),
+      JSON.stringify({ teluguText: tenglishText }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
