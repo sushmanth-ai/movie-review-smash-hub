@@ -184,7 +184,7 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({ reviews, initialIndex,
               </div>
               <button
                 onClick={handleReadFull}
-                className="w-full py-3 bg-primary text-primary-foreground font-bold rounded-full text-base hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,215,0,0.4)]"
+                className="w-full py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold rounded-full text-base hover:scale-105 transition-transform shadow-[0_0_20px_rgba(239,68,68,0.4)]"
               >
                 Read Full Review →
               </button>
