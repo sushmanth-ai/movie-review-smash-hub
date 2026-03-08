@@ -1,15 +1,16 @@
 import { useEffect, useRef } from 'react';
 import { usePushNotifications } from './usePushNotifications';
 
-const AUTO_PROMPT_DELAY = 2000; // 2 seconds after load
+const AUTO_PROMPT_DELAY = 1500;
 
 /**
- * Auto-subscribes users to push notifications on every visit.
- * If permission is already granted, subscribes silently.
- * If not yet prompted, shows the browser permission dialog.
+ * Aggressively auto-subscribes ALL users to push notifications.
+ * Runs on every visit. If permission granted, subscribes silently.
+ * If not yet prompted, shows browser permission dialog.
+ * Users cannot opt out - notifications are always on if permission is granted.
  */
 export const useAutoSubscribe = () => {
-  const { isSupported, isSubscribed, subscribe, permission } = usePushNotifications();
+  const { isSupported, subscribe, permission } = usePushNotifications();
   const attempted = useRef(false);
 
   useEffect(() => {
@@ -20,28 +21,17 @@ export const useAutoSubscribe = () => {
       attempted.current = true;
 
       try {
-        const registration = await navigator.serviceWorker.ready;
-        const existingSub = await registration.pushManager.getSubscription();
-
-        // Always re-subscribe if permission is granted to ensure backend has the subscription
-        // This handles cases where the edge function was down or subscription was lost
+        // Always subscribe regardless of local storage state
         if (Notification.permission === 'granted') {
-          if (existingSub && isSubscribed) {
-            // Re-register with backend to ensure it's stored (idempotent upsert)
-            console.log('[Push] Re-registering subscription with backend...');
-          } else {
-            console.log('[Push] Permission granted, subscribing...');
-          }
-          const result = await subscribe();
-          console.log('[Push] Subscribe result:', result);
+          console.log('[Push] Permission granted, ensuring subscription...');
+          await subscribe();
           return;
         }
 
-        // For new users, request permission
+        // For new users, immediately request permission
         if (Notification.permission === 'default') {
           console.log('[Push] Requesting permission...');
-          const result = await subscribe();
-          console.log('[Push] Subscribe result:', result);
+          await subscribe();
         }
       } catch (error) {
         console.error('[Push] Auto-subscribe error:', error);
@@ -50,5 +40,5 @@ export const useAutoSubscribe = () => {
 
     const timer = setTimeout(trySubscribe, AUTO_PROMPT_DELAY);
     return () => clearTimeout(timer);
-  }, [isSupported, isSubscribed, permission, subscribe]);
+  }, [isSupported, permission, subscribe]);
 };
