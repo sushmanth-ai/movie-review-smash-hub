@@ -185,8 +185,8 @@ const ReviewDetail = () => {
       }
     } catch (error) {
       toast({
-        title: "Share Failed",
-        description: "Something went wrong. Try again!",
+        title: t('shareFailed'),
+        description: t('shareFailedDesc'),
         variant: "destructive"
       });
     }
