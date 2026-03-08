@@ -7,6 +7,7 @@ import { MovieCard } from '@/components/MovieCard';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '@/utils/firebase';
 import { TodayViews } from '@/components/TodayViews';
+import { ReviewCarousel } from '@/components/ReviewCarousel';
 import { CurtainAnimation } from '@/components/CurtainAnimation';
 import { TrendingReviews } from '@/components/TrendingReviews';
 import { useTrendingReviews } from '@/hooks/useTrendingReviews';
@@ -250,6 +251,11 @@ const Index = () => {
       {/* Story Circles */}
       <div className="container mx-auto px-4 pt-4">
         <StoryCircles reviews={filteredReviews} />
+      </div>
+
+      {/* 3D Carousel */}
+      <div className="container mx-auto px-4 pt-4">
+        <ReviewCarousel reviews={filteredReviews} />
       </div>
 
       {/* Trending This Week Section */}
