@@ -316,13 +316,13 @@ const ReviewDetail = () => {
               {/* Section Cards */}
               <div className="space-y-4">
                 {/* First Half */}
-                <div className="rounded-xl p-[2px] bg-gradient-to-r from-sky-400 via-teal-300 to-cyan-400 hover:shadow-[0_0_15px_rgba(56,189,248,0.3)] transition-all duration-300">
+                <div className="rounded-xl p-[2px] bg-gradient-to-r from-yellow-500 via-amber-400 to-yellow-500 hover:shadow-[0_0_15px_rgba(251,191,36,0.4)] transition-all duration-300">
                   <div className="bg-card rounded-[10px] p-4">
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="bg-sky-500/20 p-1.5 rounded-lg">
-                        <Film className="w-4 h-4 text-sky-300" />
+                      <div className="bg-amber-500/20 p-1.5 rounded-lg">
+                        <Film className="w-4 h-4 text-amber-300" />
                       </div>
-                      <h4 className="text-sky-300 font-bold text-lg">{t('firstHalf')}</h4>
+                      <h4 className="text-amber-300 font-bold text-lg">{t('firstHalf')}</h4>
                     </div>
                     <p className="text-base text-white font-medium leading-relaxed pl-9">
                       {review.firstHalf}
@@ -331,13 +331,13 @@ const ReviewDetail = () => {
                 </div>
 
                 {/* Second Half */}
-                <div className="rounded-xl p-[2px] bg-gradient-to-r from-fuchsia-400 via-pink-300 to-violet-400 hover:shadow-[0_0_15px_rgba(232,121,249,0.3)] transition-all duration-300">
+                <div className="rounded-xl p-[2px] bg-gradient-to-r from-yellow-600 via-amber-500 to-yellow-600 hover:shadow-[0_0_15px_rgba(245,158,11,0.4)] transition-all duration-300">
                   <div className="bg-card rounded-[10px] p-4">
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="bg-fuchsia-500/20 p-1.5 rounded-lg">
-                        <Film className="w-4 h-4 text-fuchsia-300" />
+                      <div className="bg-amber-500/20 p-1.5 rounded-lg">
+                        <Film className="w-4 h-4 text-amber-400" />
                       </div>
-                      <h4 className="text-fuchsia-300 font-bold text-lg">{t('secondHalf')}</h4>
+                      <h4 className="text-amber-400 font-bold text-lg">{t('secondHalf')}</h4>
                     </div>
                     <p className="text-base text-white font-medium leading-relaxed pl-9">
                       {review.secondHalf}
