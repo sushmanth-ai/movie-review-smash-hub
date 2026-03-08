@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { LogOut, Plus, Home } from 'lucide-react';
+import { LogOut, Plus, Home, Bell, Loader2 } from 'lucide-react';
 import { ReviewList } from '@/components/admin/ReviewList';
 import { ReviewForm } from '@/components/admin/ReviewForm';
 import { useAdminReviews } from '@/hooks/useAdminReviews';
@@ -29,8 +29,43 @@ const AdminDashboard = () => {
   const [showForm, setShowForm] = useState(false);
   const [showPolls, setShowPolls] = useState(false);
   const [editingReview, setEditingReview] = useState<{ id: string; data: ReviewFormData } | null>(null);
+  const [sendingDigest, setSendingDigest] = useState(false);
   
   const { reviews, loading, addReview, updateReview, deleteReview } = useAdminReviews();
+
+  const handleSendWeeklyDigest = async () => {
+    setSendingDigest(true);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/weekly-digest`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ source: "admin" }),
+        }
+      );
+      const data = await response.json();
+      if (data.success) {
+        toast({
+          title: "📬 Weekly Digest Sent!",
+          description: `Sent to ${data.pushResult?.sent || 0} subscribers. Top: ${data.top3?.map((r: any) => r.title).join(", ")}`,
+        });
+      } else {
+        throw new Error(data.error || "Failed");
+      }
+    } catch (err) {
+      toast({
+        title: "Failed to send digest",
+        description: err instanceof Error ? err.message : "Unknown error",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingDigest(false);
+    }
+  };
 
   useEffect(() => {
     // Check if logged in
@@ -94,6 +129,15 @@ const AdminDashboard = () => {
               >
                 <Home className="w-4 h-4 mr-2" />
                 Home
+              </Button>
+              <Button
+                onClick={handleSendWeeklyDigest}
+                disabled={sendingDigest}
+                variant="outline"
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+              >
+                {sendingDigest ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Bell className="w-4 h-4 mr-2" />}
+                Weekly Digest
               </Button>
               <Button
                 onClick={handleLogout}
