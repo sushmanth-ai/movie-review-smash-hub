@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { MovieReview, movieReviewsData } from '@/data/movieReviews';
@@ -19,6 +20,7 @@ import { StoryCircles } from '@/components/StoryCircles';
 import { HomePredictions } from '@/components/HomePredictions';
 
 const Index = () => {
+  const navigate = useNavigate();
   const { playSound } = useSound();
   const { toast } = useToast();
   useAutoSubscribe();
@@ -242,10 +244,31 @@ const Index = () => {
             />
           </div>
         </div>
+
+        {/* Navigation Bar */}
+        <div className="px-4 pb-2">
+          <div className="max-w-2xl mx-auto flex gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+            <button onClick={() => navigate('/predictions')} className="shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/30 text-primary text-xs font-bold hover:bg-primary/20 transition-all">
+              🎯 Predictions
+            </button>
+            <button onClick={() => { const el = document.getElementById('trending-section'); el?.scrollIntoView({ behavior: 'smooth' }); }} className="shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/30 text-primary text-xs font-bold hover:bg-primary/20 transition-all">
+              🔥 Trending
+            </button>
+            <button onClick={() => { const el = document.getElementById('new-reviews-section'); el?.scrollIntoView({ behavior: 'smooth' }); }} className="shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/30 text-primary text-xs font-bold hover:bg-primary/20 transition-all">
+              🎬 New Reviews
+            </button>
+            <button onClick={() => { const el = document.getElementById('old-reviews-section'); el?.scrollIntoView({ behavior: 'smooth' }); }} className="shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/30 text-primary text-xs font-bold hover:bg-primary/20 transition-all">
+              📽️ Old Reviews
+            </button>
+            <button onClick={() => { const el = document.getElementById('contact-section'); el?.scrollIntoView({ behavior: 'smooth' }); }} className="shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/30 text-primary text-xs font-bold hover:bg-primary/20 transition-all">
+              📞 Contact
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Today Views Card - Outside Header */}
-      <div className="container mx-auto px-4 pt-36 md:pt-40">
+      <div className="container mx-auto px-4 pt-44 md:pt-48">
         <TodayViews viewCount={realTimeViewCount} />
       </div>
 
@@ -265,15 +288,15 @@ const Index = () => {
       </div>
 
       {/* Trending This Week Section */}
-      <div className="container mx-auto px-4 pt-6">
+      <div id="trending-section" className="container mx-auto px-4 pt-6">
         <TrendingReviews reviews={trendingReviews} isLoading={trendingLoading} limit={2} />
       </div>
 
       {/* Main Content */}
       <div className="container mx-auto px-4 pt-0 pb-8">
         {/* New Reviews Section */}
-        {newReviews.length > 0 && (
-          <div className="mb-12">
+          {newReviews.length > 0 && (
+            <div id="new-reviews-section" className="mb-12">
             <h2 className="text-3xl font-bold text-primary mb-6 text-center">
               🎬 New Reviews
             </h2>
@@ -302,7 +325,7 @@ const Index = () => {
 
         {/* Old Reviews Section */}
         {oldReviews.length > 0 && (
-          <div className="mb-12">
+          <div id="old-reviews-section" className="mb-12">
             <h2 className="text-3xl font-bold text-primary mb-6 text-center">
               📽️ Old Reviews
             </h2>
@@ -330,7 +353,7 @@ const Index = () => {
         )}
 
         {/* Contact Support Section */}
-        <div className="mt-16 mb-8">
+        <div id="contact-section" className="mt-16 mb-8">
           <h2 className="text-3xl font-bold text-primary mb-8 text-center">
             📞 Contact Us
           </h2>
