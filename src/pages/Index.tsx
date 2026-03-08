@@ -16,6 +16,7 @@ import { NotificationBell } from '@/components/NotificationBell';
 import { useAutoSubscribe } from '@/hooks/useAutoSubscribe';
 import { useToast } from '@/hooks/use-toast';
 import { StoryCircles } from '@/components/StoryCircles';
+import { PushDebugPanel } from '@/components/PushDebugPanel';
 
 const Index = () => {
   const { playSound } = useSound();
@@ -163,6 +164,7 @@ const Index = () => {
   const newReviews = filteredReviews.slice(0, 5);
   const oldReviews = filteredReviews.slice(5);
   return <>
+      <PushDebugPanel />
       <CurtainAnimation />
       <div className="min-h-screen bg-background">
       {/* Fixed Header with Black and Gold Theme */}
