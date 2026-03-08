@@ -22,6 +22,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 const Index = () => {
   const { playSound } = useSound();
   const { toast } = useToast();
+  const { t } = useLanguage();
   useAutoSubscribe();
   const [searchTerm, setSearchTerm] = useState('');
   const [reviews, setReviews] = useState<MovieReview[]>([]);
