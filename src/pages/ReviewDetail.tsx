@@ -312,68 +312,78 @@ const ReviewDetail = () => {
               {/* Section Cards */}
               <div className="space-y-4">
                 {/* First Half */}
-                <div className="bg-muted/30 rounded-xl p-4 border border-primary/20 hover:border-primary/40 transition-colors duration-300 hover:shadow-[0_0_15px_rgba(255,215,0,0.15)]">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="bg-primary/20 p-1.5 rounded-lg">
-                      <Film className="w-4 h-4 text-primary" />
+                <div className="bg-muted/30 rounded-xl p-[2px] bg-gradient-to-r from-red-500 via-orange-500 to-red-500 hover:shadow-[0_0_15px_rgba(239,68,68,0.25)] transition-all duration-300">
+                  <div className="bg-card rounded-[10px] p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="bg-primary/20 p-1.5 rounded-lg">
+                        <Film className="w-4 h-4 text-primary" />
+                      </div>
+                      <h4 className="text-primary font-bold text-lg">{t('firstHalf')}</h4>
                     </div>
-                    <h4 className="text-primary font-bold text-lg">{t('firstHalf')}</h4>
+                    <p className="text-base text-white font-medium leading-relaxed pl-9">
+                      {review.firstHalf}
+                    </p>
                   </div>
-                  <p className="text-base text-white font-medium leading-relaxed pl-9">
-                    {review.firstHalf}
-                  </p>
                 </div>
 
                 {/* Second Half */}
-                <div className="bg-muted/30 rounded-xl p-4 border border-primary/20 hover:border-primary/40 transition-colors duration-300 hover:shadow-[0_0_15px_rgba(255,215,0,0.15)]">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="bg-primary/20 p-1.5 rounded-lg">
-                      <Film className="w-4 h-4 text-primary" />
+                <div className="rounded-xl p-[2px] bg-gradient-to-r from-orange-500 via-red-500 to-orange-500 hover:shadow-[0_0_15px_rgba(249,115,22,0.25)] transition-all duration-300">
+                  <div className="bg-card rounded-[10px] p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="bg-primary/20 p-1.5 rounded-lg">
+                        <Film className="w-4 h-4 text-primary" />
+                      </div>
+                      <h4 className="text-primary font-bold text-lg">{t('secondHalf')}</h4>
                     </div>
-                    <h4 className="text-primary font-bold text-lg">{t('secondHalf')}</h4>
+                    <p className="text-base text-white font-medium leading-relaxed pl-9">
+                      {review.secondHalf}
+                    </p>
                   </div>
-                  <p className="text-base text-white font-medium leading-relaxed pl-9">
-                    {review.secondHalf}
-                  </p>
                 </div>
 
                 {/* Positives */}
-                <div className="bg-green-500/5 rounded-xl p-4 border border-green-500/20 hover:border-green-500/40 transition-colors duration-300 hover:shadow-[0_0_15px_rgba(34,197,94,0.15)]">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="bg-green-500/20 p-1.5 rounded-lg">
-                      <TrendingUp className="w-4 h-4 text-green-400" />
+                <div className="rounded-xl p-[2px] bg-gradient-to-r from-red-500 via-orange-400 to-red-500 hover:shadow-[0_0_15px_rgba(239,68,68,0.25)] transition-all duration-300">
+                  <div className="bg-card rounded-[10px] p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="bg-green-500/20 p-1.5 rounded-lg">
+                        <TrendingUp className="w-4 h-4 text-green-400" />
+                      </div>
+                      <h4 className="text-green-400 font-bold text-lg">{t('positives')}</h4>
                     </div>
-                    <h4 className="text-green-400 font-bold text-lg">{t('positives')}</h4>
+                    <p className="text-base text-white font-medium leading-relaxed pl-9">
+                      {review.positives}
+                    </p>
                   </div>
-                  <p className="text-base text-white font-medium leading-relaxed pl-9">
-                    {review.positives}
-                  </p>
                 </div>
 
                 {/* Negatives */}
-                <div className="bg-red-500/5 rounded-xl p-4 border border-red-500/20 hover:border-red-500/40 transition-colors duration-300 hover:shadow-[0_0_15px_rgba(239,68,68,0.15)]">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="bg-red-500/20 p-1.5 rounded-lg">
-                      <TrendingDown className="w-4 h-4 text-red-400" />
+                <div className="rounded-xl p-[2px] bg-gradient-to-r from-orange-500 via-red-600 to-orange-500 hover:shadow-[0_0_15px_rgba(239,68,68,0.25)] transition-all duration-300">
+                  <div className="bg-card rounded-[10px] p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="bg-red-500/20 p-1.5 rounded-lg">
+                        <TrendingDown className="w-4 h-4 text-red-400" />
+                      </div>
+                      <h4 className="text-red-400 font-bold text-lg">{t('negatives')}</h4>
                     </div>
-                    <h4 className="text-red-400 font-bold text-lg">{t('negatives')}</h4>
+                    <p className="text-base text-white font-medium leading-relaxed pl-9">
+                      {review.negatives}
+                    </p>
                   </div>
-                  <p className="text-base text-white font-medium leading-relaxed pl-9">
-                    {review.negatives}
-                  </p>
                 </div>
 
                 {/* Overall */}
-                <div className="relative bg-gradient-to-r from-primary/10 via-primary/15 to-primary/10 rounded-xl p-5 border-2 border-primary/30 shadow-[0_0_20px_rgba(255,215,0,0.2)]">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="bg-primary/20 p-1.5 rounded-lg">
-                      <Star className="w-4 h-4 text-primary fill-primary" />
+                <div className="rounded-xl p-[2px] bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 hover:shadow-[0_0_20px_rgba(255,165,0,0.3)] transition-all duration-300">
+                  <div className="bg-card rounded-[10px] p-5">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="bg-primary/20 p-1.5 rounded-lg">
+                        <Star className="w-4 h-4 text-primary fill-primary" />
+                      </div>
+                      <h4 className="text-primary font-bold text-lg">{t('overall')}</h4>
                     </div>
-                    <h4 className="text-primary font-bold text-lg">{t('overall')}</h4>
+                    <p className="text-base text-white font-bold leading-relaxed pl-9">
+                      {review.overall}
+                    </p>
                   </div>
-                  <p className="text-base text-white font-bold leading-relaxed pl-9">
-                    {review.overall}
-                  </p>
                 </div>
               </div>
 

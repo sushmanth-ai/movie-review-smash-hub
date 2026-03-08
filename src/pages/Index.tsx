@@ -200,12 +200,12 @@ const Index = () => {
             </div>
             
             {/* Brand Name */}
-            <div className="flex flex-col items-start">
+            <div className="flex flex-col items-start max-w-[calc(100%-120px)] sm:max-w-none">
               <div className="flex items-baseline gap-1">
-                <span className="text-3xl md:text-4xl font-black bg-gradient-to-r from-yellow-300 via-primary to-yellow-300 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(255,215,0,0.5)] tracking-tight">
+                <span className="text-2xl sm:text-3xl md:text-4xl font-black bg-gradient-to-r from-yellow-300 via-primary to-yellow-300 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(255,215,0,0.5)] tracking-tight">
                   SM
                 </span>
-                <span className="text-2xl md:text-3xl font-bold text-primary tracking-wide">
+                <span className="text-xl sm:text-2xl md:text-3xl font-bold text-primary tracking-wide">
                   Reviews
                 </span>
               </div>
