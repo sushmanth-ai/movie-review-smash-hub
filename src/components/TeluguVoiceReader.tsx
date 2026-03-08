@@ -107,8 +107,8 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
 
     if (!("speechSynthesis" in window)) {
       toast({
-        title: "Not Supported",
-        description: "Voice playback is not supported on this device.",
+        title: t('notSupported'),
+        description: t('voiceNotSupported'),
         variant: "destructive",
       });
       return;
