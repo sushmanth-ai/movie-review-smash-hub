@@ -166,10 +166,10 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
           <Volume2 className="w-5 h-5" />
         )}
         {isLoading
-          ? "Loading..."
+          ? t('loading')
           : isPlaying
-          ? "🔇 Stop"
-          : "🔊 Review Vinandi"}
+          ? t('stop')
+          : t('reviewVinandi')}
       </Button>
     </div>
   );

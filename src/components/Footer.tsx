@@ -1,6 +1,8 @@
 import { Mail, Phone, MessageCircle } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const Footer = () => {
+  const { t } = useLanguage();
   const whatsappNumber = "919014568368";
   const whatsappUrl = `https://wa.me/${whatsappNumber}`;
   const emailAddress = "sushmanth1106@gmail.com";
@@ -12,12 +14,9 @@ const Footer = () => {
           <div className="flex flex-col items-center md:items-start">
             <div className="flex items-center gap-3 mb-2">
               <Phone className="w-5 h-5 text-blue-400" />
-              <span className="text-lg font-semibold">Phone</span>
+              <span className="text-lg font-semibold">{t('phone')}</span>
             </div>
-            <a
-              href="tel:+919014568368"
-              className="text-slate-300 hover:text-blue-400 transition-colors"
-            >
+            <a href="tel:+919014568368" className="text-slate-300 hover:text-blue-400 transition-colors">
               +91 9014568368
             </a>
           </div>
@@ -25,12 +24,9 @@ const Footer = () => {
           <div className="flex flex-col items-center">
             <div className="flex items-center gap-3 mb-2">
               <Mail className="w-5 h-5 text-blue-400" />
-              <span className="text-lg font-semibold">Email</span>
+              <span className="text-lg font-semibold">{t('email')}</span>
             </div>
-            <a
-              href={`mailto:${emailAddress}`}
-              className="text-slate-300 hover:text-blue-400 transition-colors"
-            >
+            <a href={`mailto:${emailAddress}`} className="text-slate-300 hover:text-blue-400 transition-colors">
               {emailAddress}
             </a>
           </div>
@@ -38,21 +34,16 @@ const Footer = () => {
           <div className="flex flex-col items-center md:items-end">
             <div className="flex items-center gap-3 mb-2">
               <MessageCircle className="w-5 h-5 text-blue-400" />
-              <span className="text-lg font-semibold">WhatsApp</span>
+              <span className="text-lg font-semibold">{t('whatsapp')}</span>
             </div>
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-slate-300 hover:text-blue-400 transition-colors"
-            >
-              Chat with us
+            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-blue-400 transition-colors">
+              {t('chatWithUs')}
             </a>
           </div>
         </div>
 
         <div className="mt-8 pt-8 border-t border-slate-700 text-center text-slate-400">
-          <p>&copy; 2024 Movie Review Hub. All rights reserved.</p>
+          <p>{t('allRightsReserved')}</p>
         </div>
       </div>
     </footer>
