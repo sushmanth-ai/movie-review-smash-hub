@@ -353,7 +353,7 @@ const ReviewDetail = () => {
                       <h4 className="text-amber-400 font-bold text-lg">{t('secondHalf')}</h4>
                     </div>
                     <p className="text-base text-white font-medium leading-relaxed pl-9">
-                      {review.secondHalf}
+                      {translated.secondHalf}
                     </p>
                   </div>
                 </div>
