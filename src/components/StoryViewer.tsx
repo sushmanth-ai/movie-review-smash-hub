@@ -231,7 +231,7 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({ reviews, initialIndex,
         {/* Header */}
         <div className="absolute top-8 left-4 right-4 flex items-center justify-between z-20">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center">
+            <div className="w-9 h-9 rounded-full bg-red-500/20 border-2 border-orange-500 flex items-center justify-center">
               <span className="text-sm">🎬</span>
             </div>
             <div>
