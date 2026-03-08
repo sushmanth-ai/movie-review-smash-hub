@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { ArrowLeft, ThumbsUp, MessageCircle, Share2, Play, X } from "lucide-react";
+import { ArrowLeft, ThumbsUp, MessageCircle, Share2, Play, X, Star, Film, Sparkles, TrendingUp, TrendingDown, Eye } from "lucide-react";
 import { MovieReview } from "@/data/movieReviews";
 import { movieReviewsData } from "@/data/movieReviews";
 import { CommentSection } from "@/components/CommentSection";
@@ -221,49 +221,67 @@ const ReviewDetail = () => {
         {/* Main Content */}
         <div className="container mx-auto px-4 pt-24 pb-8">
           {/* 🎬 Main Review Card */}
-          <Card className="relative bg-card border-2 border-primary shadow-[0_0_30px_rgba(255,215,0,0.5)] max-w-4xl mx-auto">
-            <div className="absolute left-1/2 -translate-x-1/2 -top-[1.4rem] bg-yellow-400 text-black font-extrabold text-sm sm:text-base md:text-lg rounded-b-2xl border-x-2 border-b-2 border-primary shadow-[0_4px_10px_rgba(255,215,0,0.4)] mx-[3px] px-3 sm:px-6 md:px-[24px] py-[7px] my-[25px] max-w-[90%] sm:max-w-none text-center">
-              {review.title}
+          <Card className="relative bg-card border-2 border-primary shadow-[0_0_40px_rgba(255,215,0,0.4)] max-w-4xl mx-auto overflow-visible animate-fade-in">
+            {/* Premium Title Badge */}
+            <div className="absolute left-1/2 -translate-x-1/2 -top-5 z-10">
+              <div className="relative bg-gradient-to-r from-yellow-500 via-amber-400 to-yellow-500 text-black font-extrabold text-sm sm:text-base md:text-lg rounded-2xl border-2 border-primary shadow-[0_4px_20px_rgba(255,215,0,0.6)] px-5 sm:px-8 py-2.5 text-center max-w-[90vw] sm:max-w-none">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[shimmer_2s_infinite] rounded-2xl" />
+                <div className="flex items-center gap-2 justify-center relative z-10">
+                  <Film className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span>{review.title}</span>
+                  <Film className="w-4 h-4 sm:w-5 sm:h-5" />
+                </div>
+              </div>
             </div>
 
-            <CardHeader className="text-center pt-10"></CardHeader>
+            <CardHeader className="text-center pt-12">
+              {/* View Count & Rating Chip */}
+              <div className="flex items-center justify-center gap-4 text-sm">
+                <span className="flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-1 rounded-full border border-primary/30">
+                  <Eye className="w-3.5 h-3.5" /> {viewCount} {t('views')}
+                </span>
+                {review.rating && (
+                  <span className="flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-1 rounded-full border border-primary/30">
+                    <Star className="w-3.5 h-3.5 fill-primary" /> {review.rating}
+                  </span>
+                )}
+              </div>
+            </CardHeader>
 
-            <div className="px-6">
+            <div className="px-4 sm:px-6">
               <div className="relative group">
                 <img 
                   src={review.image} 
                   alt={review.title} 
-                  className={`w-full max-h-[500px] object-cover rounded-lg mb-6 border-2 border-primary/30 transition-all duration-300 ${showTrailer ? 'hidden' : 'block'}`} 
+                  className={`w-full max-h-[500px] object-cover rounded-xl mb-6 border-2 border-primary/30 transition-all duration-500 shadow-[0_8px_30px_rgba(0,0,0,0.4)] ${showTrailer ? 'hidden' : 'block'}`} 
                 />
                 
-                {/* Play Trailer Button Overlay - Always visible on mobile */}
                 {review.trailerUrl && !showTrailer && (
                   <button 
                     onClick={() => {
                       playSound('click');
                       setShowTrailer(true);
                     }}
-                    className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 rounded-lg mb-6"
+                    className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 rounded-xl mb-6"
                   >
-                    <div className="bg-red-600 hover:bg-red-700 rounded-full p-3 sm:p-4 shadow-[0_0_30px_rgba(255,0,0,0.6)] transform hover:scale-110 transition-transform animate-pulse">
-                      <Play className="w-8 h-8 sm:w-12 sm:h-12 text-white fill-white" />
+                    <div className="bg-destructive hover:bg-destructive/90 rounded-full p-3 sm:p-5 shadow-[0_0_40px_rgba(255,0,0,0.5)] transform hover:scale-110 transition-all duration-300 animate-pulse">
+                      <Play className="w-8 h-8 sm:w-10 sm:h-10 text-white fill-white" />
                     </div>
-                    <span className="absolute bottom-4 sm:bottom-8 text-white font-bold text-sm sm:text-lg drop-shadow-lg bg-black/50 px-3 py-1 rounded-full">
+                    <span className="absolute bottom-4 sm:bottom-8 text-white font-bold text-sm sm:text-lg drop-shadow-lg bg-black/60 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/20">
                       {t('watchTrailer')}
                     </span>
                   </button>
                 )}
 
-                {/* Embedded YouTube Player */}
                 {showTrailer && review.trailerUrl && (
                   <div className="relative mb-6">
                     <button 
                       onClick={() => setShowTrailer(false)}
-                      className="absolute -top-2 -right-2 z-10 bg-red-600 hover:bg-red-700 rounded-full p-2 shadow-lg"
+                      className="absolute -top-2 -right-2 z-10 bg-destructive hover:bg-destructive/80 rounded-full p-2 shadow-lg transition-colors"
                     >
                       <X className="w-5 h-5 text-white" />
                     </button>
-                    <div className="relative pt-[56.25%] rounded-lg overflow-hidden border-2 border-primary/30">
+                    <div className="relative pt-[56.25%] rounded-xl overflow-hidden border-2 border-primary/30 shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
                       <iframe
                         className="absolute inset-0 w-full h-full"
                         src={`https://www.youtube.com/embed/${getYouTubeVideoId(review.trailerUrl)}?autoplay=1&rel=0`}
@@ -284,60 +302,88 @@ const ReviewDetail = () => {
               </div>
             </div>
 
-            <CardContent className="space-y-6">
-              <div className="border-t border-primary/30 pt-4">
-                <div className="bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-lg p-4 mb-4 border-2 border-primary/50 shadow-[0_0_20px_rgba(255,215,0,0.3)]">
-                  <h3 className="text-center font-bold text-primary text-xl">
+            <CardContent className="space-y-6 px-4 sm:px-6">
+              {/* Glowing Divider */}
+              <div className="h-px bg-gradient-to-r from-transparent via-primary to-transparent shadow-[0_0_8px_rgba(255,215,0,0.5)]" />
+
+              {/* Review Section */}
+              <div>
+                <div className="relative bg-gradient-to-r from-primary/10 via-primary/20 to-primary/10 rounded-xl p-4 mb-5 border border-primary/40 shadow-[0_0_25px_rgba(255,215,0,0.2)] overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-[shimmer_3s_infinite]" />
+                  <h3 className="text-center font-bold text-primary text-xl flex items-center justify-center gap-2 relative z-10">
+                    <Sparkles className="w-5 h-5" />
                     {t('review')}
+                    <Sparkles className="w-5 h-5" />
                   </h3>
                 </div>
-                <p className="text-base text-slate-50 font-bold leading-relaxed">
+                <p className="text-base text-foreground font-medium leading-relaxed tracking-wide">
                   {review.review}
                 </p>
               </div>
 
+              {/* Section Cards */}
               <div className="space-y-4">
-                <div className="border-l-4 border-primary pl-4 py-2">
-                  <h4 className="text-primary font-bold text-lg mb-2">
-                    {t('firstHalf')}
-                  </h4>
-                  <p className="text-base text-slate-50 font-bold leading-relaxed">
+                {/* First Half */}
+                <div className="bg-muted/30 rounded-xl p-4 border border-primary/20 hover:border-primary/40 transition-colors duration-300 hover:shadow-[0_0_15px_rgba(255,215,0,0.15)]">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="bg-primary/20 p-1.5 rounded-lg">
+                      <Film className="w-4 h-4 text-primary" />
+                    </div>
+                    <h4 className="text-primary font-bold text-lg">{t('firstHalf')}</h4>
+                  </div>
+                  <p className="text-base text-foreground/90 font-medium leading-relaxed pl-9">
                     {review.firstHalf}
                   </p>
                 </div>
 
-                <div className="border-l-4 border-primary pl-4 py-2">
-                  <h4 className="text-primary font-bold text-lg mb-2">
-                    {t('secondHalf')}
-                  </h4>
-                  <p className="text-base text-slate-50 font-bold leading-relaxed">
+                {/* Second Half */}
+                <div className="bg-muted/30 rounded-xl p-4 border border-primary/20 hover:border-primary/40 transition-colors duration-300 hover:shadow-[0_0_15px_rgba(255,215,0,0.15)]">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="bg-primary/20 p-1.5 rounded-lg">
+                      <Film className="w-4 h-4 text-primary" />
+                    </div>
+                    <h4 className="text-primary font-bold text-lg">{t('secondHalf')}</h4>
+                  </div>
+                  <p className="text-base text-foreground/90 font-medium leading-relaxed pl-9">
                     {review.secondHalf}
                   </p>
                 </div>
 
-                <div className="border-l-4 border-primary pl-4 py-2">
-                  <h4 className="text-primary font-bold text-lg mb-2">
-                    {t('positives')}
-                  </h4>
-                  <p className="text-base text-slate-50 font-bold leading-relaxed">
+                {/* Positives */}
+                <div className="bg-green-500/5 rounded-xl p-4 border border-green-500/20 hover:border-green-500/40 transition-colors duration-300 hover:shadow-[0_0_15px_rgba(34,197,94,0.15)]">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="bg-green-500/20 p-1.5 rounded-lg">
+                      <TrendingUp className="w-4 h-4 text-green-400" />
+                    </div>
+                    <h4 className="text-green-400 font-bold text-lg">{t('positives')}</h4>
+                  </div>
+                  <p className="text-base text-foreground/90 font-medium leading-relaxed pl-9">
                     {review.positives}
                   </p>
                 </div>
 
-                <div className="border-l-4 border-primary pl-4 py-2">
-                  <h4 className="text-primary font-bold text-lg mb-2">
-                    {t('negatives')}
-                  </h4>
-                  <p className="text-base text-slate-50 font-bold leading-relaxed">
+                {/* Negatives */}
+                <div className="bg-red-500/5 rounded-xl p-4 border border-red-500/20 hover:border-red-500/40 transition-colors duration-300 hover:shadow-[0_0_15px_rgba(239,68,68,0.15)]">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="bg-red-500/20 p-1.5 rounded-lg">
+                      <TrendingDown className="w-4 h-4 text-red-400" />
+                    </div>
+                    <h4 className="text-red-400 font-bold text-lg">{t('negatives')}</h4>
+                  </div>
+                  <p className="text-base text-foreground/90 font-medium leading-relaxed pl-9">
                     {review.negatives}
                   </p>
                 </div>
 
-                <div className="border-l-4 border-primary pl-4 py-2">
-                  <h4 className="text-primary font-bold text-lg mb-2">
-                    {t('overall')}
-                  </h4>
-                  <p className="text-base text-slate-50 font-bold leading-relaxed">
+                {/* Overall */}
+                <div className="relative bg-gradient-to-r from-primary/10 via-primary/15 to-primary/10 rounded-xl p-5 border-2 border-primary/30 shadow-[0_0_20px_rgba(255,215,0,0.2)]">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="bg-primary/20 p-1.5 rounded-lg">
+                      <Star className="w-4 h-4 text-primary fill-primary" />
+                    </div>
+                    <h4 className="text-primary font-bold text-lg">{t('overall')}</h4>
+                  </div>
+                  <p className="text-base text-foreground font-bold leading-relaxed pl-9">
                     {review.overall}
                   </p>
                 </div>
