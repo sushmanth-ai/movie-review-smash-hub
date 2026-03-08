@@ -254,6 +254,11 @@ const Index = () => {
         <StoryCircles reviews={filteredReviews} />
       </div>
 
+      {/* Prediction Game */}
+      <div className="container mx-auto px-4 pt-4">
+        <HomePredictions />
+      </div>
+
       {/* 3D Carousel */}
       <div className="container mx-auto px-4 pt-4">
         <ReviewCarousel reviews={filteredReviews} />
