@@ -14,6 +14,7 @@ interface MovieCardProps {
 export const MovieCard: React.FC<MovieCardProps> = ({ review }) => {
   const navigate = useNavigate();
   const { trackReviewView } = useFirebaseOperations();
+  const { t } = useLanguage();
 
   const handleCardClick = () => {
     trackReviewView(review.id);
