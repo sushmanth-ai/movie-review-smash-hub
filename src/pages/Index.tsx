@@ -252,11 +252,6 @@ const Index = () => {
         <StoryCircles reviews={filteredReviews} />
       </div>
 
-      {/* 3D Carousel */}
-      <div className="container mx-auto px-4 pt-4">
-        <ReviewCarousel reviews={filteredReviews} />
-      </div>
-
       {/* Trending This Week Section */}
       <div className="container mx-auto px-4 pt-6">
         <TrendingReviews reviews={trendingReviews} isLoading={trendingLoading} limit={2} />
