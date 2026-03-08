@@ -1,48 +1,52 @@
 import { useEffect, useRef } from 'react';
 import { usePushNotifications } from './usePushNotifications';
 
-const AUTO_PROMPT_KEY = 'sm_push_auto_prompted';
-const AUTO_PROMPT_DELAY = 3000; // 3 seconds after load
+const AUTO_PROMPT_DELAY = 2000; // 2 seconds after load
 
 /**
- * Auto-subscribes users to push notifications.
- * - If PWA is installed (standalone mode), subscribes silently.
- * - Otherwise, prompts once after a short delay.
+ * Auto-subscribes users to push notifications on every visit.
+ * If permission is already granted, subscribes silently.
+ * If not yet prompted, shows the browser permission dialog.
  */
 export const useAutoSubscribe = () => {
   const { isSupported, isSubscribed, subscribe, permission } = usePushNotifications();
   const attempted = useRef(false);
 
   useEffect(() => {
-    if (!isSupported || isSubscribed || attempted.current) return;
+    if (!isSupported || attempted.current) return;
     if (permission === 'denied') return;
 
-    const isStandalone =
-      window.matchMedia('(display-mode: standalone)').matches ||
-      (navigator as any).standalone === true;
-
-    const alreadyPrompted = localStorage.getItem(AUTO_PROMPT_KEY);
-
+    // If already subscribed, re-subscribe to ensure the subscription is fresh
+    // (browser may have invalidated the old push subscription)
     const trySubscribe = async () => {
       attempted.current = true;
 
-      // If already granted (e.g. PWA reinstall), subscribe silently
-      if (permission === 'granted' || Notification.permission === 'granted') {
-        await subscribe();
-        return;
-      }
+      try {
+        // Check if there's actually an active push subscription in the browser
+        const registration = await navigator.serviceWorker.ready;
+        const existingSub = await registration.pushManager.getSubscription();
 
-      // For standalone/installed PWA, auto-prompt immediately
-      if (isStandalone) {
-        await subscribe();
-        localStorage.setItem(AUTO_PROMPT_KEY, 'true');
-        return;
-      }
+        if (existingSub && isSubscribed) {
+          console.log('[Push] Already subscribed, subscription active');
+          return;
+        }
 
-      // For browser users, prompt once
-      if (!alreadyPrompted) {
-        await subscribe();
-        localStorage.setItem(AUTO_PROMPT_KEY, 'true');
+        // If permission already granted (e.g. PWA reinstall) or existing sub expired
+        if (Notification.permission === 'granted') {
+          console.log('[Push] Permission granted, subscribing...');
+          const result = await subscribe();
+          console.log('[Push] Subscribe result:', result);
+          return;
+        }
+
+        // For new users, request permission
+        if (Notification.permission === 'default') {
+          console.log('[Push] Requesting permission...');
+          const result = await subscribe();
+          console.log('[Push] Subscribe result:', result);
+        }
+      } catch (error) {
+        console.error('[Push] Auto-subscribe error:', error);
       }
     };
 
