@@ -368,7 +368,7 @@ const ReviewDetail = () => {
                       <h4 className="text-emerald-300 font-bold text-lg">{t('positives')}</h4>
                     </div>
                     <p className="text-base text-white font-medium leading-relaxed pl-9">
-                      {review.positives}
+                      {translated.positives}
                     </p>
                   </div>
                 </div>
