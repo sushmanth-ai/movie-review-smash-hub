@@ -131,6 +131,15 @@ const AdminDashboard = () => {
                 Home
               </Button>
               <Button
+                onClick={handleSendWeeklyDigest}
+                disabled={sendingDigest}
+                variant="outline"
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+              >
+                {sendingDigest ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Bell className="w-4 h-4 mr-2" />}
+                Weekly Digest
+              </Button>
+              <Button
                 onClick={handleLogout}
                 variant="outline"
                 className="bg-white/10 border-white/20 text-white hover:bg-white/20"
