@@ -15,6 +15,7 @@ import { useSound } from '@/hooks/useSound';
 import { NotificationBell } from '@/components/NotificationBell';
 import { useAutoSubscribe } from '@/hooks/useAutoSubscribe';
 import { useToast } from '@/hooks/use-toast';
+import { StoryCircles } from '@/components/StoryCircles';
 
 const Index = () => {
   const { playSound } = useSound();
