@@ -5,6 +5,7 @@ import { MovieReview } from '@/data/movieReviews';
 import { ChevronRight, Eye } from 'lucide-react';
 import { useFirebaseOperations } from '@/hooks/useFirebaseOperations';
 import { FestivalBadge } from '@/components/festival';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 interface MovieCardProps {
   review: MovieReview;
