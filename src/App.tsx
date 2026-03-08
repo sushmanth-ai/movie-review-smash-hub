@@ -18,6 +18,7 @@ import {
   FestivalParticles, 
   FestivalOverlay
 } from "./components/festival";
+import { InstallBanner } from "./components/InstallBanner";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const App = () => (
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </div>
+              <InstallBanner />
             </div>
           </BrowserRouter>
         </FestivalProvider>
