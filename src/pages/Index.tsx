@@ -177,9 +177,9 @@ const Index = () => {
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
           
           {/* Main Logo and Title Container */}
-           <div className="relative flex justify-center items-center gap-4">
-            {/* Notification Bell - Top Right */}
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 z-10 flex items-center gap-2">
+           <div className="relative flex justify-center items-center gap-2 sm:gap-4">
+            {/* Notification Bell & Language - Top Right */}
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 z-10 flex items-center gap-1.5 sm:gap-2">
               <LanguageSwitcher />
               <NotificationBell />
             </div>
@@ -200,12 +200,12 @@ const Index = () => {
             </div>
             
             {/* Brand Name */}
-            <div className="flex flex-col items-start">
+            <div className="flex flex-col items-start max-w-[calc(100%-120px)] sm:max-w-none">
               <div className="flex items-baseline gap-1">
-                <span className="text-3xl md:text-4xl font-black bg-gradient-to-r from-yellow-300 via-primary to-yellow-300 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(255,215,0,0.5)] tracking-tight">
+                <span className="text-2xl sm:text-3xl md:text-4xl font-black bg-gradient-to-r from-yellow-300 via-primary to-yellow-300 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(255,215,0,0.5)] tracking-tight">
                   SM
                 </span>
-                <span className="text-2xl md:text-3xl font-bold text-primary tracking-wide">
+                <span className="text-xl sm:text-2xl md:text-3xl font-bold text-primary tracking-wide">
                   Reviews
                 </span>
               </div>
