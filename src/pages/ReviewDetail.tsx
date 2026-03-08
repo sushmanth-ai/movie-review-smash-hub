@@ -389,39 +389,48 @@ const ReviewDetail = () => {
                 </div>
               </div>
 
-              {/* ❤️ Like / 💬 Comment / 📤 Share */}
-              <div className="flex justify-center gap-6 mt-6 relative">
+              {/* Glowing Divider */}
+              <div className="h-px bg-gradient-to-r from-transparent via-primary to-transparent shadow-[0_0_8px_rgba(255,215,0,0.5)]" />
+
+              {/* ❤️ Like / 💬 Comment / 📤 Share - Glassmorphism */}
+              <div className="flex justify-center gap-3 sm:gap-5 mt-6 relative">
                 <button onClick={() => {
-                playSound("click");
-                handleLikeClick(review.id);
-              }} className={`flex items-center gap-2 font-bold hover:scale-110 transition-transform relative ${likedReviews.has(review.id) ? "text-red-500" : "text-gray-400"}`}>
-                  <ThumbsUp className={`w-6 h-6 ${showLikeEffect ? "animate-like-pop" : ""} ${likedReviews.has(review.id) ? "fill-current" : ""}`} />{" "}
-                  {review.likes}{" "}
-                  {likedReviews.has(review.id) ? t('liked') : t('like')}
+                  playSound("click");
+                  handleLikeClick(review.id);
+                }} className={`flex items-center gap-2 font-bold px-4 py-2.5 rounded-xl backdrop-blur-sm border transition-all duration-300 hover:scale-105 active:scale-95 relative ${
+                  likedReviews.has(review.id) 
+                    ? "bg-red-500/15 border-red-500/40 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.2)]" 
+                    : "bg-muted/30 border-muted-foreground/20 text-muted-foreground hover:border-red-500/30 hover:text-red-400"
+                }`}>
+                  <ThumbsUp className={`w-5 h-5 ${showLikeEffect ? "animate-like-pop" : ""} ${likedReviews.has(review.id) ? "fill-current" : ""}`} />
+                  <span className="text-sm">{review.likes} {likedReviews.has(review.id) ? t('liked') : t('like')}</span>
                   {showLikeEffect && <span className="absolute -top-6 text-red-400 font-bold animate-bubble">
-                      {likedReviews.has(review.id) ? "+1 ❤️" : "-1"}
-                    </span>}
+                    {likedReviews.has(review.id) ? "+1 ❤️" : "-1"}
+                  </span>}
                 </button>
 
                 <button onClick={() => {
-                playSound("click");
-                setShowComments(prev => !prev);
-              }} className="flex items-center gap-2 text-yellow-400 font-bold hover:scale-110 transition-transform">
-                  <MessageCircle className="w-6 h-6" /> {t('comment')}
+                  playSound("click");
+                  setShowComments(prev => !prev);
+                }} className="flex items-center gap-2 font-bold px-4 py-2.5 rounded-xl backdrop-blur-sm bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 hover:scale-105 active:scale-95 transition-all duration-300 shadow-[0_0_10px_rgba(255,215,0,0.1)]">
+                  <MessageCircle className="w-5 h-5" />
+                  <span className="text-sm">{t('comment')}</span>
                 </button>
 
                 <button onClick={() => {
-                playSound("click");
-                handleShareClick();
-              }} className="flex items-center gap-2 text-blue-400 font-bold hover:scale-110 transition-transform">
-                  <Share2 className="w-6 h-6" /> {t('share')}
+                  playSound("click");
+                  handleShareClick();
+                }} className="flex items-center gap-2 font-bold px-4 py-2.5 rounded-xl backdrop-blur-sm bg-blue-500/10 border border-blue-500/30 text-blue-400 hover:bg-blue-500/20 hover:scale-105 active:scale-95 transition-all duration-300 shadow-[0_0_10px_rgba(59,130,246,0.1)]">
+                  <Share2 className="w-5 h-5" />
+                  <span className="text-sm">{t('share')}</span>
                 </button>
               </div>
 
-              {/* 🎟️ Book Your Ticket */}
+              {/* 🎟️ Book Your Ticket - Enhanced */}
               <div className="flex justify-center mt-6">
-                <Button onClick={handleBookTicket} className="bg-gradient-to-r from-red-600 to-yellow-400 text-white font-bold px-8 py-4 rounded-xl hover:scale-105 transition-transform shadow-lg">
-                  {t('bookTicket')}
+                <Button onClick={handleBookTicket} className="relative overflow-hidden bg-gradient-to-r from-red-600 via-orange-500 to-yellow-400 text-white font-bold px-10 py-5 rounded-2xl hover:scale-105 active:scale-95 transition-all duration-300 shadow-[0_4px_25px_rgba(239,68,68,0.4)] text-lg">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[shimmer_2s_infinite]" />
+                  <span className="relative z-10">{t('bookTicket')}</span>
                 </Button>
               </div>
 
