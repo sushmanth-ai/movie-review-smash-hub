@@ -60,7 +60,7 @@ export const useAdminReviews = () => {
       try {
         await sendPushNotification(
           `🎬 New Review: ${data.title}`,
-          `${data.rating} — ${data.review?.slice(0, 80) || 'Check out the latest review!'}`,
+          `${data.review?.slice(0, 100) || 'Check out the latest review!'}`,
           '/',
           `review-${Date.now()}`,
           data.image || undefined
