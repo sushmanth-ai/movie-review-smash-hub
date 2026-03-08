@@ -238,7 +238,7 @@ const Index = () => {
           <div className="max-w-2xl mx-auto">
             <Input 
               type="text" 
-              placeholder="🔍 Search for movie Reviews..." 
+              placeholder={t('searchPlaceholder')} 
               value={searchTerm} 
               onChange={e => setSearchTerm(e.target.value)} 
               className="w-full bg-input/80 backdrop-blur-sm text-foreground border-2 border-primary/50 focus:border-primary focus:ring-primary rounded-full px-5 py-2 shadow-[0_0_15px_rgba(255,215,0,0.2)]" 
