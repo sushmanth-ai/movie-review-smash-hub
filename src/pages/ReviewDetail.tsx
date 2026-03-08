@@ -41,6 +41,7 @@ const ReviewDetail = () => {
   const {
     playSound
   } = useSound();
+  const { t } = useLanguage();
   const [review, setReview] = useState(null);
   const [newComment, setNewComment] = useState("");
   const [showComments, setShowComments] = useState(false);
