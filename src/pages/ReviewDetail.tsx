@@ -326,7 +326,7 @@ const ReviewDetail = () => {
 
                 <div className="border-l-4 border-primary pl-4 py-2">
                   <h4 className="text-primary font-bold text-lg mb-2">
-                    Negatives:
+                    {t('negatives')}
                   </h4>
                   <p className="text-base text-slate-50 font-bold leading-relaxed">
                     {review.negatives}
