@@ -368,7 +368,7 @@ const ReviewDetail = () => {
                 playSound("click");
                 handleShareClick();
               }} className="flex items-center gap-2 text-blue-400 font-bold hover:scale-110 transition-transform">
-                  <Share2 className="w-6 h-6" /> Share
+                  <Share2 className="w-6 h-6" /> {t('share')}
                 </button>
               </div>
 
