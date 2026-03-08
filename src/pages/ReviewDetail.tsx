@@ -203,7 +203,7 @@ const ReviewDetail = () => {
     setShowBookingOptions(false);
   };
   return <>
-      <CurtainAnimation />
+      <CurtainAnimation alwaysPlay />
       <div className="min-h-screen bg-background">
         {/* Header */}
         <div className="fixed top-0 left-0 w-full z-50 p-4 shadow-[0_4px_20px_rgba(255,215,0,0.3)] border-b-2 border-primary bg-background">
