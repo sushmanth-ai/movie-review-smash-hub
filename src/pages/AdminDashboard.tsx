@@ -7,6 +7,7 @@ import { ReviewList } from '@/components/admin/ReviewList';
 import { ReviewForm } from '@/components/admin/ReviewForm';
 import { useAdminReviews } from '@/hooks/useAdminReviews';
 import { AdminRatings } from '@/types/ratings';
+import { PollManager } from '@/components/admin/PollManager';
 
 export interface ReviewFormData {
   title: string;
