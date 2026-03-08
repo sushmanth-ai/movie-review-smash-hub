@@ -398,7 +398,7 @@ const ReviewDetail = () => {
                       <h4 className="text-amber-300 font-bold text-lg">{t('overall')}</h4>
                     </div>
                     <p className="text-base text-white font-bold leading-relaxed pl-9">
-                      {review.overall}
+                      {translated.overall}
                     </p>
                   </div>
                 </div>
