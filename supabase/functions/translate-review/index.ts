@@ -6,8 +6,11 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const langMap: Record<string, string> = {
-  te: "Telugu",
+const langMap: Record<string, { name: string; script: string }> = {
+  te: { name: "Telugu", script: "Telugu script (తెలుగు)" },
+  hi: { name: "Hindi", script: "Devanagari script (हिन्दी)" },
+  ta: { name: "Tamil", script: "Tamil script (தமிழ்)" },
+};
   hi: "Hindi",
   ta: "Tamil",
 };
