@@ -108,9 +108,28 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
-        {!showForm ? (
+        {/* Tab buttons */}
+        <div className="flex gap-2 mb-6">
+          <Button
+            onClick={() => { setShowPolls(false); setShowForm(false); }}
+            variant={!showPolls ? "default" : "outline"}
+            className={!showPolls ? "bg-white text-primary" : "bg-white/10 text-white border-white/20"}
+          >
+            🎬 Reviews
+          </Button>
+          <Button
+            onClick={() => { setShowPolls(true); setShowForm(false); }}
+            variant={showPolls ? "default" : "outline"}
+            className={showPolls ? "bg-white text-primary" : "bg-white/10 text-white border-white/20"}
+          >
+            📊 Polls
+          </Button>
+        </div>
+
+        {showPolls ? (
+          <PollManager reviews={reviews.map(r => ({ id: r.id, title: r.title }))} />
+        ) : !showForm ? (
           <>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold text-white">Movie Reviews</h2>
