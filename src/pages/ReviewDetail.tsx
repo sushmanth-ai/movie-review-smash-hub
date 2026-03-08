@@ -219,34 +219,22 @@ const ReviewDetail = () => {
         </div>
 
         {/* Main Content */}
-        <div className="container mx-auto px-4 pt-24 pb-8">
+        <div className="container mx-auto px-2 sm:px-4 pt-24 pb-8">
           {/* 🎬 Main Review Card */}
-          <Card className="relative bg-card border-2 border-primary shadow-[0_0_40px_rgba(255,215,0,0.4)] max-w-4xl mx-auto overflow-visible animate-fade-in">
+          <Card className="relative bg-card border-2 border-primary shadow-[0_0_40px_rgba(255,215,0,0.4)] max-w-4xl mx-auto overflow-visible animate-fade-in mt-6">
             {/* Premium Title Badge */}
-            <div className="absolute left-1/2 -translate-x-1/2 -top-5 z-10">
-              <div className="relative bg-gradient-to-r from-yellow-500 via-amber-400 to-yellow-500 text-black font-extrabold text-sm sm:text-base md:text-lg rounded-2xl border-2 border-primary shadow-[0_4px_20px_rgba(255,215,0,0.6)] px-5 sm:px-8 py-2.5 text-center max-w-[90vw] sm:max-w-none">
+            <div className="absolute left-1/2 -translate-x-1/2 -top-5 z-10 w-[calc(100%-2rem)] sm:w-auto">
+              <div className="relative bg-gradient-to-r from-yellow-500 via-amber-400 to-yellow-500 text-black font-extrabold text-sm sm:text-base md:text-lg rounded-2xl border-2 border-primary shadow-[0_4px_20px_rgba(255,215,0,0.6)] px-4 sm:px-8 py-2.5 text-center">
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[shimmer_2s_infinite] rounded-2xl" />
                 <div className="flex items-center gap-2 justify-center relative z-10">
-                  <Film className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span>{review.title}</span>
-                  <Film className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <Film className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                  <span className="line-clamp-2">{review.title}</span>
+                  <Film className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
                 </div>
               </div>
             </div>
 
-            <CardHeader className="text-center pt-12">
-              {/* View Count & Rating Chip */}
-              <div className="flex items-center justify-center gap-4 text-sm">
-                <span className="flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-1 rounded-full border border-primary/30">
-                  <Eye className="w-3.5 h-3.5" /> {viewCount} {t('views')}
-                </span>
-                {review.rating && (
-                  <span className="flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-1 rounded-full border border-primary/30">
-                    <Star className="w-3.5 h-3.5 fill-primary" /> {review.rating}
-                  </span>
-                )}
-              </div>
-            </CardHeader>
+            <CardHeader className="pt-8" />
 
             <div className="px-4 sm:px-6">
               <div className="relative group">
@@ -316,7 +304,7 @@ const ReviewDetail = () => {
                     <Sparkles className="w-5 h-5" />
                   </h3>
                 </div>
-                <p className="text-base text-foreground font-medium leading-relaxed tracking-wide">
+                <p className="text-base text-white font-medium leading-relaxed tracking-wide">
                   {review.review}
                 </p>
               </div>
@@ -331,7 +319,7 @@ const ReviewDetail = () => {
                     </div>
                     <h4 className="text-primary font-bold text-lg">{t('firstHalf')}</h4>
                   </div>
-                  <p className="text-base text-foreground/90 font-medium leading-relaxed pl-9">
+                  <p className="text-base text-white font-medium leading-relaxed pl-9">
                     {review.firstHalf}
                   </p>
                 </div>
@@ -344,7 +332,7 @@ const ReviewDetail = () => {
                     </div>
                     <h4 className="text-primary font-bold text-lg">{t('secondHalf')}</h4>
                   </div>
-                  <p className="text-base text-foreground/90 font-medium leading-relaxed pl-9">
+                  <p className="text-base text-white font-medium leading-relaxed pl-9">
                     {review.secondHalf}
                   </p>
                 </div>
@@ -357,7 +345,7 @@ const ReviewDetail = () => {
                     </div>
                     <h4 className="text-green-400 font-bold text-lg">{t('positives')}</h4>
                   </div>
-                  <p className="text-base text-foreground/90 font-medium leading-relaxed pl-9">
+                  <p className="text-base text-white font-medium leading-relaxed pl-9">
                     {review.positives}
                   </p>
                 </div>
@@ -370,7 +358,7 @@ const ReviewDetail = () => {
                     </div>
                     <h4 className="text-red-400 font-bold text-lg">{t('negatives')}</h4>
                   </div>
-                  <p className="text-base text-foreground/90 font-medium leading-relaxed pl-9">
+                  <p className="text-base text-white font-medium leading-relaxed pl-9">
                     {review.negatives}
                   </p>
                 </div>
@@ -383,7 +371,7 @@ const ReviewDetail = () => {
                     </div>
                     <h4 className="text-primary font-bold text-lg">{t('overall')}</h4>
                   </div>
-                  <p className="text-base text-foreground font-bold leading-relaxed pl-9">
+                  <p className="text-base text-white font-bold leading-relaxed pl-9">
                     {review.overall}
                   </p>
                 </div>
