@@ -291,7 +291,7 @@ const Index = () => {
                   }}
                   className="bg-gradient-to-r from-primary via-yellow-500 to-primary text-primary-foreground font-bold px-8 py-3 rounded-full shadow-[0_0_20px_rgba(255,215,0,0.4)] hover:shadow-[0_0_30px_rgba(255,215,0,0.6)] transition-all duration-300"
                 >
-                  {showAllNewReviews ? 'See Less' : 'See More New Reviews'}
+                  {showAllNewReviews ? t('seeLess') : t('seeMoreNew')}
                 </Button>
               </div>
             )}
