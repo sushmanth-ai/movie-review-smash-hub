@@ -16,6 +16,7 @@ import { NotificationBell } from '@/components/NotificationBell';
 import { useAutoSubscribe } from '@/hooks/useAutoSubscribe';
 import { useToast } from '@/hooks/use-toast';
 import { StoryCircles } from '@/components/StoryCircles';
+import { HomePredictions } from '@/components/HomePredictions';
 
 const Index = () => {
   const { playSound } = useSound();
@@ -251,6 +252,11 @@ const Index = () => {
       {/* Story Circles */}
       <div className="container mx-auto px-4 pt-4">
         <StoryCircles reviews={filteredReviews} />
+      </div>
+
+      {/* Prediction Game */}
+      <div className="container mx-auto px-4 pt-4">
+        <HomePredictions />
       </div>
 
       {/* 3D Carousel */}
