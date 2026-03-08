@@ -248,6 +248,11 @@ const Index = () => {
         <TodayViews viewCount={realTimeViewCount} />
       </div>
 
+      {/* Story Circles */}
+      <div className="container mx-auto px-4 pt-4">
+        <StoryCircles reviews={filteredReviews} />
+      </div>
+
       {/* 3D Carousel */}
       <div className="container mx-auto px-4 pt-4">
         <ReviewCarousel reviews={filteredReviews} />
