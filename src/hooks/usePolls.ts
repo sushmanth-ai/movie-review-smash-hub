@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { collection, doc, getDoc, setDoc, updateDoc, onSnapshot, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/utils/firebase';
-import { getDeviceFingerprint } from '@/utils/deviceFingerprint';
+import { generateDeviceFingerprint } from '@/utils/deviceFingerprint';
 
 export interface PollOption {
   id: string;
