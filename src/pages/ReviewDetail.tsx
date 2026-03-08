@@ -288,7 +288,7 @@ const ReviewDetail = () => {
               <div className="border-t border-primary/30 pt-4">
                 <div className="bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-lg p-4 mb-4 border-2 border-primary/50 shadow-[0_0_20px_rgba(255,215,0,0.3)]">
                   <h3 className="text-center font-bold text-primary text-xl">
-                    REVIEW
+                    {t('review')}
                   </h3>
                 </div>
                 <p className="text-base text-slate-50 font-bold leading-relaxed">
