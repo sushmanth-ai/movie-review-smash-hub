@@ -173,14 +173,14 @@ const ReviewDetail = () => {
       if (navigator.share) {
         await navigator.share(shareData);
         toast({
-          title: "Shared Successfully!",
-          description: "Your friends can see this review now!"
+          title: t('sharedSuccess'),
+          description: t('sharedSuccessDesc')
         });
       } else {
         await navigator.clipboard.writeText(shareData.url);
         toast({
-          title: "Link Copied!",
-          description: "You can paste and share it anywhere."
+          title: t('linkCopied'),
+          description: t('linkCopiedDesc')
         });
       }
     } catch (error) {
