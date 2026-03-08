@@ -371,7 +371,7 @@ const ReviewDetail = () => {
                     </div>
                     <h4 className="text-primary font-bold text-lg">{t('overall')}</h4>
                   </div>
-                  <p className="text-base text-foreground font-bold leading-relaxed pl-9">
+                  <p className="text-base text-white font-bold leading-relaxed pl-9">
                     {review.overall}
                   </p>
                 </div>
