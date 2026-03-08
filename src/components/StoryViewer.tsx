@@ -170,7 +170,7 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({ reviews, initialIndex,
                   <ThumbsUp className="w-5 h-5 text-emerald-400" />
                   <h3 className="text-lg font-bold text-emerald-400">Positives</h3>
                 </div>
-                <p className="text-foreground/90 text-sm leading-relaxed">{review.positives}</p>
+                <p className="text-white/90 text-sm leading-relaxed">{review.positives}</p>
               </div>
               <div className="bg-red-500/10 backdrop-blur-md rounded-2xl p-5 border border-red-500/30">
                 <div className="flex items-center gap-2 mb-3">
