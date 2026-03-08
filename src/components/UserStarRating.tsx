@@ -4,6 +4,7 @@ import { getUserMovieRating, saveUserMovieRating, getDeviceId } from '@/utils/de
 import { doc, runTransaction, getDoc } from 'firebase/firestore';
 import { db } from '@/utils/firebase';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 interface UserStarRatingProps {
   movieId: string;
@@ -12,6 +13,7 @@ interface UserStarRatingProps {
 
 export const UserStarRating: React.FC<UserStarRatingProps> = ({ movieId, onRatingChange }) => {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [userRating, setUserRating] = useState<number | null>(null);
   const [hoverRating, setHoverRating] = useState<number>(0);
   const [averageRating, setAverageRating] = useState<number>(0);
@@ -19,23 +21,18 @@ export const UserStarRating: React.FC<UserStarRatingProps> = ({ movieId, onRatin
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    // Load user's existing rating from localStorage
     const savedRating = getUserMovieRating(movieId);
     if (savedRating) {
       setUserRating(savedRating);
     }
-    
-    // Load aggregate rating from Firebase
     loadAggregateRating();
   }, [movieId]);
 
   const loadAggregateRating = async () => {
     if (!db) return;
-    
     try {
       const ratingRef = doc(db, 'userRatings', movieId);
       const ratingDoc = await getDoc(ratingRef);
-      
       if (ratingDoc.exists()) {
         const data = ratingDoc.data();
         setAverageRating(data.averageRating || 0);
@@ -48,20 +45,18 @@ export const UserStarRating: React.FC<UserStarRatingProps> = ({ movieId, onRatin
 
   const handleRatingClick = async (rating: number) => {
     if (isSubmitting) return;
-    
     setIsSubmitting(true);
     const previousRating = userRating;
     const deviceHash = getDeviceId();
     
     try {
-      // Update local state immediately
       setUserRating(rating);
       saveUserMovieRating(movieId, rating);
       
       if (!db) {
         toast({
-          title: 'Rating saved locally!',
-          description: `You rated this movie ${rating}/5 stars`,
+          title: t('ratingSaved'),
+          description: `${t('ratingSavedDesc')} ${rating}/5 ⭐`,
         });
         setIsSubmitting(false);
         return;
@@ -71,7 +66,6 @@ export const UserStarRating: React.FC<UserStarRatingProps> = ({ movieId, onRatin
       
       await runTransaction(db, async (transaction) => {
         const ratingDoc = await transaction.get(ratingRef);
-        
         let totalSum = 0;
         let count = 0;
         
@@ -82,10 +76,8 @@ export const UserStarRating: React.FC<UserStarRatingProps> = ({ movieId, onRatin
         }
         
         if (previousRating !== null) {
-          // User is updating their rating
           totalSum = totalSum - previousRating + rating;
         } else {
-          // New rating
           totalSum = totalSum + rating;
           count = count + 1;
         }
@@ -109,14 +101,14 @@ export const UserStarRating: React.FC<UserStarRatingProps> = ({ movieId, onRatin
       });
       
       toast({
-        title: previousRating ? 'Rating updated!' : 'Thanks for rating!',
-        description: `You rated this movie ${rating}/5 stars`,
+        title: previousRating ? t('ratingUpdated') : t('thanksForRating'),
+        description: `${t('ratingSavedDesc')} ${rating}/5 ⭐`,
       });
     } catch (error) {
       console.error('Error submitting rating:', error);
       toast({
-        title: 'Rating saved locally',
-        description: 'Rating saved on your device',
+        title: t('ratingSavedLocally'),
+        description: t('ratingSavedLocallyDesc'),
       });
     } finally {
       setIsSubmitting(false);
@@ -128,29 +120,25 @@ export const UserStarRating: React.FC<UserStarRatingProps> = ({ movieId, onRatin
   return (
     <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg p-4 border border-blue-500/30">
       <div className="flex flex-col items-center gap-3">
-        
-        {/* Audience Stats - Show First */}
         {ratingCount > 0 && (
           <div className="text-center w-full pb-3 border-b border-blue-500/20">
             <h4 className="text-sm font-bold text-blue-400 uppercase tracking-wide mb-2">
-              👥 Audience Rating
+              {t('audienceRating')}
             </h4>
             <div className="flex items-center justify-center gap-2">
               <span className="text-2xl font-bold text-blue-400">{averageRating}</span>
               <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
             </div>
             <p className="text-xs text-muted-foreground">
-              {ratingCount} {ratingCount === 1 ? 'user' : 'users'} rated
+              {ratingCount} {ratingCount === 1 ? t('userRated') : t('usersRated')}
             </p>
           </div>
         )}
         
-        {/* User's Rating Input - Show After */}
         <h4 className="text-sm font-bold text-purple-400 uppercase tracking-wide">
-          ⭐ Rate This Movie
+          {t('rateThisMovie')}
         </h4>
         
-        {/* Star Rating Input */}
         <div className="flex items-center gap-1">
           {[1, 2, 3, 4, 5].map((star) => (
             <button
@@ -176,7 +164,7 @@ export const UserStarRating: React.FC<UserStarRatingProps> = ({ movieId, onRatin
         
         {userRating && (
           <p className="text-xs text-purple-300">
-            You rated: {userRating}/5 stars
+            {t('youRated')} {userRating}/5 ⭐
           </p>
         )}
       </div>

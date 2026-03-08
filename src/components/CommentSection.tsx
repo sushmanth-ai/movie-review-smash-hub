@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Send, Reply } from 'lucide-react';
 import { MovieReview, Comment } from '@/data/movieReviews';
 import { DialogueStickerReactions } from './DialogueStickerReactions';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 interface CommentSectionProps {
   review: MovieReview;
@@ -22,6 +23,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
 }) => {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
+  const { t } = useLanguage();
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -47,7 +49,6 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
     <div key={comment.id} className={`bg-secondary/50 p-3 rounded-lg text-sm ${isReply ? 'ml-4 mt-2' : ''}`}>
       <p className="text-muted-foreground mb-3">{comment.text}</p>
       
-      {/* Dialogue Sticker Reactions */}
       <div className="mb-3">
         <DialogueStickerReactions targetId={comment.id} targetType="comment" />
       </div>
@@ -63,14 +64,14 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
           onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
         >
           <Reply className="w-3 h-3 mr-1" />
-          Reply
+          {t('reply')}
         </Button>
       </div>
       
       {replyingTo === comment.id && (
         <div className="flex gap-2 mt-2">
           <Input
-            placeholder={`Reply to ${comment.author}...`}
+            placeholder={`${t('replyTo')} ${comment.author}...`}
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}
             className="flex-1 bg-secondary border-border/30 text-foreground text-xs h-8"
@@ -98,7 +99,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
     <div className="mt-4 space-y-3 border-t border-border/30 pt-4">
       <div className="flex gap-2">
         <Input
-          placeholder="Add a comment..."
+          placeholder={t('addComment')}
           value={newComment}
           onChange={(e) => onCommentChange(e.target.value)}
           className="flex-1 bg-secondary border-border/30 text-foreground"

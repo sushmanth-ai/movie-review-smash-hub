@@ -3,11 +3,13 @@ import { Bell, BellRing, BellOff } from 'lucide-react';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useToast } from '@/hooks/use-toast';
 import { useSound } from '@/hooks/useSound';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 export const NotificationBell = () => {
   const { isSupported, isSubscribed, isLoading, permission, subscribe } = usePushNotifications();
   const { toast } = useToast();
   const { playSound } = useSound();
+  const { t } = useLanguage();
 
   if (!isSupported) return null;
 
@@ -16,8 +18,8 @@ export const NotificationBell = () => {
 
     if (permission === 'denied') {
       toast({
-        title: '⚠️ Notifications Blocked',
-        description: 'Please enable notifications in your browser settings.',
+        title: t('notificationsBlocked'),
+        description: t('notificationsBlockedDesc'),
         variant: 'destructive',
       });
       return;
@@ -25,8 +27,8 @@ export const NotificationBell = () => {
 
     if (isSubscribed) {
       toast({
-        title: '🔔 Notifications Active',
-        description: 'You\'re receiving push notifications!',
+        title: t('notificationsActive'),
+        description: t('notificationsActiveDesc'),
       });
       return;
     }
@@ -35,13 +37,13 @@ export const NotificationBell = () => {
     if (success) {
       playSound('popup');
       toast({
-        title: '🔔 Notifications Enabled!',
-        description: 'You\'ll get notified about new reviews!',
+        title: t('notificationsEnabled'),
+        description: t('notificationsEnabledDesc'),
       });
     } else {
       toast({
-        title: '❌ Failed',
-        description: 'Could not enable notifications.',
+        title: t('notificationsFailed'),
+        description: t('notificationsFailedDesc'),
         variant: 'destructive',
       });
     }
@@ -58,7 +60,7 @@ export const NotificationBell = () => {
           ? 'bg-destructive/20 text-destructive'
           : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-primary'
       } ${isLoading ? 'animate-pulse' : ''}`}
-      title={isSubscribed ? 'Notifications Active' : 'Enable Notifications'}
+      title={isSubscribed ? t('notificationsActive') : t('enableNotifications')}
     >
       {permission === 'denied' ? (
         <BellOff className="w-5 h-5" />
