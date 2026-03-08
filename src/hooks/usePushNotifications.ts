@@ -21,11 +21,9 @@ export const usePushNotifications = () => {
     }
   }, []);
 
-  const registerPushSW = async () => {
-    const registration = await navigator.serviceWorker.register('/push-sw.js', {
-      scope: '/',
-    });
-    await navigator.serviceWorker.ready;
+  const getPWARegistration = async () => {
+    // Use the existing PWA service worker instead of registering a separate one
+    const registration = await navigator.serviceWorker.ready;
     return registration;
   };
 
@@ -67,7 +65,7 @@ export const usePushNotifications = () => {
         return false;
       }
 
-      const registration = await registerPushSW();
+      const registration = await getPWARegistration();
       const vapidPublicKey = await getVapidPublicKey();
 
       const subscription = await registration.pushManager.subscribe({
