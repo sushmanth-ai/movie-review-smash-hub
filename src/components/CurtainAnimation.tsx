@@ -1,99 +1,124 @@
 import { useState, useEffect } from 'react';
 
-export const CurtainAnimation = () => {
-  const [phase, setPhase] = useState<'logo' | 'explode' | 'done'>('logo');
+interface CurtainAnimationProps {
+  /** If true, plays every time (e.g. on review navigation). Default: once per session */
+  alwaysPlay?: boolean;
+}
+
+export const CurtainAnimation = ({ alwaysPlay = false }: CurtainAnimationProps) => {
+  const [phase, setPhase] = useState<'enter' | 'logo' | 'reveal' | 'done'>('enter');
 
   useEffect(() => {
-    const shown = sessionStorage.getItem('curtainShown');
-    if (shown) {
-      setPhase('done');
-      return;
+    if (!alwaysPlay) {
+      const shown = sessionStorage.getItem('curtainShown');
+      if (shown) {
+        setPhase('done');
+        return;
+      }
+      sessionStorage.setItem('curtainShown', 'true');
     }
 
-    sessionStorage.setItem('curtainShown', 'true');
-
-    // Logo holds for 1.5s, then explode for 1.5s
-    const t1 = setTimeout(() => setPhase('explode'), 1500);
-    const t2 = setTimeout(() => setPhase('done'), 3000);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, []);
+    // enter → logo (0.4s), logo → reveal (1.6s), reveal → done (2.4s)
+    const t0 = setTimeout(() => setPhase('logo'), 400);
+    const t1 = setTimeout(() => setPhase('reveal'), 1600);
+    const t2 = setTimeout(() => setPhase('done'), 2400);
+    return () => { clearTimeout(t0); clearTimeout(t1); clearTimeout(t2); };
+  }, [alwaysPlay]);
 
   if (phase === 'done') return null;
 
   return (
     <div className="fixed inset-0 z-[9999] pointer-events-none overflow-hidden">
-      {/* Dark cinematic background */}
+      {/* Dark cinematic background with fade out */}
       <div
-        className={`absolute inset-0 bg-black transition-opacity duration-700 ${
-          phase === 'explode' ? 'opacity-0' : 'opacity-100'
-        }`}
+        className="absolute inset-0 bg-black transition-opacity duration-700"
+        style={{ opacity: phase === 'reveal' ? 0 : 1 }}
       />
 
-      {/* Radial spotlight */}
+      {/* Radial golden spotlight - slowly breathes */}
       <div
-        className={`absolute inset-0 transition-all duration-700 ${
-          phase === 'explode' ? 'scale-[3] opacity-0' : 'scale-100 opacity-100'
-        }`}
+        className="absolute inset-0 transition-all duration-700"
         style={{
-          background: 'radial-gradient(circle at center, hsl(0 60% 18% / 0.6) 0%, transparent 60%)',
+          background: 'radial-gradient(circle at center, hsl(42 100% 50% / 0.15) 0%, transparent 70%)',
+          opacity: phase === 'reveal' ? 0 : 1,
+          transform: phase === 'reveal' ? 'scale(3)' : 'scale(1)',
         }}
       />
 
-      {/* Particle sparks */}
-      {phase === 'logo' && (
+      {/* Floating golden particles */}
+      {(phase === 'enter' || phase === 'logo') && (
         <div className="absolute inset-0">
-          {Array.from({ length: 20 }).map((_, i) => (
+          {Array.from({ length: 16 }).map((_, i) => (
             <div
               key={i}
-              className="absolute w-1 h-1 rounded-full bg-primary animate-ping"
+              className="absolute rounded-full"
               style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 2}s`,
-                animationDuration: `${1 + Math.random() * 2}s`,
-                opacity: 0.6,
+                width: `${2 + Math.random() * 3}px`,
+                height: `${2 + Math.random() * 3}px`,
+                background: `hsl(42 100% ${55 + Math.random() * 20}%)`,
+                left: `${10 + Math.random() * 80}%`,
+                bottom: '-5%',
+                opacity: 0,
+                boxShadow: '0 0 6px hsl(42 100% 50% / 0.6)',
+                animation: `float-up ${2 + Math.random() * 2}s ease-out forwards`,
+                animationDelay: `${Math.random() * 1}s`,
               }}
             />
           ))}
         </div>
       )}
 
-      {/* Logo text */}
+      {/* SM Logo - center stage */}
       <div
-        className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-700 ${
-          phase === 'explode' ? 'scale-[2] opacity-0' : 'scale-100 opacity-100'
-        }`}
+        className="absolute inset-0 flex flex-col items-center justify-center transition-all"
+        style={{
+          opacity: phase === 'enter' ? 0 : phase === 'reveal' ? 0 : 1,
+          transform:
+            phase === 'enter'
+              ? 'scale(0.7)'
+              : phase === 'reveal'
+              ? 'scale(1.3)'
+              : 'scale(1)',
+          transition: 'opacity 0.5s ease-out, transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
+        }}
       >
-        {/* Glowing ring */}
+        {/* Pulsing ring */}
         <div
-          className="absolute w-48 h-48 md:w-64 md:h-64 rounded-full border-2 border-primary/40 animate-pulse"
+          className="absolute w-40 h-40 md:w-56 md:h-56 rounded-full"
           style={{
-            boxShadow: '0 0 60px hsl(42 100% 50% / 0.3), inset 0 0 60px hsl(42 100% 50% / 0.1)',
+            border: '2px solid hsl(42 100% 50% / 0.35)',
+            boxShadow:
+              '0 0 40px hsl(42 100% 50% / 0.2), inset 0 0 40px hsl(42 100% 50% / 0.08)',
+            animation: 'ring-pulse 1.5s ease-in-out infinite',
           }}
         />
 
-        {/* SM text */}
+        {/* SM text with golden gradient */}
         <h1
           className="text-7xl md:text-9xl font-black tracking-tighter"
           style={{
-            background: 'linear-gradient(180deg, hsl(42 100% 65%), hsl(42 100% 50%), hsl(0 75% 45%))',
+            background:
+              'linear-gradient(180deg, hsl(42 100% 70%), hsl(42 100% 50%), hsl(0 75% 45%))',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
-            filter: 'drop-shadow(0 0 30px hsl(42 100% 50% / 0.8))',
+            filter: 'drop-shadow(0 0 25px hsl(42 100% 50% / 0.7))',
+            animation: phase === 'logo' ? 'text-glow 1s ease-in-out infinite alternate' : 'none',
           }}
         >
           SM
         </h1>
 
-        {/* REVIEWS subtitle with stagger */}
-        <div className="flex gap-1 mt-2">
+        {/* REVIEWS - letter by letter stagger */}
+        <div className="flex gap-0.5 mt-2">
           {'REVIEWS'.split('').map((char, i) => (
             <span
               key={i}
-              className="text-lg md:text-2xl font-bold tracking-[0.3em] text-primary/90 animate-fade-in"
+              className="text-base md:text-xl font-bold tracking-[0.3em]"
               style={{
-                animationDelay: `${0.3 + i * 0.08}s`,
-                animationFillMode: 'both',
+                color: 'hsl(42 100% 50% / 0.85)',
+                opacity: 0,
+                animation: 'letter-in 0.3s ease-out forwards',
+                animationDelay: `${0.5 + i * 0.07}s`,
               }}
             >
               {char}
@@ -103,53 +128,34 @@ export const CurtainAnimation = () => {
 
         {/* 3.0 badge */}
         <span
-          className="mt-3 text-xs md:text-sm font-semibold tracking-widest text-accent/70 animate-fade-in"
-          style={{ animationDelay: '0.9s', animationFillMode: 'both' }}
+          className="mt-2 text-xs md:text-sm font-semibold tracking-widest"
+          style={{
+            color: 'hsl(42 100% 50% / 0.5)',
+            opacity: 0,
+            animation: 'letter-in 0.4s ease-out forwards',
+            animationDelay: '1s',
+          }}
         >
           — 3.0 ★★★ —
         </span>
       </div>
 
-      {/* Explode particles */}
-      {phase === 'explode' && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          {Array.from({ length: 30 }).map((_, i) => {
-            const angle = (i / 30) * 360;
-            const distance = 80 + Math.random() * 120;
-            return (
-              <div
-                key={i}
-                className="absolute w-2 h-2 rounded-full"
-                style={{
-                  background: i % 3 === 0 ? 'hsl(42 100% 50%)' : i % 3 === 1 ? 'hsl(0 75% 45%)' : 'hsl(42 100% 70%)',
-                  animation: `explode-particle 0.8s ease-out forwards`,
-                  animationDelay: `${Math.random() * 0.2}s`,
-                  ['--angle' as string]: `${angle}deg`,
-                  ['--distance' as string]: `${distance}vh`,
-                  boxShadow: '0 0 8px currentColor',
-                }}
-              />
-            );
-          })}
-        </div>
-      )}
-
       <style>{`
-        @keyframes explode-particle {
-          0% {
-            transform: translate(0, 0) scale(1);
-            opacity: 1;
-          }
-          100% {
-            transform: translate(
-              calc(cos(var(--angle)) * var(--distance)),
-              calc(sin(var(--angle)) * var(--distance))
-            ) scale(0);
-            opacity: 0;
-          }
+        @keyframes float-up {
+          0% { opacity: 0; transform: translateY(0); }
+          30% { opacity: 0.8; }
+          100% { opacity: 0; transform: translateY(-100vh); }
         }
-        @keyframes fade-in-letter {
-          from { opacity: 0; transform: translateY(10px); }
+        @keyframes ring-pulse {
+          0%, 100% { transform: scale(1); opacity: 0.4; }
+          50% { transform: scale(1.08); opacity: 0.7; }
+        }
+        @keyframes text-glow {
+          from { filter: drop-shadow(0 0 20px hsl(42 100% 50% / 0.5)); }
+          to { filter: drop-shadow(0 0 40px hsl(42 100% 50% / 0.9)); }
+        }
+        @keyframes letter-in {
+          from { opacity: 0; transform: translateY(8px); }
           to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
