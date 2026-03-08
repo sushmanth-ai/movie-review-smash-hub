@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { ArrowLeft, ThumbsUp, MessageCircle, Share2, Play, X } from "lucide-react";
+import { ArrowLeft, ThumbsUp, MessageCircle, Share2, Play, X, Star, Film, Sparkles, TrendingUp, TrendingDown, Eye } from "lucide-react";
 import { MovieReview } from "@/data/movieReviews";
 import { movieReviewsData } from "@/data/movieReviews";
 import { CommentSection } from "@/components/CommentSection";
