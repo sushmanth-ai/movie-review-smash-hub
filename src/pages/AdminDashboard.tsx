@@ -29,6 +29,7 @@ const AdminDashboard = () => {
   const { toast } = useToast();
   const [showForm, setShowForm] = useState(false);
   const [showPolls, setShowPolls] = useState(false);
+  const [showPredictions, setShowPredictions] = useState(false);
   const [editingReview, setEditingReview] = useState<{ id: string; data: ReviewFormData } | null>(null);
   
   const { reviews, loading, addReview, updateReview, deleteReview } = useAdminReviews();
