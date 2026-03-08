@@ -10,63 +10,59 @@ interface Particle {
   opacity: number;
   char: string;
   drift: number;
+  wobble: number;
 }
 
 export const FestivalParticles: React.FC = () => {
   const { activeFestival, isActive, prefersReducedMotion, decorationsEnabled } = useFestivalContext();
-  
+
   const particles = useMemo<Particle[]>(() => {
     if (!isActive || !activeFestival || prefersReducedMotion || !decorationsEnabled) {
       return [];
     }
-    
-    const { theme } = activeFestival;
-    const count = theme.particleCount;
-    const chars = theme.particles;
-    
-    if (chars.length === 0) return [];
-    
+
+    const emojis = activeFestival.floatingEmojis || activeFestival.theme.particles;
+    const count = activeFestival.theme.particleCount;
+    if (emojis.length === 0) return [];
+
     return Array.from({ length: count }, (_, i) => ({
       id: i,
       left: Math.random() * 100,
-      delay: Math.random() * 15,
-      duration: 15 + Math.random() * 20,
-      size: 10 + Math.random() * 14,
-      opacity: 0.15 + Math.random() * 0.25,
-      char: chars[i % chars.length],
-      drift: (Math.random() - 0.5) * 30,
+      delay: Math.random() * 20,
+      duration: 12 + Math.random() * 18,
+      size: 16 + Math.random() * 16,
+      opacity: 0.3 + Math.random() * 0.5,
+      char: emojis[i % emojis.length],
+      drift: (Math.random() - 0.5) * 50,
+      wobble: 2 + Math.random() * 4,
     }));
   }, [isActive, activeFestival, prefersReducedMotion, decorationsEnabled]);
-  
+
   if (!isActive || !activeFestival || particles.length === 0) {
     return null;
   }
-  
-  const glowColor = activeFestival.theme.glowColor;
-  
+
   return (
-    <div 
-      className="fixed inset-0 pointer-events-none z-10 overflow-hidden"
+    <div
+      className="fixed inset-0 pointer-events-none z-[5] overflow-hidden"
       aria-hidden="true"
     >
-      {particles.map((particle) => (
+      {particles.map((p) => (
         <div
-          key={particle.id}
+          key={p.id}
           className="absolute animate-premium-fall"
           style={{
-            left: `${particle.left}%`,
+            left: `${p.left}%`,
             top: '-5%',
-            fontSize: `${particle.size}px`,
-            opacity: particle.opacity,
-            animationDelay: `${particle.delay}s`,
-            animationDuration: `${particle.duration}s`,
-            color: `hsl(${glowColor})`,
-            textShadow: `0 0 ${particle.size / 2}px hsl(${glowColor} / 0.5)`,
-            filter: 'blur(0.5px)',
-            ['--drift' as string]: `${particle.drift}px`,
+            fontSize: `${p.size}px`,
+            opacity: p.opacity,
+            animationDelay: `${p.delay}s`,
+            animationDuration: `${p.duration}s`,
+            ['--drift' as string]: `${p.drift}px`,
+            filter: `drop-shadow(0 0 ${p.size / 3}px hsl(${activeFestival.theme.glowColor} / 0.4))`,
           }}
         >
-          {particle.char}
+          {p.char}
         </div>
       ))}
     </div>
