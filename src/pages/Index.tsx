@@ -176,56 +176,48 @@ const Index = () => {
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent" />
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
           
-          {/* Main Logo and Title Container */}
-           <div className="relative flex justify-center items-center gap-2 sm:gap-4">
-            {/* Notification Bell & Language - Top Right */}
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 z-10 flex items-center gap-1.5 sm:gap-2">
-              <LanguageSwitcher />
-              <NotificationBell />
-            </div>
-            {/* Golden Film Reel Decoration - Left */}
-            <div className="hidden md:flex items-center gap-2">
-              <span className="text-2xl animate-pulse">🎬</span>
-              <div className="w-12 h-0.5 bg-gradient-to-r from-transparent via-primary to-primary rounded-full" />
-            </div>
-            
-            {/* Logo with Premium Glow */}
-            <div className="relative group">
-              <div className="absolute -inset-2 bg-gradient-to-r from-yellow-400 via-primary to-yellow-400 rounded-full blur-lg opacity-60 group-hover:opacity-100 transition-opacity duration-500 animate-pulse" />
-              <img 
-                src="https://res.cloudinary.com/dvdmk59a1/image/upload/v1762242791/SM_Image_m8js8c.jpg" 
-                alt="SM Reviews Logo" 
-                className="relative h-16 w-16 md:h-20 md:w-20 object-cover rounded-full border-3 border-yellow-400 shadow-[0_0_30px_rgba(255,215,0,0.8)]" 
-              />
-            </div>
-            
-            {/* Brand Name */}
-            <div className="flex flex-col items-start max-w-[calc(100%-120px)] sm:max-w-none">
-              <div className="flex items-baseline gap-1">
-                <span className="text-2xl sm:text-3xl md:text-4xl font-black bg-gradient-to-r from-yellow-300 via-primary to-yellow-300 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(255,215,0,0.5)] tracking-tight">
-                  SM
-                </span>
-                <span className="text-xl sm:text-2xl md:text-3xl font-bold text-primary tracking-wide">
-                  Reviews
-                </span>
+          {/* Main Header Row */}
+          <div className="relative flex items-center justify-between">
+            {/* Logo + Brand */}
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+              {/* Logo */}
+              <div className="relative group flex-shrink-0">
+                <div className="absolute -inset-2 bg-gradient-to-r from-yellow-400 via-primary to-yellow-400 rounded-full blur-lg opacity-60 group-hover:opacity-100 transition-opacity duration-500 animate-pulse" />
+                <img 
+                  src="https://res.cloudinary.com/dvdmk59a1/image/upload/v1762242791/SM_Image_m8js8c.jpg" 
+                  alt="SM Reviews Logo" 
+                  className="relative h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20 object-cover rounded-full border-3 border-yellow-400 shadow-[0_0_30px_rgba(255,215,0,0.8)]" 
+                />
               </div>
-              <div className="flex items-center gap-2 -mt-1">
-                <div className="h-0.5 w-8 bg-gradient-to-r from-primary to-transparent rounded-full" />
-                <span className="text-xs md:text-sm font-bold bg-gradient-to-r from-yellow-400 to-primary bg-clip-text text-transparent tracking-[0.3em] uppercase">
-                  3.0
-                </span>
-                <div className="flex gap-0.5">
-                  <span className="text-yellow-400 text-xs">★</span>
-                  <span className="text-yellow-400 text-xs">★</span>
-                  <span className="text-yellow-400 text-xs">★</span>
+              
+              {/* Brand Name */}
+              <div className="flex flex-col items-start min-w-0">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl sm:text-3xl md:text-4xl font-black bg-gradient-to-r from-yellow-300 via-primary to-yellow-300 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(255,215,0,0.5)] tracking-tight">
+                    SM
+                  </span>
+                  <span className="text-lg sm:text-2xl md:text-3xl font-bold text-primary tracking-wide truncate">
+                    Reviews
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 -mt-1">
+                  <div className="h-0.5 w-6 sm:w-8 bg-gradient-to-r from-primary to-transparent rounded-full" />
+                  <span className="text-[10px] sm:text-xs md:text-sm font-bold bg-gradient-to-r from-yellow-400 to-primary bg-clip-text text-transparent tracking-[0.3em] uppercase">
+                    3.0
+                  </span>
+                  <div className="flex gap-0.5">
+                    <span className="text-yellow-400 text-[10px] sm:text-xs">★</span>
+                    <span className="text-yellow-400 text-[10px] sm:text-xs">★</span>
+                    <span className="text-yellow-400 text-[10px] sm:text-xs">★</span>
+                  </div>
                 </div>
               </div>
             </div>
             
-            {/* Golden Film Reel Decoration - Right */}
-            <div className="hidden md:flex items-center gap-2">
-              <div className="w-12 h-0.5 bg-gradient-to-l from-transparent via-primary to-primary rounded-full" />
-              <span className="text-2xl animate-pulse">🎬</span>
+            {/* Right Controls */}
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-2">
+              <LanguageSwitcher />
+              <NotificationBell />
             </div>
           </div>
           
