@@ -415,9 +415,9 @@ const ReviewDetail = () => {
       {showBookingOptions && <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
           <div className="bg-card border-2 border-primary rounded-xl shadow-[0_0_30px_rgba(255,215,0,0.6)] p-8 text-center space-y-6 max-w-sm w-full mx-4">
             <h3 className="text-2xl font-bold text-primary">
-              🎟️ Book Your Tickets
+              {t('bookTickets')}
             </h3>
-            <p className="text-slate-200">Choose your preferred platform:</p>
+            <p className="text-slate-200">{t('choosePlatform')}</p>
             <div className="flex flex-col gap-4">
               <Button onClick={handleOpenBookMyShow} className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg shadow-lg">
                 🎬 BookMyShow
