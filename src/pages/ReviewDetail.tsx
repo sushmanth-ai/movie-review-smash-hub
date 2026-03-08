@@ -143,9 +143,7 @@ const ReviewDetail = () => {
     }
   }, [id]);
   if (!review) {
-    return <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-primary text-xl">Loading review...</p>
-      </div>;
+    return <CurtainAnimation alwaysPlay />;
   }
   const handleLikeClick = reviewId => {
     playSound("bubble");
