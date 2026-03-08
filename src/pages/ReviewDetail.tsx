@@ -249,7 +249,7 @@ const ReviewDetail = () => {
                       <Play className="w-8 h-8 sm:w-12 sm:h-12 text-white fill-white" />
                     </div>
                     <span className="absolute bottom-4 sm:bottom-8 text-white font-bold text-sm sm:text-lg drop-shadow-lg bg-black/50 px-3 py-1 rounded-full">
-                      ▶️ Watch Trailer
+                      {t('watchTrailer')}
                     </span>
                   </button>
                 )}
