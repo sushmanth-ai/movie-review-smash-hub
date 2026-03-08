@@ -1,1 +1,0 @@
-CREATE POLICY "Admins can delete predictions" ON public.predictions FOR DELETE USING (has_role(auth.uid(), 'admin'::app_role));

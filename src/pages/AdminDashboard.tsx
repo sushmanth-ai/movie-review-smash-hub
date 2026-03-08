@@ -8,7 +8,6 @@ import { ReviewForm } from '@/components/admin/ReviewForm';
 import { useAdminReviews } from '@/hooks/useAdminReviews';
 import { AdminRatings } from '@/types/ratings';
 import { PollManager } from '@/components/admin/PollManager';
-import { PredictionManager } from '@/components/admin/PredictionManager';
 
 export interface ReviewFormData {
   title: string;
@@ -29,7 +28,6 @@ const AdminDashboard = () => {
   const { toast } = useToast();
   const [showForm, setShowForm] = useState(false);
   const [showPolls, setShowPolls] = useState(false);
-  const [showPredictions, setShowPredictions] = useState(false);
   const [editingReview, setEditingReview] = useState<{ id: string; data: ReviewFormData } | null>(null);
   
   const { reviews, loading, addReview, updateReview, deleteReview } = useAdminReviews();
@@ -114,31 +112,22 @@ const AdminDashboard = () => {
         {/* Tab buttons */}
         <div className="flex gap-2 mb-6">
           <Button
-            onClick={() => { setShowPolls(false); setShowPredictions(false); setShowForm(false); }}
-            variant={!showPolls && !showPredictions ? "default" : "outline"}
-            className={!showPolls && !showPredictions ? "bg-white text-primary" : "bg-white/10 text-white border-white/20"}
+            onClick={() => { setShowPolls(false); setShowForm(false); }}
+            variant={!showPolls ? "default" : "outline"}
+            className={!showPolls ? "bg-white text-primary" : "bg-white/10 text-white border-white/20"}
           >
             🎬 Reviews
           </Button>
           <Button
-            onClick={() => { setShowPolls(true); setShowPredictions(false); setShowForm(false); }}
+            onClick={() => { setShowPolls(true); setShowForm(false); }}
             variant={showPolls ? "default" : "outline"}
             className={showPolls ? "bg-white text-primary" : "bg-white/10 text-white border-white/20"}
           >
             📊 Polls
           </Button>
-          <Button
-            onClick={() => { setShowPredictions(true); setShowPolls(false); setShowForm(false); }}
-            variant={showPredictions ? "default" : "outline"}
-            className={showPredictions ? "bg-white text-primary" : "bg-white/10 text-white border-white/20"}
-          >
-            🎯 Predictions
-          </Button>
         </div>
 
-        {showPredictions ? (
-          <PredictionManager />
-        ) : showPolls ? (
+        {showPolls ? (
           <PollManager reviews={reviews.map(r => ({ id: r.id, title: r.title }))} />
         ) : !showForm ? (
           <>
