@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { MovieReview } from '@/data/movieReviews';
-import { ChevronRight, Eye, Star } from 'lucide-react';
+import { ChevronRight, Eye } from 'lucide-react';
 import { useFirebaseOperations } from '@/hooks/useFirebaseOperations';
 import { FestivalBadge } from '@/components/festival';
 import { useLanguage } from '@/i18n/LanguageContext';
@@ -20,75 +21,53 @@ export const MovieCard: React.FC<MovieCardProps> = ({ review }) => {
     navigate(`/review/${review.id}`);
   };
 
-  // Extract rating number
-  const ratingMatch = review.rating?.match(/[\d.]+/);
-  const ratingNum = ratingMatch ? parseFloat(ratingMatch[0]) : 0;
-
   return (
-    <div
-      className="group relative cursor-pointer h-full"
+    <Card
+      className="bg-card border-2 border-primary shadow-[0_0_20px_rgba(255,215,0,0.3)] h-full transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,215,0,0.5)] cursor-pointer festival-enhanced"
       onClick={handleCardClick}
     >
-      {/* Outer glow on hover */}
-      <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/0 via-primary/0 to-primary/0 group-hover:from-primary/40 group-hover:via-yellow-500/50 group-hover:to-primary/40 rounded-2xl blur-md transition-all duration-500 opacity-0 group-hover:opacity-100" />
-      
-      <div className="relative bg-card rounded-2xl overflow-hidden border border-primary/30 group-hover:border-primary/60 transition-all duration-500 h-full flex flex-col shadow-[0_4px_20px_rgba(0,0,0,0.4)] group-hover:shadow-[0_8px_40px_rgba(255,215,0,0.25)]">
-        
-        {/* Image Section with overlay */}
-        <div className="relative overflow-hidden">
-          <img
-            src={review.image}
-            alt={review.title}
-            className="w-full h-72 object-cover transition-transform duration-700 group-hover:scale-110"
-          />
-          
-          {/* Dark gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
-          
-          {/* Top badges */}
-          <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
-            <FestivalBadge className="festival-badge" />
-            {/* Rating badge */}
-            {ratingNum > 0 && (
-              <div className="flex items-center gap-1 bg-black/70 backdrop-blur-sm px-2.5 py-1 rounded-full border border-primary/40">
-                <Star className="w-3.5 h-3.5 text-primary fill-primary" />
-                <span className="text-xs font-black text-primary">{ratingNum}</span>
-              </div>
-            )}
-          </div>
-          
-          {/* Views badge - bottom left */}
-          <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-black/60 backdrop-blur-sm px-2.5 py-1 rounded-full">
-            <Eye className="w-3 h-3 text-primary" />
-            <span className="text-[11px] font-bold text-primary">{review.views || 0} {t('views')}</span>
-          </div>
-
-          {/* Shimmer sweep on hover */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/8 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000 ease-in-out" />
-        </div>
-
-        {/* Content Section */}
-        <div className="flex-1 flex flex-col p-4">
-          {/* Title */}
-          <h3 className="text-base sm:text-lg font-extrabold text-foreground leading-tight line-clamp-2 mb-3 group-hover:text-primary transition-colors duration-300">
-            {review.title}
-          </h3>
-
-          {/* Divider */}
-          <div className="h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent mb-3" />
-
-          {/* Bottom bar */}
-          <div className="mt-auto flex items-center justify-between">
-            <span className="text-xs text-muted-foreground font-medium">
-              {review.rating}
-            </span>
-            <div className="flex items-center gap-1 text-primary font-bold text-xs group-hover:gap-2 transition-all duration-300">
-              <span>{t('readMore')}</span>
-              <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform duration-300" />
-            </div>
+      <CardHeader className="text-center relative pb-2">
+        <FestivalBadge className="absolute top-2 right-2 festival-badge z-10" />
+        <div className="relative mx-2">
+          {/* Gradient Container for Title */}
+          <div className="relative bg-gradient-to-r from-yellow-500/20 via-amber-400/30 to-yellow-500/20 rounded-xl p-3 border border-primary/40 shadow-[0_0_20px_rgba(255,215,0,0.3)] overflow-hidden">
+            {/* Animated shimmer effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-festival-shimmer" />
+            
+            {/* Decorative corner accents */}
+            <div className="absolute top-0 left-0 w-4 h-4 border-l-2 border-t-2 border-primary rounded-tl-lg" />
+            <div className="absolute top-0 right-0 w-4 h-4 border-r-2 border-t-2 border-primary rounded-tr-lg" />
+            <div className="absolute bottom-0 left-0 w-4 h-4 border-l-2 border-b-2 border-primary rounded-bl-lg" />
+            <div className="absolute bottom-0 right-0 w-4 h-4 border-r-2 border-b-2 border-primary rounded-br-lg" />
+            
+            {/* Title with gradient text */}
+            <h3 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-300 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(255,215,0,0.5)] relative z-10 line-clamp-2">
+              {review.title}
+            </h3>
           </div>
         </div>
+      </CardHeader>
+
+      <div className="px-4 pt-3 pb-4">
+        <img
+          src={review.image}
+          alt={review.title}
+          className="w-full h-64 object-cover rounded-lg border-2 border-primary/30"
+        />
       </div>
-    </div>
+
+      <CardContent className="pb-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-primary">
+            <Eye className="w-4 h-4" />
+            <span className="font-bold text-sm">{review.views || 0} {t('views')}</span>
+          </div>
+          <div className="flex items-center gap-2 text-primary">
+            <span className="font-bold text-sm">{t('readMore')}</span>
+            <ChevronRight className="w-4 h-4" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
