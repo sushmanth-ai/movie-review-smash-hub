@@ -5,6 +5,7 @@ import { MovieReview } from '@/data/movieReviews';
 import { ChevronRight, Eye } from 'lucide-react';
 import { useFirebaseOperations } from '@/hooks/useFirebaseOperations';
 import { FestivalBadge } from '@/components/festival';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 interface MovieCardProps {
   review: MovieReview;
@@ -13,6 +14,7 @@ interface MovieCardProps {
 export const MovieCard: React.FC<MovieCardProps> = ({ review }) => {
   const navigate = useNavigate();
   const { trackReviewView } = useFirebaseOperations();
+  const { t } = useLanguage();
 
   const handleCardClick = () => {
     trackReviewView(review.id);
@@ -58,10 +60,10 @@ export const MovieCard: React.FC<MovieCardProps> = ({ review }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-primary">
             <Eye className="w-4 h-4" />
-            <span className="font-bold text-sm">{review.views || 0} views</span>
+            <span className="font-bold text-sm">{review.views || 0} {t('views')}</span>
           </div>
           <div className="flex items-center gap-2 text-primary">
-            <span className="font-bold text-sm">Read more</span>
+            <span className="font-bold text-sm">{t('readMore')}</span>
             <ChevronRight className="w-4 h-4" />
           </div>
         </div>

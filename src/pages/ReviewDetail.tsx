@@ -19,6 +19,8 @@ import { AdminRatingsDisplay } from "@/components/AdminRatingsDisplay";
 import { RatingComparison } from "@/components/RatingComparison";
 import { NotificationBell } from "@/components/NotificationBell";
 import { ReviewPolls } from "@/components/ReviewPolls";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 // Helper function to extract YouTube video ID
 const getYouTubeVideoId = (url: string): string => {
@@ -39,6 +41,7 @@ const ReviewDetail = () => {
   const {
     playSound
   } = useSound();
+  const { t } = useLanguage();
   const [review, setReview] = useState(null);
   const [newComment, setNewComment] = useState("");
   const [showComments, setShowComments] = useState(false);
@@ -170,20 +173,20 @@ const ReviewDetail = () => {
       if (navigator.share) {
         await navigator.share(shareData);
         toast({
-          title: "Shared Successfully!",
-          description: "Your friends can see this review now!"
+          title: t('sharedSuccess'),
+          description: t('sharedSuccessDesc')
         });
       } else {
         await navigator.clipboard.writeText(shareData.url);
         toast({
-          title: "Link Copied!",
-          description: "You can paste and share it anywhere."
+          title: t('linkCopied'),
+          description: t('linkCopiedDesc')
         });
       }
     } catch (error) {
       toast({
-        title: "Share Failed",
-        description: "Something went wrong. Try again!",
+        title: t('shareFailed'),
+        description: t('shareFailedDesc'),
         variant: "destructive"
       });
     }
@@ -210,6 +213,7 @@ const ReviewDetail = () => {
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <h1 className="text-xl font-bold text-primary flex-1">SM REVIEW 3.0</h1>
+            <LanguageSwitcher />
             <NotificationBell />
           </div>
         </div>
@@ -245,7 +249,7 @@ const ReviewDetail = () => {
                       <Play className="w-8 h-8 sm:w-12 sm:h-12 text-white fill-white" />
                     </div>
                     <span className="absolute bottom-4 sm:bottom-8 text-white font-bold text-sm sm:text-lg drop-shadow-lg bg-black/50 px-3 py-1 rounded-full">
-                      ▶️ Watch Trailer
+                      {t('watchTrailer')}
                     </span>
                   </button>
                 )}
@@ -273,7 +277,7 @@ const ReviewDetail = () => {
                       onClick={() => setShowTrailer(false)}
                       className="mt-3 mx-auto flex items-center gap-2 bg-primary/20 hover:bg-primary/30 text-primary font-bold px-4 py-2 rounded-lg transition-colors"
                     >
-                      🖼️ Back to Poster
+                      {t('backToPoster')}
                     </button>
                   </div>
                 )}
@@ -284,7 +288,7 @@ const ReviewDetail = () => {
               <div className="border-t border-primary/30 pt-4">
                 <div className="bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-lg p-4 mb-4 border-2 border-primary/50 shadow-[0_0_20px_rgba(255,215,0,0.3)]">
                   <h3 className="text-center font-bold text-primary text-xl">
-                    REVIEW
+                    {t('review')}
                   </h3>
                 </div>
                 <p className="text-base text-slate-50 font-bold leading-relaxed">
@@ -295,7 +299,7 @@ const ReviewDetail = () => {
               <div className="space-y-4">
                 <div className="border-l-4 border-primary pl-4 py-2">
                   <h4 className="text-primary font-bold text-lg mb-2">
-                    First Half:
+                    {t('firstHalf')}
                   </h4>
                   <p className="text-base text-slate-50 font-bold leading-relaxed">
                     {review.firstHalf}
@@ -304,7 +308,7 @@ const ReviewDetail = () => {
 
                 <div className="border-l-4 border-primary pl-4 py-2">
                   <h4 className="text-primary font-bold text-lg mb-2">
-                    Second Half:
+                    {t('secondHalf')}
                   </h4>
                   <p className="text-base text-slate-50 font-bold leading-relaxed">
                     {review.secondHalf}
@@ -313,7 +317,7 @@ const ReviewDetail = () => {
 
                 <div className="border-l-4 border-primary pl-4 py-2">
                   <h4 className="text-primary font-bold text-lg mb-2">
-                    Positives:
+                    {t('positives')}
                   </h4>
                   <p className="text-base text-slate-50 font-bold leading-relaxed">
                     {review.positives}
@@ -322,7 +326,7 @@ const ReviewDetail = () => {
 
                 <div className="border-l-4 border-primary pl-4 py-2">
                   <h4 className="text-primary font-bold text-lg mb-2">
-                    Negatives:
+                    {t('negatives')}
                   </h4>
                   <p className="text-base text-slate-50 font-bold leading-relaxed">
                     {review.negatives}
@@ -331,7 +335,7 @@ const ReviewDetail = () => {
 
                 <div className="border-l-4 border-primary pl-4 py-2">
                   <h4 className="text-primary font-bold text-lg mb-2">
-                    Overall:
+                    {t('overall')}
                   </h4>
                   <p className="text-base text-slate-50 font-bold leading-relaxed">
                     {review.overall}
@@ -347,7 +351,7 @@ const ReviewDetail = () => {
               }} className={`flex items-center gap-2 font-bold hover:scale-110 transition-transform relative ${likedReviews.has(review.id) ? "text-red-500" : "text-gray-400"}`}>
                   <ThumbsUp className={`w-6 h-6 ${showLikeEffect ? "animate-like-pop" : ""} ${likedReviews.has(review.id) ? "fill-current" : ""}`} />{" "}
                   {review.likes}{" "}
-                  {likedReviews.has(review.id) ? "Liked" : "Like"}
+                  {likedReviews.has(review.id) ? t('liked') : t('like')}
                   {showLikeEffect && <span className="absolute -top-6 text-red-400 font-bold animate-bubble">
                       {likedReviews.has(review.id) ? "+1 ❤️" : "-1"}
                     </span>}
@@ -357,21 +361,21 @@ const ReviewDetail = () => {
                 playSound("click");
                 setShowComments(prev => !prev);
               }} className="flex items-center gap-2 text-yellow-400 font-bold hover:scale-110 transition-transform">
-                  <MessageCircle className="w-6 h-6" /> Comment
+                  <MessageCircle className="w-6 h-6" /> {t('comment')}
                 </button>
 
                 <button onClick={() => {
                 playSound("click");
                 handleShareClick();
               }} className="flex items-center gap-2 text-blue-400 font-bold hover:scale-110 transition-transform">
-                  <Share2 className="w-6 h-6" /> Share
+                  <Share2 className="w-6 h-6" /> {t('share')}
                 </button>
               </div>
 
               {/* 🎟️ Book Your Ticket */}
               <div className="flex justify-center mt-6">
                 <Button onClick={handleBookTicket} className="bg-gradient-to-r from-red-600 to-yellow-400 text-white font-bold px-8 py-4 rounded-xl hover:scale-105 transition-transform shadow-lg">
-                  🎟️ Book Your Ticket
+                  {t('bookTicket')}
                 </Button>
               </div>
 
@@ -411,9 +415,9 @@ const ReviewDetail = () => {
       {showBookingOptions && <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
           <div className="bg-card border-2 border-primary rounded-xl shadow-[0_0_30px_rgba(255,215,0,0.6)] p-8 text-center space-y-6 max-w-sm w-full mx-4">
             <h3 className="text-2xl font-bold text-primary">
-              🎟️ Book Your Tickets
+              {t('bookTickets')}
             </h3>
-            <p className="text-slate-200">Choose your preferred platform:</p>
+            <p className="text-slate-200">{t('choosePlatform')}</p>
             <div className="flex flex-col gap-4">
               <Button onClick={handleOpenBookMyShow} className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg shadow-lg">
                 🎬 BookMyShow
@@ -422,7 +426,7 @@ const ReviewDetail = () => {
                 🏠 District Cinemas
               </Button>
               <Button onClick={() => setShowBookingOptions(false)} variant="outline" className="border-primary text-primary font-bold py-3 rounded-lg">
-                ✖️ Cancel
+                {t('cancel')}
               </Button>
             </div>
           </div>

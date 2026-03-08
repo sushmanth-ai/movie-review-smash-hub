@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Volume2, VolumeX, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface TeluguVoiceReaderProps {
   reviewText: string;
@@ -15,6 +16,7 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const cancelledRef = useRef(false);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (!("speechSynthesis" in window)) return;
@@ -105,8 +107,8 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
 
     if (!("speechSynthesis" in window)) {
       toast({
-        title: "Not Supported",
-        description: "Voice playback is not supported on this device.",
+        title: t('notSupported'),
+        description: t('voiceNotSupported'),
         variant: "destructive",
       });
       return;
@@ -164,10 +166,10 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
           <Volume2 className="w-5 h-5" />
         )}
         {isLoading
-          ? "Loading..."
+          ? t('loading')
           : isPlaying
-          ? "🔇 Stop"
-          : "🔊 Review Vinandi"}
+          ? t('stop')
+          : t('reviewVinandi')}
       </Button>
     </div>
   );

@@ -16,10 +16,13 @@ import { NotificationBell } from '@/components/NotificationBell';
 import { useAutoSubscribe } from '@/hooks/useAutoSubscribe';
 import { useToast } from '@/hooks/use-toast';
 import { StoryCircles } from '@/components/StoryCircles';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const Index = () => {
   const { playSound } = useSound();
   const { toast } = useToast();
+  const { t } = useLanguage();
   useAutoSubscribe();
   const [searchTerm, setSearchTerm] = useState('');
   const [reviews, setReviews] = useState<MovieReview[]>([]);
@@ -176,7 +179,8 @@ const Index = () => {
           {/* Main Logo and Title Container */}
            <div className="relative flex justify-center items-center gap-4">
             {/* Notification Bell - Top Right */}
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 z-10">
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 z-10 flex items-center gap-2">
+              <LanguageSwitcher />
               <NotificationBell />
             </div>
             {/* Golden Film Reel Decoration - Left */}
@@ -234,7 +238,7 @@ const Index = () => {
           <div className="max-w-2xl mx-auto">
             <Input 
               type="text" 
-              placeholder="🔍 Search for movie Reviews..." 
+              placeholder={t('searchPlaceholder')} 
               value={searchTerm} 
               onChange={e => setSearchTerm(e.target.value)} 
               className="w-full bg-input/80 backdrop-blur-sm text-foreground border-2 border-primary/50 focus:border-primary focus:ring-primary rounded-full px-5 py-2 shadow-[0_0_15px_rgba(255,215,0,0.2)]" 
@@ -269,7 +273,7 @@ const Index = () => {
         {newReviews.length > 0 && (
           <div className="mb-12">
             <h2 className="text-3xl font-bold text-primary mb-6 text-center">
-              🎬 New Reviews
+              {t('newReviews')}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {(showAllNewReviews ? newReviews : newReviews.slice(0, 3)).map(review => (
@@ -287,7 +291,7 @@ const Index = () => {
                   }}
                   className="bg-gradient-to-r from-primary via-yellow-500 to-primary text-primary-foreground font-bold px-8 py-3 rounded-full shadow-[0_0_20px_rgba(255,215,0,0.4)] hover:shadow-[0_0_30px_rgba(255,215,0,0.6)] transition-all duration-300"
                 >
-                  {showAllNewReviews ? 'See Less' : 'See More New Reviews'}
+                  {showAllNewReviews ? t('seeLess') : t('seeMoreNew')}
                 </Button>
               </div>
             )}
@@ -298,7 +302,7 @@ const Index = () => {
         {oldReviews.length > 0 && (
           <div className="mb-12">
             <h2 className="text-3xl font-bold text-primary mb-6 text-center">
-              📽️ Old Reviews
+              {t('oldReviews')}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {(showAllOldReviews ? oldReviews : oldReviews.slice(0, 3)).map(review => (
@@ -316,7 +320,7 @@ const Index = () => {
                   }}
                   className="bg-gradient-to-r from-primary via-yellow-500 to-primary text-primary-foreground font-bold px-8 py-3 rounded-full shadow-[0_0_20px_rgba(255,215,0,0.4)] hover:shadow-[0_0_30px_rgba(255,215,0,0.6)] transition-all duration-300"
                 >
-                  {showAllOldReviews ? 'See Less' : 'See More Old Reviews'}
+                  {showAllOldReviews ? t('seeLess') : t('seeMoreOld')}
                 </Button>
               </div>
             )}
@@ -326,7 +330,7 @@ const Index = () => {
         {/* Contact Support Section */}
         <div className="mt-16 mb-8">
           <h2 className="text-3xl font-bold text-primary mb-8 text-center">
-            📞 Contact Us
+            {t('contactUs')}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
             {/* Email Support */}
@@ -335,7 +339,7 @@ const Index = () => {
               className="bg-card border-2 border-primary p-6 rounded-lg shadow-[0_0_20px_rgba(255,215,0,0.3)] hover:shadow-[0_0_30px_rgba(255,215,0,0.5)] transition-all duration-300 flex flex-col items-center gap-4"
             >
               <div className="text-5xl">📧</div>
-              <h3 className="text-xl font-bold text-primary">Email Support</h3>
+              <h3 className="text-xl font-bold text-primary">{t('emailSupport')}</h3>
               <p className="text-muted-foreground text-center">support@smreviews.com</p>
             </a>
 
@@ -347,8 +351,8 @@ const Index = () => {
               className="bg-card border-2 border-primary p-6 rounded-lg shadow-[0_0_20px_rgba(255,215,0,0.3)] hover:shadow-[0_0_30px_rgba(255,215,0,0.5)] transition-all duration-300 flex flex-col items-center gap-4"
             >
               <div className="text-5xl">💬</div>
-              <h3 className="text-xl font-bold text-primary">WhatsApp Chat</h3>
-              <p className="text-muted-foreground text-center">Chat with us instantly</p>
+              <h3 className="text-xl font-bold text-primary">{t('whatsappChat')}</h3>
+              <p className="text-muted-foreground text-center">{t('chatWithUs')}</p>
             </a>
           </div>
         </div>
