@@ -21,6 +21,7 @@ import { NotificationBell } from "@/components/NotificationBell";
 import { ReviewPolls } from "@/components/ReviewPolls";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useTranslateReview } from "@/hooks/useTranslateReview";
 
 // Helper function to extract YouTube video ID
 const getYouTubeVideoId = (url: string): string => {
@@ -145,6 +146,17 @@ const ReviewDetail = () => {
       }
     }
   }, [id]);
+  const originalTexts = review ? {
+    review: review.review || '',
+    firstHalf: review.firstHalf || '',
+    secondHalf: review.secondHalf || '',
+    positives: review.positives || '',
+    negatives: review.negatives || '',
+    overall: review.overall || '',
+  } : { review: '', firstHalf: '', secondHalf: '', positives: '', negatives: '', overall: '' };
+
+  const { translated, isTranslating } = useTranslateReview(id || '', originalTexts);
+
   if (!review) {
     return <CurtainAnimation alwaysPlay />;
   }
@@ -306,8 +318,9 @@ const ReviewDetail = () => {
                 </div>
               <div className="rounded-xl p-[2px] bg-gradient-to-r from-amber-400 via-orange-300 to-yellow-400">
                   <div className="bg-card rounded-[10px] p-4">
+                    {isTranslating && <p className="text-xs text-primary/60 mb-2 animate-pulse">Translating...</p>}
                     <p className="text-base text-white font-medium leading-relaxed tracking-wide">
-                      {review.review}
+                      {translated.review}
                     </p>
                   </div>
                 </div>
@@ -325,7 +338,7 @@ const ReviewDetail = () => {
                       <h4 className="text-amber-300 font-bold text-lg">{t('firstHalf')}</h4>
                     </div>
                     <p className="text-base text-white font-medium leading-relaxed pl-9">
-                      {review.firstHalf}
+                      {translated.firstHalf}
                     </p>
                   </div>
                 </div>
@@ -340,7 +353,7 @@ const ReviewDetail = () => {
                       <h4 className="text-amber-400 font-bold text-lg">{t('secondHalf')}</h4>
                     </div>
                     <p className="text-base text-white font-medium leading-relaxed pl-9">
-                      {review.secondHalf}
+                      {translated.secondHalf}
                     </p>
                   </div>
                 </div>
@@ -355,7 +368,7 @@ const ReviewDetail = () => {
                       <h4 className="text-emerald-300 font-bold text-lg">{t('positives')}</h4>
                     </div>
                     <p className="text-base text-white font-medium leading-relaxed pl-9">
-                      {review.positives}
+                      {translated.positives}
                     </p>
                   </div>
                 </div>
@@ -370,7 +383,7 @@ const ReviewDetail = () => {
                       <h4 className="text-rose-300 font-bold text-lg">{t('negatives')}</h4>
                     </div>
                     <p className="text-base text-white font-medium leading-relaxed pl-9">
-                      {review.negatives}
+                      {translated.negatives}
                     </p>
                   </div>
                 </div>
@@ -385,7 +398,7 @@ const ReviewDetail = () => {
                       <h4 className="text-amber-300 font-bold text-lg">{t('overall')}</h4>
                     </div>
                     <p className="text-base text-white font-bold leading-relaxed pl-9">
-                      {review.overall}
+                      {translated.overall}
                     </p>
                   </div>
                 </div>
