@@ -21,6 +21,7 @@ import { NotificationBell } from "@/components/NotificationBell";
 import { ReviewPolls } from "@/components/ReviewPolls";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useTranslateReview } from "@/hooks/useTranslateReview";
 
 // Helper function to extract YouTube video ID
 const getYouTubeVideoId = (url: string): string => {
