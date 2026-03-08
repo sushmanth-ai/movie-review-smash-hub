@@ -115,15 +115,15 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({ reviews, initialIndex,
         return (
           <div className="flex flex-col items-center justify-center h-full text-center px-6 animate-fade-in">
             <div className="text-6xl mb-4">🎬</div>
-            <h2 className="text-3xl font-black text-primary mb-3 drop-shadow-[0_0_20px_rgba(255,215,0,0.6)]">
+            <h2 className="text-3xl font-black text-orange-400 mb-3 drop-shadow-[0_0_20px_rgba(251,146,60,0.6)]">
               {review.title}
             </h2>
-            <p className="text-foreground/80 text-lg leading-relaxed max-w-sm">
+            <p className="text-white/80 text-lg leading-relaxed max-w-sm">
               {review.review}
             </p>
-            <div className="flex items-center gap-2 mt-6 bg-primary/20 px-5 py-2.5 rounded-full border border-primary/40">
-              <Star className="w-5 h-5 text-primary fill-primary" />
-              <span className="text-primary font-bold text-xl">{review.rating}</span>
+            <div className="flex items-center gap-2 mt-6 bg-red-500/20 px-5 py-2.5 rounded-full border border-orange-500/40">
+              <Star className="w-5 h-5 text-orange-400 fill-orange-400" />
+              <span className="text-orange-400 font-bold text-xl">{review.rating}</span>
             </div>
             {review.views && (
               <div className="flex items-center gap-1.5 mt-3 text-muted-foreground text-sm">
