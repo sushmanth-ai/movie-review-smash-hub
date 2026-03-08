@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 serve(async (req) => {
@@ -17,61 +17,67 @@ serve(async (req) => {
       throw new Error('Text is required');
     }
 
-    const apiKey = Deno.env.get('GOOGLE_TTS_API_KEY');
-    if (!apiKey) {
-      throw new Error('Google TTS API key not configured');
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    console.log('Generating Telugu speech for text length:', text.length);
+    console.log('Translating review to Telugu using AI, text length:', text.length);
 
-    // Call Google Cloud Text-to-Speech API
-    const response = await fetch(
-      `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          input: { text },
-          voice: {
-            languageCode: 'te-IN', // Telugu (India)
-            name: 'te-IN-Standard-B', // Male voice
-            ssmlGender: 'MALE'
+    // Use Lovable AI to ensure the text is proper Telugu
+    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash-lite',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a Telugu language expert. Your job is to take movie review text (which may be in English or mixed Telugu-English) and convert it ENTIRELY into natural, fluent Telugu script. Output ONLY the Telugu text, nothing else. No English words, no explanations. Use proper Telugu script (తెలుగు). Keep the meaning and tone intact.'
           },
-          audioConfig: {
-            audioEncoding: 'MP3',
-            pitch: -2.0, // Slightly lower pitch for male voice
-            speakingRate: 0.85 // Slower for better clarity
+          {
+            role: 'user',
+            content: `Convert this movie review to pure Telugu:\n\n${text}`
           }
-        })
-      }
-    );
+        ],
+      }),
+    });
 
-    if (!response.ok) {
-      const error = await response.text();
-      console.error('Google TTS API error:', error);
-      throw new Error(`Google TTS API error: ${error}`);
+    if (!aiResponse.ok) {
+      const errText = await aiResponse.text();
+      console.error('AI gateway error:', aiResponse.status, errText);
+      
+      if (aiResponse.status === 429) {
+        return new Response(JSON.stringify({ error: 'Rate limited, please try again later' }), {
+          status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      if (aiResponse.status === 402) {
+        return new Response(JSON.stringify({ error: 'Credits exhausted' }), {
+          status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      throw new Error('AI translation failed');
     }
 
-    const data = await response.json();
-    
-    // Return the base64 encoded audio
+    const aiData = await aiResponse.json();
+    const teluguText = aiData.choices?.[0]?.message?.content?.trim() || text;
+
+    console.log('Telugu translation done, length:', teluguText.length);
+
     return new Response(
-      JSON.stringify({ audioContent: data.audioContent }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      JSON.stringify({ teluguText }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('Error in text-to-speech function:', error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
