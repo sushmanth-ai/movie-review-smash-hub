@@ -244,6 +244,27 @@ const Index = () => {
             />
           </div>
         </div>
+
+        {/* Navigation Bar */}
+        <div className="px-4 pb-2">
+          <div className="max-w-2xl mx-auto flex gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+            <button onClick={() => navigate('/predictions')} className="shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/30 text-primary text-xs font-bold hover:bg-primary/20 transition-all">
+              🎯 Predictions
+            </button>
+            <button onClick={() => { const el = document.getElementById('trending-section'); el?.scrollIntoView({ behavior: 'smooth' }); }} className="shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/30 text-primary text-xs font-bold hover:bg-primary/20 transition-all">
+              🔥 Trending
+            </button>
+            <button onClick={() => { const el = document.getElementById('new-reviews-section'); el?.scrollIntoView({ behavior: 'smooth' }); }} className="shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/30 text-primary text-xs font-bold hover:bg-primary/20 transition-all">
+              🎬 New Reviews
+            </button>
+            <button onClick={() => { const el = document.getElementById('old-reviews-section'); el?.scrollIntoView({ behavior: 'smooth' }); }} className="shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/30 text-primary text-xs font-bold hover:bg-primary/20 transition-all">
+              📽️ Old Reviews
+            </button>
+            <button onClick={() => { const el = document.getElementById('contact-section'); el?.scrollIntoView({ behavior: 'smooth' }); }} className="shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/30 text-primary text-xs font-bold hover:bg-primary/20 transition-all">
+              📞 Contact
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Today Views Card - Outside Header */}
