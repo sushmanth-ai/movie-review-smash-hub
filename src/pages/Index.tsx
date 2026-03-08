@@ -12,6 +12,7 @@ import { CurtainAnimation } from '@/components/CurtainAnimation';
 import { TrendingReviews } from '@/components/TrendingReviews';
 import { useTrendingReviews } from '@/hooks/useTrendingReviews';
 import { useSound } from '@/hooks/useSound';
+import { NotificationBell } from '@/components/NotificationBell';
 import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
