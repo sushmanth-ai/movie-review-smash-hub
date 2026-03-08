@@ -64,7 +64,7 @@ export const usePolls = (movieId: string) => {
   const vote = async (pollId: string, optionId: string) => {
     if (!db) return;
     
-    const deviceHash = getDeviceFingerprint();
+    const deviceHash = generateDeviceFingerprint();
     
     // Check if already voted
     if (votedPolls[pollId]) return;
