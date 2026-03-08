@@ -277,7 +277,7 @@ const ReviewDetail = () => {
                       onClick={() => setShowTrailer(false)}
                       className="mt-3 mx-auto flex items-center gap-2 bg-primary/20 hover:bg-primary/30 text-primary font-bold px-4 py-2 rounded-lg transition-colors"
                     >
-                      🖼️ Back to Poster
+                      {t('backToPoster')}
                     </button>
                   </div>
                 )}
