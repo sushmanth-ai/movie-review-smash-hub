@@ -171,7 +171,7 @@ const Index = () => {
       {/* Fixed Header with Black and Gold Theme */}
       <div className="fixed top-0 left-0 w-full z-50 shadow-[0_4px_30px_rgba(255,215,0,0.4)] border-b-2 border-primary bg-gradient-to-b from-background via-background to-background/95">
         {/* Beautiful Heading Container */}
-        <div className="relative py-4 px-4 overflow-hidden">
+        <div className="relative py-4 px-4">
           {/* Decorative Background Elements */}
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent" />
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
