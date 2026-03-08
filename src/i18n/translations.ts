@@ -69,8 +69,62 @@ type TranslationKeys = {
   // Notification
   notSupported: string;
   voiceNotSupported: string;
+  notificationsBlocked: string;
+  notificationsBlockedDesc: string;
+  notificationsActive: string;
+  notificationsActiveDesc: string;
+  notificationsEnabled: string;
+  notificationsEnabledDesc: string;
+  notificationsFailed: string;
+  notificationsFailedDesc: string;
+  enableNotifications: string;
   // Today Views
   todayViews: string;
+  live: string;
+  // Comments
+  addComment: string;
+  reply: string;
+  replyTo: string;
+  // User Rating
+  audienceRating: string;
+  usersRated: string;
+  userRated: string;
+  rateThisMovie: string;
+  youRated: string;
+  ratingSaved: string;
+  ratingSavedDesc: string;
+  ratingUpdated: string;
+  thanksForRating: string;
+  ratingSavedLocally: string;
+  ratingSavedLocallyDesc: string;
+  // Admin / Critic Rating
+  criticRating: string;
+  smRating: string;
+  story: string;
+  acting: string;
+  music: string;
+  direction: string;
+  cinematography: string;
+  rewatchValue: string;
+  // Rating Comparison
+  ratingComparison: string;
+  critic: string;
+  audience: string;
+  votes: string;
+  beFirstToRate: string;
+  criticsAndAudienceAgree: string;
+  audienceLoveMore: string;
+  criticsCraftMore: string;
+  // Trending
+  trendingReviews: string;
+  basedOnEngagement: string;
+  points: string;
+  // Polls
+  pollsAndVotes: string;
+  totalVotes: string;
+  tapToVote: string;
+  // Stories
+  quickStories: string;
 };
 
 const translations: Record<Language, TranslationKeys> = {
@@ -121,7 +175,54 @@ const translations: Record<Language, TranslationKeys> = {
     allRightsReserved: '© 2024 Movie Review Hub. All rights reserved.',
     notSupported: 'Not Supported',
     voiceNotSupported: 'Voice playback is not supported on this device.',
+    notificationsBlocked: '⚠️ Notifications Blocked',
+    notificationsBlockedDesc: 'Please enable notifications in your browser settings.',
+    notificationsActive: '🔔 Notifications Active',
+    notificationsActiveDesc: "You're receiving push notifications!",
+    notificationsEnabled: '🔔 Notifications Enabled!',
+    notificationsEnabledDesc: "You'll get notified about new reviews!",
+    notificationsFailed: '❌ Failed',
+    notificationsFailedDesc: 'Could not enable notifications.',
+    enableNotifications: 'Enable Notifications',
     todayViews: "Today's Views",
+    live: 'LIVE',
+    addComment: 'Add a comment...',
+    reply: 'Reply',
+    replyTo: 'Reply to',
+    audienceRating: '👥 Audience Rating',
+    usersRated: 'users rated',
+    userRated: 'user rated',
+    rateThisMovie: '⭐ Rate This Movie',
+    youRated: 'You rated:',
+    ratingSaved: 'Rating saved locally!',
+    ratingSavedDesc: 'You rated this movie',
+    ratingUpdated: 'Rating updated!',
+    thanksForRating: 'Thanks for rating!',
+    ratingSavedLocally: 'Rating saved locally',
+    ratingSavedLocallyDesc: 'Rating saved on your device',
+    criticRating: '🎬 CRITIC RATING',
+    smRating: 'SM RATING:',
+    story: 'Story',
+    acting: 'Acting',
+    music: 'Music',
+    direction: 'Direction',
+    cinematography: 'Cinematography',
+    rewatchValue: 'Rewatch Value',
+    ratingComparison: 'Rating Comparison',
+    critic: 'CRITIC',
+    audience: 'AUDIENCE',
+    votes: 'votes',
+    beFirstToRate: 'Be the first to rate this movie!',
+    criticsAndAudienceAgree: 'Critics and audience agree on this one!',
+    audienceLoveMore: 'Audience loved this movie more than critics.',
+    criticsCraftMore: 'Critics appreciated the craft more than viewers.',
+    trendingReviews: 'Trending Reviews',
+    basedOnEngagement: 'Based on views, likes & engagement',
+    points: 'points',
+    pollsAndVotes: '📊 Polls & Votes',
+    totalVotes: 'Total votes:',
+    tapToVote: 'Tap to vote!',
+    quickStories: '📖 Quick Stories',
   },
   te: {
     searchPlaceholder: '🔍 సినిమా రివ్యూలు వెతకండి...',
@@ -170,7 +271,54 @@ const translations: Record<Language, TranslationKeys> = {
     allRightsReserved: '© 2024 మూవీ రివ్యూ హబ్. అన్ని హక్కులు రిజర్వ్ చేయబడ్డాయి.',
     notSupported: 'సపోర్ట్ లేదు',
     voiceNotSupported: 'ఈ పరికరంలో వాయిస్ ప్లేబ్యాక్ అందుబాటులో లేదు.',
+    notificationsBlocked: '⚠️ నోటిఫికేషన్లు బ్లాక్ చేయబడ్డాయి',
+    notificationsBlockedDesc: 'దయచేసి మీ బ్రౌజర్ సెట్టింగ్స్‌లో నోటిఫికేషన్లను ఎనేబుల్ చేయండి.',
+    notificationsActive: '🔔 నోటిఫికేషన్లు యాక్టివ్',
+    notificationsActiveDesc: 'మీరు పుష్ నోటిఫికేషన్లు అందుకుంటున్నారు!',
+    notificationsEnabled: '🔔 నోటిఫికేషన్లు ఎనేబుల్ అయ్యాయి!',
+    notificationsEnabledDesc: 'కొత్త రివ్యూల గురించి మీకు తెలియజేయబడుతుంది!',
+    notificationsFailed: '❌ విఫలమైంది',
+    notificationsFailedDesc: 'నోటిఫికేషన్లను ఎనేబుల్ చేయలేకపోయాము.',
+    enableNotifications: 'నోటిఫికేషన్లు ఎనేబుల్ చేయండి',
     todayViews: 'ఈరోజు వ్యూస్',
+    live: 'లైవ్',
+    addComment: 'కామెంట్ రాయండి...',
+    reply: 'రిప్లై',
+    replyTo: 'రిప్లై ఇవ్వండి',
+    audienceRating: '👥 ప్రేక్షకుల రేటింగ్',
+    usersRated: 'మంది రేట్ చేసారు',
+    userRated: 'యూజర్ రేట్ చేసారు',
+    rateThisMovie: '⭐ ఈ సినిమాకి రేట్ చేయండి',
+    youRated: 'మీ రేటింగ్:',
+    ratingSaved: 'రేటింగ్ సేవ్ అయింది!',
+    ratingSavedDesc: 'మీరు ఈ సినిమాకి రేట్ చేసారు',
+    ratingUpdated: 'రేటింగ్ అప్‌డేట్ అయింది!',
+    thanksForRating: 'రేట్ చేసినందుకు ధన్యవాదాలు!',
+    ratingSavedLocally: 'రేటింగ్ లోకల్‌గా సేవ్ అయింది',
+    ratingSavedLocallyDesc: 'రేటింగ్ మీ డివైస్‌లో సేవ్ అయింది',
+    criticRating: '🎬 క్రిటిక్ రేటింగ్',
+    smRating: 'SM రేటింగ్:',
+    story: 'కథ',
+    acting: 'నటన',
+    music: 'సంగీతం',
+    direction: 'దర్శకత్వం',
+    cinematography: 'సినిమాటోగ్రఫీ',
+    rewatchValue: 'మళ్ళీ చూడదగినది',
+    ratingComparison: 'రేటింగ్ పోలిక',
+    critic: 'క్రిటిక్',
+    audience: 'ప్రేక్షకులు',
+    votes: 'ఓట్లు',
+    beFirstToRate: 'ఈ సినిమాకి మొదట రేట్ చేయండి!',
+    criticsAndAudienceAgree: 'క్రిటిక్స్ మరియు ప్రేక్షకులు ఏకీభవిస్తున్నారు!',
+    audienceLoveMore: 'ప్రేక్షకులు క్రిటిక్స్ కంటే ఎక్కువగా ఇష్టపడ్డారు.',
+    criticsCraftMore: 'క్రిటిక్స్ దర్శకులను ప్రేక్షకుల కంటే ఎక్కువగా మెచ్చుకున్నారు.',
+    trendingReviews: 'ట్రెండింగ్ రివ్యూలు',
+    basedOnEngagement: 'వ్యూస్, లైక్స్ & ఎంగేజ్‌మెంట్ ఆధారంగా',
+    points: 'పాయింట్లు',
+    pollsAndVotes: '📊 పోల్స్ & ఓట్లు',
+    totalVotes: 'మొత్తం ఓట్లు:',
+    tapToVote: 'ఓట్ చేయడానికి ట్యాప్ చేయండి!',
+    quickStories: '📖 క్విక్ స్టోరీస్',
   },
   hi: {
     searchPlaceholder: '🔍 मूवी रिव्यू खोजें...',
@@ -219,7 +367,54 @@ const translations: Record<Language, TranslationKeys> = {
     allRightsReserved: '© 2024 मूवी रिव्यू हब। सर्वाधिकार सुरक्षित।',
     notSupported: 'सपोर्ट नहीं है',
     voiceNotSupported: 'इस डिवाइस पर वॉइस प्लेबैक उपलब्ध नहीं है।',
+    notificationsBlocked: '⚠️ नोटिफिकेशन ब्लॉक हैं',
+    notificationsBlockedDesc: 'कृपया अपने ब्राउज़र सेटिंग्स में नोटिफिकेशन सक्षम करें।',
+    notificationsActive: '🔔 नोटिफिकेशन सक्रिय',
+    notificationsActiveDesc: 'आप पुश नोटिफिकेशन प्राप्त कर रहे हैं!',
+    notificationsEnabled: '🔔 नोटिफिकेशन सक्षम!',
+    notificationsEnabledDesc: 'नई समीक्षाओं की सूचना मिलेगी!',
+    notificationsFailed: '❌ विफल',
+    notificationsFailedDesc: 'नोटिफिकेशन सक्षम नहीं हो सके।',
+    enableNotifications: 'नोटिफिकेशन सक्षम करें',
     todayViews: 'आज के व्यूज',
+    live: 'लाइव',
+    addComment: 'कमेंट लिखें...',
+    reply: 'जवाब',
+    replyTo: 'जवाब दें',
+    audienceRating: '👥 दर्शक रेटिंग',
+    usersRated: 'यूजर्स ने रेट किया',
+    userRated: 'यूजर ने रेट किया',
+    rateThisMovie: '⭐ इस मूवी को रेट करें',
+    youRated: 'आपकी रेटिंग:',
+    ratingSaved: 'रेटिंग सेव हुई!',
+    ratingSavedDesc: 'आपने इस मूवी को रेट किया',
+    ratingUpdated: 'रेटिंग अपडेट हुई!',
+    thanksForRating: 'रेट करने के लिए धन्यवाद!',
+    ratingSavedLocally: 'रेटिंग लोकल में सेव हुई',
+    ratingSavedLocallyDesc: 'रेटिंग आपके डिवाइस पर सेव हुई',
+    criticRating: '🎬 क्रिटिक रेटिंग',
+    smRating: 'SM रेटिंग:',
+    story: 'कहानी',
+    acting: 'अभिनय',
+    music: 'संगीत',
+    direction: 'निर्देशन',
+    cinematography: 'सिनेमैटोग्राफी',
+    rewatchValue: 'दोबारा देखने योग्य',
+    ratingComparison: 'रेटिंग तुलना',
+    critic: 'क्रिटिक',
+    audience: 'दर्शक',
+    votes: 'वोट',
+    beFirstToRate: 'इस मूवी को पहले रेट करें!',
+    criticsAndAudienceAgree: 'क्रिटिक्स और दर्शक सहमत हैं!',
+    audienceLoveMore: 'दर्शकों ने क्रिटिक्स से ज्यादा पसंद किया।',
+    criticsCraftMore: 'क्रिटिक्स ने दर्शकों से ज्यादा सराहा।',
+    trendingReviews: 'ट्रेंडिंग रिव्यू',
+    basedOnEngagement: 'व्यूज, लाइक्स और एंगेजमेंट के आधार पर',
+    points: 'पॉइंट्स',
+    pollsAndVotes: '📊 पोल्स और वोट',
+    totalVotes: 'कुल वोट:',
+    tapToVote: 'वोट करने के लिए टैप करें!',
+    quickStories: '📖 क्विक स्टोरीज',
   },
   ta: {
     searchPlaceholder: '🔍 திரைப்பட விமர்சனங்களைத் தேடுங்கள்...',
@@ -268,7 +463,54 @@ const translations: Record<Language, TranslationKeys> = {
     allRightsReserved: '© 2024 மூவி ரிவ்யூ ஹப். அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.',
     notSupported: 'ஆதரவு இல்லை',
     voiceNotSupported: 'இந்த சாதனத்தில் குரல் பிளேபேக் கிடைக்கவில்லை.',
+    notificationsBlocked: '⚠️ அறிவிப்புகள் தடுக்கப்பட்டுள்ளன',
+    notificationsBlockedDesc: 'உங்கள் உலாவி அமைப்புகளில் அறிவிப்புகளை இயக்கவும்.',
+    notificationsActive: '🔔 அறிவிப்புகள் செயலில்',
+    notificationsActiveDesc: 'நீங்கள் புஷ் அறிவிப்புகளைப் பெறுகிறீர்கள்!',
+    notificationsEnabled: '🔔 அறிவிப்புகள் இயக்கப்பட்டன!',
+    notificationsEnabledDesc: 'புதிய விமர்சனங்கள் பற்றி தெரிவிக்கப்படும்!',
+    notificationsFailed: '❌ தோல்வி',
+    notificationsFailedDesc: 'அறிவிப்புகளை இயக்க முடியவில்லை.',
+    enableNotifications: 'அறிவிப்புகளை இயக்கு',
     todayViews: 'இன்றைய பார்வைகள்',
+    live: 'நேரலை',
+    addComment: 'கருத்து எழுதுங்கள்...',
+    reply: 'பதில்',
+    replyTo: 'பதில் அளிக்கவும்',
+    audienceRating: '👥 பார்வையாளர் மதிப்பீடு',
+    usersRated: 'பயனர்கள் மதிப்பிட்டனர்',
+    userRated: 'பயனர் மதிப்பிட்டார்',
+    rateThisMovie: '⭐ இந்த படத்தை மதிப்பிடுங்கள்',
+    youRated: 'உங்கள் மதிப்பீடு:',
+    ratingSaved: 'மதிப்பீடு சேமிக்கப்பட்டது!',
+    ratingSavedDesc: 'நீங்கள் இந்த படத்தை மதிப்பிட்டீர்கள்',
+    ratingUpdated: 'மதிப்பீடு புதுப்பிக்கப்பட்டது!',
+    thanksForRating: 'மதிப்பிட்டதற்கு நன்றி!',
+    ratingSavedLocally: 'மதிப்பீடு உள்ளூரில் சேமிக்கப்பட்டது',
+    ratingSavedLocallyDesc: 'மதிப்பீடு உங்கள் சாதனத்தில் சேமிக்கப்பட்டது',
+    criticRating: '🎬 விமர்சகர் மதிப்பீடு',
+    smRating: 'SM மதிப்பீடு:',
+    story: 'கதை',
+    acting: 'நடிப்பு',
+    music: 'இசை',
+    direction: 'இயக்கம்',
+    cinematography: 'ஒளிப்பதிவு',
+    rewatchValue: 'மீண்டும் பார்க்கத்தக்கது',
+    ratingComparison: 'மதிப்பீடு ஒப்பீடு',
+    critic: 'விமர்சகர்',
+    audience: 'பார்வையாளர்',
+    votes: 'வாக்குகள்',
+    beFirstToRate: 'இந்த படத்தை முதலில் மதிப்பிடுங்கள்!',
+    criticsAndAudienceAgree: 'விமர்சகர்களும் பார்வையாளர்களும் ஒத்துக்கொள்கிறார்கள்!',
+    audienceLoveMore: 'பார்வையாளர்கள் விமர்சகர்களை விட அதிகம் விரும்பினர்.',
+    criticsCraftMore: 'விமர்சகர்கள் பார்வையாளர்களை விட அதிகம் பாராட்டினர்.',
+    trendingReviews: 'டிரெண்டிங் விமர்சனங்கள்',
+    basedOnEngagement: 'பார்வைகள், லைக்குகள் & ஈடுபாடு அடிப்படையில்',
+    points: 'புள்ளிகள்',
+    pollsAndVotes: '📊 கருத்துக்கணிப்பு & வாக்குகள்',
+    totalVotes: 'மொத்த வாக்குகள்:',
+    tapToVote: 'வாக்களிக்க தட்டுங்கள்!',
+    quickStories: '📖 விரைவு கதைகள்',
   },
 };
 
