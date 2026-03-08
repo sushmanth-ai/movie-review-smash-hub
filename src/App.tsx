@@ -49,6 +49,7 @@ const App = () => (
             </div>
           </BrowserRouter>
         </FestivalProvider>
+        </LanguageProvider>
       </TooltipProvider>
     </QueryClientProvider>
   </ErrorBoundary>
