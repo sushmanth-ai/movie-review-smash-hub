@@ -33,6 +33,7 @@ const App = () => (
         
         <BrowserRouter>
           <div className="flex flex-col min-h-screen relative z-10">
+            <Navbar />
             <div className="flex-1">
               <Routes>
                 <Route path="/" element={<Index />} />
