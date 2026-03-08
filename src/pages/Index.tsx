@@ -325,7 +325,7 @@ const Index = () => {
 
         {/* Old Reviews Section */}
         {oldReviews.length > 0 && (
-          <div className="mb-12">
+          <div id="old-reviews-section" className="mb-12">
             <h2 className="text-3xl font-bold text-primary mb-6 text-center">
               📽️ Old Reviews
             </h2>
