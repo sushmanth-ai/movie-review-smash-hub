@@ -353,7 +353,7 @@ const Index = () => {
         )}
 
         {/* Contact Support Section */}
-        <div className="mt-16 mb-8">
+        <div id="contact-section" className="mt-16 mb-8">
           <h2 className="text-3xl font-bold text-primary mb-8 text-center">
             📞 Contact Us
           </h2>
