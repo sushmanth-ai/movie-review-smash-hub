@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { festivalsConfig, defaultTheme, Festival } from '@/data/festivalConfig';
+import { festivalsConfig, defaultTheme, defaultSiteTheme, Festival, FestivalSiteTheme } from '@/data/festivalConfig';
 
 interface FestivalState {
   activeFestival: Festival | null;
@@ -12,7 +12,6 @@ interface FestivalState {
 const TIMEZONE = 'Asia/Kolkata';
 const STORAGE_KEY = 'sm-reviews-decorations-enabled';
 
-// Get current date string in IST timezone (YYYY-MM-DD)
 const getCurrentDateStrIST = (): string => {
   const formatter = new Intl.DateTimeFormat('en-CA', {
     timeZone: TIMEZONE,
@@ -23,17 +22,42 @@ const getCurrentDateStrIST = (): string => {
   return formatter.format(new Date());
 };
 
-// Get active festival based on current date
 const getActiveFestival = (): Festival | null => {
   const dateStr = getCurrentDateStrIST();
-  
   for (const festival of festivalsConfig) {
     if (dateStr >= festival.startDate && dateStr <= festival.endDate) {
       return festival;
     }
   }
-  
   return null;
+};
+
+// Apply full site theme by overriding CSS custom properties
+const applySiteTheme = (theme: FestivalSiteTheme) => {
+  const root = document.documentElement;
+  root.style.setProperty('--background', theme.background);
+  root.style.setProperty('--foreground', theme.foreground);
+  root.style.setProperty('--card', theme.card);
+  root.style.setProperty('--card-foreground', theme.cardForeground);
+  root.style.setProperty('--primary', theme.primary);
+  root.style.setProperty('--primary-foreground', theme.primaryForeground);
+  root.style.setProperty('--secondary', theme.secondary);
+  root.style.setProperty('--secondary-foreground', theme.secondaryForeground);
+  root.style.setProperty('--accent', theme.accent);
+  root.style.setProperty('--accent-foreground', theme.accentForeground);
+  root.style.setProperty('--border', theme.border);
+  root.style.setProperty('--muted', theme.muted);
+  root.style.setProperty('--muted-foreground', theme.mutedForeground);
+};
+
+const clearSiteTheme = () => {
+  const root = document.documentElement;
+  const props = [
+    '--background', '--foreground', '--card', '--card-foreground',
+    '--primary', '--primary-foreground', '--secondary', '--secondary-foreground',
+    '--accent', '--accent-foreground', '--border', '--muted', '--muted-foreground'
+  ];
+  props.forEach(p => root.style.removeProperty(p));
 };
 
 export const useFestival = (): FestivalState => {
@@ -43,40 +67,47 @@ export const useFestival = (): FestivalState => {
     const stored = localStorage.getItem(STORAGE_KEY);
     return stored === null ? true : stored === 'true';
   });
-  
-  // Detect reduced motion preference
+
   const prefersReducedMotion = useMemo(() => {
     if (typeof window === 'undefined') return false;
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }, []);
 
-  // Check for active festival
   useEffect(() => {
     const checkFestival = () => {
       const festival = getActiveFestival();
       setActiveFestival(festival);
-      
-      const theme = festival?.colors || defaultTheme.colors;
-      
-      // Apply CSS variables
-      document.documentElement.style.setProperty('--festival-primary', theme.primary);
-      document.documentElement.style.setProperty('--festival-secondary', theme.secondary);
-      document.documentElement.style.setProperty('--festival-accent', theme.accent);
-      document.documentElement.style.setProperty('--festival-glow', theme.glow);
-      
+
+      // Apply festival colors as CSS variables
+      const festColors = festival?.colors || defaultTheme.colors;
+      document.documentElement.style.setProperty('--festival-primary', festColors.primary);
+      document.documentElement.style.setProperty('--festival-secondary', festColors.secondary);
+      document.documentElement.style.setProperty('--festival-accent', festColors.accent);
+      document.documentElement.style.setProperty('--festival-glow', festColors.glow);
+
+      // Full site theme override
       if (festival && decorationsEnabled) {
         document.documentElement.setAttribute('data-festival', festival.id);
+        document.body.classList.add(festival.moodClass);
+        applySiteTheme(festival.siteTheme);
       } else {
         document.documentElement.removeAttribute('data-festival');
+        // Remove all mood classes
+        document.body.className = document.body.className
+          .split(' ')
+          .filter(c => !c.startsWith('festival-'))
+          .join(' ');
+        clearSiteTheme();
       }
     };
-    
+
     checkFestival();
-    
-    // Check every hour for festival changes
     const interval = setInterval(checkFestival, 60 * 60 * 1000);
-    
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      clearSiteTheme();
+      document.documentElement.removeAttribute('data-festival');
+    };
   }, [decorationsEnabled]);
 
   const toggleDecorations = useCallback(() => {
