@@ -177,10 +177,10 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({ reviews, initialIndex,
                   <ThumbsDown className="w-5 h-5 text-red-400" />
                   <h3 className="text-lg font-bold text-red-400">Negatives</h3>
                 </div>
-                <p className="text-foreground/90 text-sm leading-relaxed">{review.negatives}</p>
+                <p className="text-white/90 text-sm leading-relaxed">{review.negatives}</p>
               </div>
-              <div className="bg-primary/10 backdrop-blur-md rounded-2xl p-5 border border-primary/30">
-                <p className="text-primary font-bold text-center text-lg">"{review.overall}"</p>
+              <div className="bg-orange-500/10 backdrop-blur-md rounded-2xl p-5 border border-orange-500/30">
+                <p className="text-orange-400 font-bold text-center text-lg">"{review.overall}"</p>
               </div>
               <button
                 onClick={handleReadFull}
