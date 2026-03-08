@@ -114,22 +114,31 @@ const AdminDashboard = () => {
         {/* Tab buttons */}
         <div className="flex gap-2 mb-6">
           <Button
-            onClick={() => { setShowPolls(false); setShowForm(false); }}
-            variant={!showPolls ? "default" : "outline"}
-            className={!showPolls ? "bg-white text-primary" : "bg-white/10 text-white border-white/20"}
+            onClick={() => { setShowPolls(false); setShowPredictions(false); setShowForm(false); }}
+            variant={!showPolls && !showPredictions ? "default" : "outline"}
+            className={!showPolls && !showPredictions ? "bg-white text-primary" : "bg-white/10 text-white border-white/20"}
           >
             🎬 Reviews
           </Button>
           <Button
-            onClick={() => { setShowPolls(true); setShowForm(false); }}
+            onClick={() => { setShowPolls(true); setShowPredictions(false); setShowForm(false); }}
             variant={showPolls ? "default" : "outline"}
             className={showPolls ? "bg-white text-primary" : "bg-white/10 text-white border-white/20"}
           >
             📊 Polls
           </Button>
+          <Button
+            onClick={() => { setShowPredictions(true); setShowPolls(false); setShowForm(false); }}
+            variant={showPredictions ? "default" : "outline"}
+            className={showPredictions ? "bg-white text-primary" : "bg-white/10 text-white border-white/20"}
+          >
+            🎯 Predictions
+          </Button>
         </div>
 
-        {showPolls ? (
+        {showPredictions ? (
+          <PredictionManager />
+        ) : showPolls ? (
           <PollManager reviews={reviews.map(r => ({ id: r.id, title: r.title }))} />
         ) : !showForm ? (
           <>
