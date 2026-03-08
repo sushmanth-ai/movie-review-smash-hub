@@ -19,6 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 const Index = () => {
   const { playSound } = useSound();
   const { toast } = useToast();
+  useAutoSubscribe();
   const [searchTerm, setSearchTerm] = useState('');
   const [reviews, setReviews] = useState<MovieReview[]>([]);
   const [newComment, setNewComment] = useState<{
