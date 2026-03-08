@@ -16,24 +16,22 @@ export const useAutoSubscribe = () => {
     if (!isSupported || attempted.current) return;
     if (permission === 'denied') return;
 
-    // If already subscribed, re-subscribe to ensure the subscription is fresh
-    // (browser may have invalidated the old push subscription)
     const trySubscribe = async () => {
       attempted.current = true;
 
       try {
-        // Check if there's actually an active push subscription in the browser
         const registration = await navigator.serviceWorker.ready;
         const existingSub = await registration.pushManager.getSubscription();
 
-        if (existingSub && isSubscribed) {
-          console.log('[Push] Already subscribed, subscription active');
-          return;
-        }
-
-        // If permission already granted (e.g. PWA reinstall) or existing sub expired
+        // Always re-subscribe if permission is granted to ensure backend has the subscription
+        // This handles cases where the edge function was down or subscription was lost
         if (Notification.permission === 'granted') {
-          console.log('[Push] Permission granted, subscribing...');
+          if (existingSub && isSubscribed) {
+            // Re-register with backend to ensure it's stored (idempotent upsert)
+            console.log('[Push] Re-registering subscription with backend...');
+          } else {
+            console.log('[Push] Permission granted, subscribing...');
+          }
           const result = await subscribe();
           console.log('[Push] Subscribe result:', result);
           return;
