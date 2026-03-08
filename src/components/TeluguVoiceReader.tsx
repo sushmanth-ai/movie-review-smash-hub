@@ -16,6 +16,7 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const cancelledRef = useRef(false);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (!("speechSynthesis" in window)) return;
