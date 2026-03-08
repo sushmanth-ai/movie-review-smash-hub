@@ -60,10 +60,10 @@ export const MovieCard: React.FC<MovieCardProps> = ({ review }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-primary">
             <Eye className="w-4 h-4" />
-            <span className="font-bold text-sm">{review.views || 0} views</span>
+            <span className="font-bold text-sm">{review.views || 0} {t('views')}</span>
           </div>
           <div className="flex items-center gap-2 text-primary">
-            <span className="font-bold text-sm">Read more</span>
+            <span className="font-bold text-sm">{t('readMore')}</span>
             <ChevronRight className="w-4 h-4" />
           </div>
         </div>
