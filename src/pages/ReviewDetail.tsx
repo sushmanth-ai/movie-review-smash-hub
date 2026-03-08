@@ -318,8 +318,9 @@ const ReviewDetail = () => {
                 </div>
               <div className="rounded-xl p-[2px] bg-gradient-to-r from-amber-400 via-orange-300 to-yellow-400">
                   <div className="bg-card rounded-[10px] p-4">
+                    {isTranslating && <p className="text-xs text-primary/60 mb-2 animate-pulse">Translating...</p>}
                     <p className="text-base text-white font-medium leading-relaxed tracking-wide">
-                      {review.review}
+                      {translated.review}
                     </p>
                   </div>
                 </div>
