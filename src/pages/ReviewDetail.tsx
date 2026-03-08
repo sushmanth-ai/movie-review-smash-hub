@@ -304,7 +304,7 @@ const ReviewDetail = () => {
                     <Sparkles className="w-5 h-5" />
                   </h3>
                 </div>
-                <div className="rounded-xl p-[2px] bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500">
+              <div className="rounded-xl p-[2px] bg-gradient-to-r from-amber-400 via-orange-300 to-yellow-400">
                   <div className="bg-card rounded-[10px] p-4">
                     <p className="text-base text-white font-medium leading-relaxed tracking-wide">
                       {review.review}
