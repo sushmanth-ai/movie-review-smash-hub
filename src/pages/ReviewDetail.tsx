@@ -213,6 +213,7 @@ const ReviewDetail = () => {
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <h1 className="text-xl font-bold text-primary flex-1">SM REVIEW 3.0</h1>
+            <LanguageSwitcher />
             <NotificationBell />
           </div>
         </div>
