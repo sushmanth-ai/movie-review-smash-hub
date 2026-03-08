@@ -82,23 +82,24 @@ export const useTrendingReviews = () => {
       const allReviews: { id: string; title: string; image: string }[] = 
         movieReviewsData.map(r => ({ id: r.id, title: r.title, image: r.image }));
 
-      // Fetch Firebase reviews in parallel with metrics
-      const [reviewsSnapshot, viewsSnapshot, likesSnapshot] = await Promise.all([
+      // Fetch Firebase reviews and weekly metrics in parallel
+      const [reviewsSnapshot, weeklyMetricsSnapshot] = await Promise.all([
         getDocs(collection(db, 'reviews')),
-        getDocs(collection(db, 'reviewViews')),
-        getDocs(collection(db, 'likes'))
+        getDocs(collection(db, 'weeklyMetrics'))
       ]);
 
-      // Build lookup maps for fast access
-      const viewsMap = new Map<string, number>();
-      const likesMap = new Map<string, number>();
-
-      viewsSnapshot.forEach((doc) => {
-        viewsMap.set(doc.id, Math.min(doc.data().count || 0, 50));
-      });
-
-      likesSnapshot.forEach((doc) => {
-        likesMap.set(doc.id, Math.min(doc.data().count || 0, 20));
+      // Build weekly metrics map filtered by current week
+      const weeklyMap = new Map<string, { views: number; likes: number; comments: number; reactions: number }>();
+      weeklyMetricsSnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        if (data.weekKey === weekKey) {
+          weeklyMap.set(data.reviewId, {
+            views: data.views || 0,
+            likes: data.likes || 0,
+            comments: data.comments || 0,
+            reactions: data.reactions || 0
+          });
+        }
       });
 
       // Add Firebase reviews
@@ -113,20 +114,19 @@ export const useTrendingReviews = () => {
         }
       });
 
-      // Calculate scores using cached views/likes (no additional fetches)
+      // Calculate scores using weekly metrics
       const trendingData: TrendingReviewData[] = allReviews.map(review => {
-        const weeklyViews = viewsMap.get(review.id) || 0;
-        const weeklyLikes = likesMap.get(review.id) || 0;
-        const trendingScore = calculateTrendingScore(weeklyViews, weeklyLikes, 0, 0);
+        const metrics = weeklyMap.get(review.id) || { views: 0, likes: 0, comments: 0, reactions: 0 };
+        const trendingScore = calculateTrendingScore(metrics.views, metrics.likes, metrics.comments, metrics.reactions);
 
         return {
           reviewId: review.id,
           title: review.title,
           image: review.image,
-          weeklyViews,
-          weeklyLikes,
-          weeklyComments: 0,
-          weeklyReactions: 0,
+          weeklyViews: metrics.views,
+          weeklyLikes: metrics.likes,
+          weeklyComments: metrics.comments,
+          weeklyReactions: metrics.reactions,
           trendingScore,
           rank: 0
         };
