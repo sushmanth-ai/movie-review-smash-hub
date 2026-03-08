@@ -16,7 +16,6 @@ import { NotificationBell } from '@/components/NotificationBell';
 import { useAutoSubscribe } from '@/hooks/useAutoSubscribe';
 import { useToast } from '@/hooks/use-toast';
 import { StoryCircles } from '@/components/StoryCircles';
-import { PushDebugPanel } from '@/components/PushDebugPanel';
 
 const Index = () => {
   const { playSound } = useSound();
