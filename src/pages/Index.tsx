@@ -351,8 +351,8 @@ const Index = () => {
               className="bg-card border-2 border-primary p-6 rounded-lg shadow-[0_0_20px_rgba(255,215,0,0.3)] hover:shadow-[0_0_30px_rgba(255,215,0,0.5)] transition-all duration-300 flex flex-col items-center gap-4"
             >
               <div className="text-5xl">💬</div>
-              <h3 className="text-xl font-bold text-primary">WhatsApp Chat</h3>
-              <p className="text-muted-foreground text-center">Chat with us instantly</p>
+              <h3 className="text-xl font-bold text-primary">{t('whatsappChat')}</h3>
+              <p className="text-muted-foreground text-center">{t('chatWithUs')}</p>
             </a>
           </div>
         </div>
