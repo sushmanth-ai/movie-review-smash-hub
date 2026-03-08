@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '@/utils/firebase';
 import { useToast } from '@/hooks/use-toast';
+import { sendPushNotification } from '@/hooks/usePushNotifications';
 import { ReviewFormData } from '@/pages/AdminDashboard';
 
 interface Review extends ReviewFormData {
@@ -54,10 +55,22 @@ export const useAdminReviews = () => {
         ...data,
         createdAt: new Date()
       });
+
+      // Auto-send push notification to all subscribers
+      try {
+        await sendPushNotification(
+          `🎬 New Review: ${data.title}`,
+          `${data.rating} — ${data.review?.slice(0, 80) || 'Check out the latest review!'}`,
+          '/',
+          `review-${Date.now()}`
+        );
+      } catch (e) {
+        console.error('Push notification failed:', e);
+      }
       
       toast({
         title: "Success",
-        description: "Review added successfully",
+        description: "Review added & notification sent! 🔔",
       });
     } catch (error) {
       console.error('Error adding review:', error);
