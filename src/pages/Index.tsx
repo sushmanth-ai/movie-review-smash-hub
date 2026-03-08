@@ -15,6 +15,7 @@ import { useSound } from '@/hooks/useSound';
 import { NotificationBell } from '@/components/NotificationBell';
 import { useAutoSubscribe } from '@/hooks/useAutoSubscribe';
 import { useToast } from '@/hooks/use-toast';
+import { StoryCircles } from '@/components/StoryCircles';
 
 const Index = () => {
   const { playSound } = useSound();
@@ -245,6 +246,11 @@ const Index = () => {
       {/* Today Views Card - Outside Header */}
       <div className="container mx-auto px-4 pt-36 md:pt-40">
         <TodayViews viewCount={realTimeViewCount} />
+      </div>
+
+      {/* Story Circles */}
+      <div className="container mx-auto px-4 pt-4">
+        <StoryCircles reviews={filteredReviews} />
       </div>
 
       {/* 3D Carousel */}
