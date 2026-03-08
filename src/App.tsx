@@ -24,6 +24,7 @@ const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <LanguageProvider>
         <FestivalProvider>
           <Toaster />
           <Sonner />
