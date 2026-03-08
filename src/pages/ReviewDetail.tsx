@@ -234,19 +234,7 @@ const ReviewDetail = () => {
               </div>
             </div>
 
-            <CardHeader className="text-center pt-12">
-              {/* View Count & Rating Chip */}
-              <div className="flex items-center justify-center gap-4 text-sm">
-                <span className="flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-1 rounded-full border border-primary/30">
-                  <Eye className="w-3.5 h-3.5" /> {viewCount} {t('views')}
-                </span>
-                {review.rating && (
-                  <span className="flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-1 rounded-full border border-primary/30">
-                    <Star className="w-3.5 h-3.5 fill-primary" /> {review.rating}
-                  </span>
-                )}
-              </div>
-            </CardHeader>
+            <CardHeader className="pt-10" />
 
             <div className="px-4 sm:px-6">
               <div className="relative group">
