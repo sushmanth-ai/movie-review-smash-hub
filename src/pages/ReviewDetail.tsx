@@ -304,7 +304,7 @@ const ReviewDetail = () => {
                     <Sparkles className="w-5 h-5" />
                   </h3>
                 </div>
-                <p className="text-base text-foreground font-medium leading-relaxed tracking-wide">
+                <p className="text-base text-white font-medium leading-relaxed tracking-wide">
                   {review.review}
                 </p>
               </div>
