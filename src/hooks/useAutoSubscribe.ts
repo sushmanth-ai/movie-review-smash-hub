@@ -1,16 +1,12 @@
 import { useEffect, useRef } from 'react';
 import { usePushNotifications } from './usePushNotifications';
+import { useToast } from '@/hooks/use-toast';
 
-const AUTO_PROMPT_DELAY = 1500;
+const AUTO_PROMPT_DELAY = 2000;
 
-/**
- * Aggressively auto-subscribes ALL users to push notifications.
- * Runs on every visit. If permission granted, subscribes silently.
- * If not yet prompted, shows browser permission dialog.
- * Users cannot opt out - notifications are always on if permission is granted.
- */
 export const useAutoSubscribe = () => {
-  const { isSupported, subscribe, permission } = usePushNotifications();
+  const { isSupported, subscribe, permission, lastError } = usePushNotifications();
+  const { toast } = useToast();
   const attempted = useRef(false);
 
   useEffect(() => {
@@ -21,17 +17,14 @@ export const useAutoSubscribe = () => {
       attempted.current = true;
 
       try {
-        // Always subscribe regardless of local storage state
-        if (Notification.permission === 'granted') {
-          console.log('[Push] Permission granted, ensuring subscription...');
-          await subscribe();
-          return;
-        }
-
-        // For new users, immediately request permission
-        if (Notification.permission === 'default') {
-          console.log('[Push] Requesting permission...');
-          await subscribe();
+        if (Notification.permission === 'granted' || Notification.permission === 'default') {
+          console.log('[Push] Auto-subscribing, permission:', Notification.permission);
+          const result = await subscribe();
+          console.log('[Push] Auto-subscribe result:', result);
+          
+          if (!result) {
+            console.error('[Push] Auto-subscribe failed');
+          }
         }
       } catch (error) {
         console.error('[Push] Auto-subscribe error:', error);
