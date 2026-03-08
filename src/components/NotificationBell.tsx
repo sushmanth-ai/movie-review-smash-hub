@@ -26,23 +26,22 @@ export const NotificationBell = () => {
     if (isSubscribed) {
       toast({
         title: '🔔 Notifications Active',
-        description: 'You\'re receiving push notifications for new reviews & updates!',
+        description: 'You\'re receiving push notifications!',
       });
       return;
     }
 
-    // Try to subscribe
     const success = await subscribe();
     if (success) {
       playSound('popup');
       toast({
         title: '🔔 Notifications Enabled!',
-        description: 'You\'ll get notified about new reviews & updates!',
+        description: 'You\'ll get notified about new reviews!',
       });
     } else {
       toast({
         title: '❌ Failed',
-        description: 'Could not enable notifications. Try again later.',
+        description: 'Could not enable notifications.',
         variant: 'destructive',
       });
     }
@@ -59,23 +58,17 @@ export const NotificationBell = () => {
           ? 'bg-destructive/20 text-destructive'
           : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-primary'
       } ${isLoading ? 'animate-pulse' : ''}`}
-      title={
-        isSubscribed
-          ? 'Notifications Active'
-          : permission === 'denied'
-          ? 'Notifications Blocked'
-          : 'Enable Notifications'
-      }
+      title={isSubscribed ? 'Notifications Active' : 'Enable Notifications'}
     >
       {permission === 'denied' ? (
         <BellOff className="w-5 h-5" />
       ) : isSubscribed ? (
-        <BellRing className="w-5 h-5 animate-[ring_0.5s_ease-in-out]" />
+        <BellRing className="w-5 h-5" />
       ) : (
         <Bell className="w-5 h-5" />
       )}
       {isSubscribed && (
-        <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background" />
+        <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-background bg-green-500" />
       )}
     </button>
   );
