@@ -65,7 +65,7 @@ export const usePushNotifications = () => {
         return false;
       }
 
-      const registration = await registerPushSW();
+      const registration = await getPWARegistration();
       const vapidPublicKey = await getVapidPublicKey();
 
       const subscription = await registration.pushManager.subscribe({
