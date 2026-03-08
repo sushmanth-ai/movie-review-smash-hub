@@ -299,7 +299,7 @@ const ReviewDetail = () => {
               <div className="space-y-4">
                 <div className="border-l-4 border-primary pl-4 py-2">
                   <h4 className="text-primary font-bold text-lg mb-2">
-                    First Half:
+                    {t('firstHalf')}
                   </h4>
                   <p className="text-base text-slate-50 font-bold leading-relaxed">
                     {review.firstHalf}
