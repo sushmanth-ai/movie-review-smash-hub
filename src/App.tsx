@@ -9,6 +9,7 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import ReviewDetail from "./pages/ReviewDetail";
 import Footer from "./components/Footer";
+import { Navbar } from "./components/Navbar";
 import { 
   FestivalProvider, 
   FestivalBanner, 
