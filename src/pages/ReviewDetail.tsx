@@ -376,13 +376,13 @@ const ReviewDetail = () => {
                 </div>
 
                 {/* Overall */}
-                <div className="rounded-xl p-[2px] bg-gradient-to-r from-amber-500 via-yellow-400 to-primary hover:shadow-[0_0_20px_rgba(255,215,0,0.3)] transition-all duration-300">
+                <div className="rounded-xl p-[2px] bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-400 hover:shadow-[0_0_20px_rgba(251,191,36,0.3)] transition-all duration-300">
                   <div className="bg-card rounded-[10px] p-5">
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="bg-primary/20 p-1.5 rounded-lg">
-                        <Star className="w-4 h-4 text-primary fill-primary" />
+                      <div className="bg-amber-500/20 p-1.5 rounded-lg">
+                        <Star className="w-4 h-4 text-amber-300 fill-amber-300" />
                       </div>
-                      <h4 className="text-primary font-bold text-lg">{t('overall')}</h4>
+                      <h4 className="text-amber-300 font-bold text-lg">{t('overall')}</h4>
                     </div>
                     <p className="text-base text-white font-bold leading-relaxed pl-9">
                       {review.overall}
