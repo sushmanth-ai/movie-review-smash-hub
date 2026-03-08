@@ -375,7 +375,7 @@ const ReviewDetail = () => {
               {/* 🎟️ Book Your Ticket */}
               <div className="flex justify-center mt-6">
                 <Button onClick={handleBookTicket} className="bg-gradient-to-r from-red-600 to-yellow-400 text-white font-bold px-8 py-4 rounded-xl hover:scale-105 transition-transform shadow-lg">
-                  🎟️ Book Your Ticket
+                  {t('bookTicket')}
                 </Button>
               </div>
 
