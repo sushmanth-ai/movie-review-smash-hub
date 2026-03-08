@@ -18,6 +18,7 @@ import { UserStarRating } from "@/components/UserStarRating";
 import { AdminRatingsDisplay } from "@/components/AdminRatingsDisplay";
 import { RatingComparison } from "@/components/RatingComparison";
 import { NotificationBell } from "@/components/NotificationBell";
+import { ReviewPolls } from "@/components/ReviewPolls";
 
 // Helper function to extract YouTube video ID
 const getYouTubeVideoId = (url: string): string => {
