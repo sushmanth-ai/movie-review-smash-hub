@@ -6,10 +6,10 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const langMap: Record<string, string> = {
-  te: "Telugu",
-  hi: "Hindi",
-  ta: "Tamil",
+const langMap: Record<string, { name: string; script: string; example: string }> = {
+  te: { name: "Telugu", script: "Telugu script", example: "తెలుగు" },
+  hi: { name: "Hindi", script: "Devanagari script", example: "हिन्दी" },
+  ta: { name: "Tamil", script: "Tamil script", example: "தமிழ்" },
 };
 
 serve(async (req) => {
@@ -32,9 +32,19 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const langName = langMap[targetLang] || targetLang;
+    const lang = langMap[targetLang];
+    if (!lang) {
+      return new Response(JSON.stringify({ error: "Unsupported language" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    const prompt = `Translate the following JSON object values into ${langName}. Keep JSON keys exactly the same. Return ONLY valid JSON, no explanation.
+    const prompt = `Translate ALL the following JSON values into ${lang.name} language using ${lang.script} (example: "${lang.example}").
+
+IMPORTANT: You MUST use ${lang.script} characters. Do NOT use Telugu, Hindi, or any other script. Only ${lang.name} (${lang.script}).
+
+Keep JSON keys exactly the same. Return ONLY valid JSON, no explanation.
 
 ${JSON.stringify(texts)}`;
 
@@ -47,12 +57,11 @@ ${JSON.stringify(texts)}`;
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash-lite",
+          model: "google/gemini-2.5-flash",
           messages: [
             {
               role: "system",
-              content:
-                "You are a professional movie review translator. Translate naturally and accurately. Return ONLY valid JSON with the same keys.",
+              content: `You are a professional movie review translator. You MUST translate into ${lang.name} using ${lang.script} characters only. Do NOT confuse with other Indian languages. Return ONLY valid JSON with the same keys.`,
             },
             { role: "user", content: prompt },
           ],
