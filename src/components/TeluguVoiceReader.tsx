@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Volume2, VolumeX, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -13,43 +13,36 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const cancelledRef = useRef(false);
   const resumeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { toast } = useToast();
   const { t } = useLanguage();
 
-  useEffect(() => {
-    if (!("speechSynthesis" in window)) return;
-    const loadVoices = () => {
-      const v = window.speechSynthesis.getVoices();
-      if (v.length > 0) setVoices(v);
-    };
-    loadVoices();
-    window.speechSynthesis.onvoiceschanged = loadVoices;
-    // Some mobile browsers need a delay
-    setTimeout(loadVoices, 500);
-    setTimeout(loadVoices, 1500);
-  }, []);
-
-  const clearResumeInterval = () => {
+  const clearResumeInterval = useCallback(() => {
     if (resumeIntervalRef.current) {
       clearInterval(resumeIntervalRef.current);
       resumeIntervalRef.current = null;
     }
-  };
+  }, []);
 
-  const stopSpeech = () => {
+  const stopSpeech = useCallback(() => {
     cancelledRef.current = true;
     clearResumeInterval();
     if ("speechSynthesis" in window) {
       window.speechSynthesis.cancel();
     }
     setIsPlaying(false);
-  };
+  }, [clearResumeInterval]);
 
-  const getVoice = (): SpeechSynthesisVoice | null => {
-    // Tenglish is Roman script, so English-India voice works best
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopSpeech();
+    };
+  }, [stopSpeech]);
+
+  const getVoice = useCallback((): SpeechSynthesisVoice | null => {
+    const voices = window.speechSynthesis.getVoices();
     return (
       voices.find((v) => v.lang === "en-IN") ||
       voices.find((v) => v.lang.startsWith("en-IN")) ||
@@ -57,29 +50,22 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
       voices.find((v) => v.lang.startsWith("en")) ||
       null
     );
-  };
+  }, []);
 
-  const speakText = (text: string) => {
-    const synth = window.speechSynthesis;
-    // Cancel any ongoing speech first
-    synth.cancel();
-
-    const voice = getVoice();
-
-    // Split into shorter chunks for mobile reliability (max ~200 chars)
+  const splitIntoChunks = useCallback((text: string): string[] => {
+    // Split on sentence endings
     const sentences = text
-      .split(/(?<=[.!?])\s+/)
-      .filter((c) => c.trim().length > 0);
+      .split(/(?<=[.!?:।])\s+/)
+      .filter((s) => s.trim().length > 0);
 
-    // Further split long sentences
     const chunks: string[] = [];
     for (const sentence of sentences) {
-      if (sentence.length > 200) {
-        // Split on commas or mid-point
-        const parts = sentence.split(/,\s*/);
+      if (sentence.length > 150) {
+        // Split long sentences on commas or ellipsis
+        const parts = sentence.split(/[,…]+\s*/);
         let current = "";
         for (const part of parts) {
-          if ((current + part).length > 200 && current) {
+          if ((current + part).length > 150 && current.trim()) {
             chunks.push(current.trim());
             current = part;
           } else {
@@ -91,9 +77,18 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
         chunks.push(sentence);
       }
     }
+    return chunks.filter((c) => c.length > 0);
+  }, []);
 
+  const speakText = useCallback((text: string) => {
+    const synth = window.speechSynthesis;
+    synth.cancel();
+
+    const chunks = splitIntoChunks(text);
     let i = 0;
     cancelledRef.current = false;
+
+    const voice = getVoice();
 
     const speakNext = () => {
       if (cancelledRef.current || i >= chunks.length) {
@@ -116,21 +111,20 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
       } else {
         utter.lang = "en-IN";
       }
-      utter.rate = 0.9;
+      utter.rate = 0.85;
       utter.pitch = 1;
       utter.volume = 1;
 
       utter.onend = () => {
         i++;
-        setTimeout(speakNext, 150);
+        setTimeout(speakNext, 120);
       };
       utter.onerror = (e) => {
-        // "interrupted" is normal when cancelling
-        if (e.error !== "interrupted") {
+        if (e.error !== "interrupted" && e.error !== "canceled") {
           console.error("Speech error:", e.error);
         }
         i++;
-        setTimeout(speakNext, 150);
+        setTimeout(speakNext, 200);
       };
 
       synth.speak(utter);
@@ -139,27 +133,40 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
     setIsPlaying(true);
 
     // Mobile Chrome workaround: Chrome pauses speech after ~15 seconds
-    // Periodically call resume() to keep it going
     clearResumeInterval();
     resumeIntervalRef.current = setInterval(() => {
       if (synth.speaking && !synth.paused) {
         synth.resume();
       }
-      // If speech stopped unexpectedly, clean up
-      if (!synth.speaking && !cancelledRef.current && i < chunks.length) {
-        // Try to resume by speaking next chunk
-        speakNext();
-      }
     }, 5000);
 
     speakNext();
-  };
+  }, [getVoice, splitIntoChunks, clearResumeInterval]);
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      stopSpeech();
-    };
+  const convertToTenglish = useCallback(async (text: string): Promise<string> => {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+    if (!supabaseUrl || !anonKey) {
+      return text;
+    }
+
+    const response = await fetch(`${supabaseUrl}/functions/v1/text-to-speech`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": anonKey,
+        "Authorization": `Bearer ${anonKey}`,
+      },
+      body: JSON.stringify({ text }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Edge function returned ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.teluguText || text;
   }, []);
 
   const handleToggle = async () => {
@@ -170,49 +177,41 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
 
     if (!("speechSynthesis" in window)) {
       toast({
-        title: t('notSupported'),
-        description: t('voiceNotSupported'),
+        title: t("notSupported"),
+        description: t("voiceNotSupported"),
         variant: "destructive",
       });
       return;
     }
 
-    // Mobile browsers require user gesture to init speech - do a silent utterance
+    // Mobile browsers need user gesture to init speech
+    const synth = window.speechSynthesis;
+    synth.cancel();
     const silentUtter = new SpeechSynthesisUtterance("");
     silentUtter.volume = 0;
-    window.speechSynthesis.speak(silentUtter);
+    synth.speak(silentUtter);
+
+    // Ensure voices are loaded (mobile can be slow)
+    if (synth.getVoices().length === 0) {
+      await new Promise<void>((resolve) => {
+        const checkVoices = () => {
+          if (synth.getVoices().length > 0) resolve();
+          else setTimeout(checkVoices, 100);
+        };
+        checkVoices();
+        setTimeout(resolve, 2000); // Max wait 2s
+      });
+    }
 
     setIsLoading(true);
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/text-to-speech`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ text: reviewText }),
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.teluguText) {
-          setIsLoading(false);
-          speakText(data.teluguText);
-          return;
-        }
-      }
-
-      // If edge function fails, speak original text
-      console.warn("Edge function failed, using original text");
+      const tenglishText = await convertToTenglish(reviewText);
+      if (cancelledRef.current) return;
       setIsLoading(false);
-      speakText(reviewText);
+      speakText(tenglishText);
     } catch (err) {
-      console.warn("Edge function error:", err);
+      console.warn("Tenglish conversion failed, using original:", err);
       setIsLoading(false);
       speakText(reviewText);
     }
@@ -233,11 +232,7 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
         ) : (
           <Volume2 className="w-5 h-5" />
         )}
-        {isLoading
-          ? t('loading')
-          : isPlaying
-          ? t('stop')
-          : t('reviewVinandi')}
+        {isLoading ? t("loading") : isPlaying ? t("stop") : t("reviewVinandi")}
       </Button>
     </div>
   );
