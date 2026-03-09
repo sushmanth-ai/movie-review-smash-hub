@@ -1,19 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLanguage } from '@/i18n/LanguageContext';
-
-// Lazy-load supabase to prevent crash when env vars are missing (e.g. Vercel without config)
-let _supabase: any = null;
-async function getSupabase() {
-  if (!_supabase) {
-    try {
-      const mod = await import('@/integrations/supabase/client');
-      _supabase = mod.supabase;
-    } catch {
-      return null;
-    }
-  }
-  return _supabase;
-}
 
 interface ReviewTexts {
   review: string;
@@ -24,7 +10,7 @@ interface ReviewTexts {
   overall: string;
 }
 
-// Simple in-memory cache: key = `${reviewId}-${lang}`
+// Persistent in-memory cache
 const translationCache = new Map<string, ReviewTexts>();
 
 export function useTranslateReview(reviewId: string, original: ReviewTexts) {
@@ -32,16 +18,52 @@ export function useTranslateReview(reviewId: string, original: ReviewTexts) {
   const [translated, setTranslated] = useState<ReviewTexts>(original);
   const [isTranslating, setIsTranslating] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+  const retryCountRef = useRef(0);
+
+  const translateViaFetch = useCallback(async (
+    texts: ReviewTexts,
+    targetLang: string,
+    signal: AbortSignal
+  ): Promise<ReviewTexts | null> => {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+    if (!supabaseUrl || !anonKey) {
+      console.warn('Missing Supabase env vars for translation');
+      return null;
+    }
+
+    const response = await fetch(`${supabaseUrl}/functions/v1/translate-review`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': anonKey,
+        'Authorization': `Bearer ${anonKey}`,
+      },
+      body: JSON.stringify({ texts, targetLang }),
+      signal,
+    });
+
+    if (!response.ok) {
+      const errText = await response.text().catch(() => 'Unknown error');
+      throw new Error(`Translation failed (${response.status}): ${errText}`);
+    }
+
+    const data = await response.json();
+    return data?.translated || null;
+  }, []);
 
   useEffect(() => {
-    // English = original, no translation needed
+    // English = original
     if (language === 'en') {
       setTranslated(original);
+      setIsTranslating(false);
       return;
     }
 
-    // Skip if original text is empty (review not loaded yet)
-    if (!original.review && !original.firstHalf) {
+    // Skip if original is empty (not loaded yet)
+    const hasContent = original.review || original.firstHalf || original.secondHalf;
+    if (!hasContent) {
       setTranslated(original);
       return;
     }
@@ -50,6 +72,7 @@ export function useTranslateReview(reviewId: string, original: ReviewTexts) {
     const cached = translationCache.get(cacheKey);
     if (cached) {
       setTranslated(cached);
+      setIsTranslating(false);
       return;
     }
 
@@ -57,35 +80,48 @@ export function useTranslateReview(reviewId: string, original: ReviewTexts) {
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
+    retryCountRef.current = 0;
 
-    setIsTranslating(true);
+    const doTranslate = async () => {
+      setIsTranslating(true);
 
-    getSupabase().then(sb => {
-      if (!sb || controller.signal.aborted) {
-        setIsTranslating(false);
-        return;
-      }
-      sb.functions
-        .invoke('translate-review', {
-          body: { texts: original, targetLang: language },
-        })
-        .then(({ data, error }: any) => {
-          if (controller.signal.aborted) return;
-          if (error || !data?.translated) {
-            console.error('Translation failed:', error);
-            setTranslated(original);
-          } else {
-            translationCache.set(cacheKey, data.translated);
-            setTranslated(data.translated);
-          }
+      try {
+        const result = await translateViaFetch(original, language, controller.signal);
+        if (controller.signal.aborted) return;
+
+        if (result) {
+          translationCache.set(cacheKey, result);
+          setTranslated(result);
+        } else {
+          setTranslated(original);
+        }
+      } catch (err: any) {
+        if (err.name === 'AbortError') return;
+        console.error('Translation error:', err);
+
+        // Retry once after 2 seconds
+        if (retryCountRef.current < 1 && !controller.signal.aborted) {
+          retryCountRef.current++;
+          setTimeout(() => {
+            if (!controller.signal.aborted) doTranslate();
+          }, 2000);
+          return;
+        }
+
+        setTranslated(original);
+      } finally {
+        if (!controller.signal.aborted) {
           setIsTranslating(false);
-        });
-    });
+        }
+      }
+    };
+
+    doTranslate();
 
     return () => {
       controller.abort();
     };
-  }, [language, reviewId, original.review, original.firstHalf]);
+  }, [language, reviewId, original.review, original.firstHalf, original.secondHalf, translateViaFetch]);
 
   return { translated, isTranslating };
 }
