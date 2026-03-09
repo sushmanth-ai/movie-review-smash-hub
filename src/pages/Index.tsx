@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { MovieReview, movieReviewsData } from '@/data/movieReviews';
@@ -34,6 +35,29 @@ const Index = () => {
   }>({});
   const [showAllNewReviews, setShowAllNewReviews] = useState(false);
   const [showAllOldReviews, setShowAllOldReviews] = useState(false);
+  
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState('home');
+  const [isAnimatingReviews, setIsAnimatingReviews] = useState(false);
+
+  useEffect(() => {
+    const hash = location.hash;
+    let newTab = 'home';
+    if (hash === '#search') newTab = 'search';
+    else if (hash === '#reviews') newTab = 'reviews';
+    
+    // Trigger logo animation if switching to reviews on mobile
+    if (newTab === 'reviews' && activeTab !== 'reviews' && window.innerWidth < 768) {
+      setIsAnimatingReviews(true);
+      setTimeout(() => setIsAnimatingReviews(false), 1200);
+    }
+    setActiveTab(newTab);
+  }, [location.hash]);
+
+  const getMobileDisplayClass = (tabName: string) => {
+    return activeTab === tabName ? 'block' : 'hidden md:block';
+  };
+
   const {
     loadLikes,
     loadComments,
@@ -224,24 +248,65 @@ const Index = () => {
           {/* Bottom Decorative Line */}
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-64 h-0.5 bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
         </div>
+      </div>
 
-        {/* Search Bar */}
-        <div id="search" className="px-4 pb-3">
-          <div className="max-w-2xl mx-auto">
-            <Input 
-              type="text" 
-              placeholder={t('searchPlaceholder')} 
-              value={searchTerm} 
-              onChange={e => setSearchTerm(e.target.value)} 
-              className="w-full bg-input/80 backdrop-blur-sm text-foreground border-2 border-primary/50 focus:border-primary focus:ring-primary rounded-full px-5 py-2 shadow-[0_0_15px_rgba(255,215,0,0.2)]" 
-            />
+      <div className="pt-20 md:pt-28" />
+
+      {/* SM Logo Animation Overlay for Mobile */}
+      {isAnimatingReviews && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/95 backdrop-blur-md md:hidden">
+          <img 
+            src="https://res.cloudinary.com/dvdmk59a1/image/upload/v1762242791/SM_Image_m8js8c.jpg" 
+            alt="SM Reviews Logo" 
+            className="h-40 w-40 object-cover rounded-full border-4 border-yellow-400 shadow-[0_0_50px_rgba(255,215,0,1)] animate-bounce" 
+          />
+        </div>
+      )}
+
+      {/* Mobile Search Tab */}
+      <div className={`container mx-auto px-4 pt-4 md:hidden ${activeTab === 'search' ? 'block' : 'hidden'}`}>
+        <div className="max-w-2xl mx-auto mb-8">
+          <Input 
+            type="text" 
+            placeholder={t('searchPlaceholder')} 
+            value={searchTerm} 
+            onChange={e => setSearchTerm(e.target.value)} 
+            className="w-full bg-input/80 backdrop-blur-sm text-foreground border-2 border-primary/50 focus:border-primary focus:ring-primary rounded-full px-5 py-2 shadow-[0_0_15px_rgba(255,215,0,0.2)] text-lg" 
+          />
+        </div>
+        {searchTerm && (
+          <div className="grid grid-cols-1 gap-6 pb-20">
+            {filteredReviews.map(review => (
+              <div key={`search-${review.id}`}>
+                <MovieCard review={review} />
+              </div>
+            ))}
           </div>
+        )}
+        {!searchTerm && (
+          <div className="text-center flex flex-col items-center justify-center mt-12 py-16 bg-card/30 rounded-2xl border border-primary/20 shadow-[0_0_30px_rgba(255,215,0,0.05)]">
+            <span className="text-4xl mb-4">🔍</span>
+            <p className="text-muted-foreground text-lg">{t('searchPlaceholder')}...</p>
+          </div>
+        )}
+      </div>
+
+      {/* Desktop Search Bar (Hidden on Mobile) */}
+      <div className="hidden md:block container mx-auto px-4 pt-4">
+        <div className="max-w-2xl mx-auto mb-8">
+          <Input 
+            type="text" 
+            placeholder={t('searchPlaceholder')} 
+            value={searchTerm} 
+            onChange={e => setSearchTerm(e.target.value)} 
+            className="w-full bg-input/80 backdrop-blur-sm text-foreground border-2 border-primary/50 focus:border-primary focus:ring-primary rounded-full px-5 py-2 shadow-[0_0_15px_rgba(255,215,0,0.2)]" 
+          />
         </div>
       </div>
 
-      <div className="pt-36 md:pt-40" />
-
-      {/* Story Circles */}
+      {/* Home Sections */}
+      <div className={getMobileDisplayClass('home')}>
+        {/* Story Circles */}
       <div className="container mx-auto px-4 pt-4">
         <StoryCircles reviews={filteredReviews} />
       </div>
@@ -255,9 +320,10 @@ const Index = () => {
       <div className="container mx-auto px-4 pt-6">
         <TrendingReviews reviews={trendingReviews} isLoading={trendingLoading} limit={2} />
       </div>
+      </div>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 pt-0 pb-8">
+      {/* Main Content (Reviews) */}
+      <div className={`container mx-auto px-4 pt-0 pb-8 ${getMobileDisplayClass('reviews')}`}>
         {/* New Reviews Section */}
         {newReviews.length > 0 && (
           <div id="reviews" className="mb-12">

@@ -12,19 +12,11 @@ export const MobileNavbar = () => {
     if (path.startsWith('/#') && location.pathname === '/') {
       e.preventDefault();
       navigate(path);
-      const id = path.substring(2);
-      setTimeout(() => {
-        const element = document.getElementById(id);
-        if (element) {
-          const yOffset = -120; // Adjust based on header height
-          const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-          window.scrollTo({ top: y, behavior: 'smooth' });
-        }
-      }, 50);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (path === '/' && location.pathname === '/') {
       e.preventDefault();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
       navigate('/');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
