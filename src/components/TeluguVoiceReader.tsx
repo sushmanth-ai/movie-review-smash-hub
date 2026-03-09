@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Volume2, VolumeX, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -14,32 +14,28 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const cancelledRef = useRef(false);
-  const resumeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const utterancesRef = useRef<SpeechSynthesisUtterance[]>([]);
+  const resumeTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { toast } = useToast();
   const { t } = useLanguage();
 
-  const clearResumeInterval = useCallback(() => {
-    if (resumeIntervalRef.current) {
-      clearInterval(resumeIntervalRef.current);
-      resumeIntervalRef.current = null;
-    }
-  }, []);
-
-  const stopSpeech = useCallback(() => {
+  const cleanup = useCallback(() => {
     cancelledRef.current = true;
-    clearResumeInterval();
+    if (resumeTimerRef.current) {
+      clearInterval(resumeTimerRef.current);
+      resumeTimerRef.current = null;
+    }
+    utterancesRef.current = [];
     if ("speechSynthesis" in window) {
       window.speechSynthesis.cancel();
     }
     setIsPlaying(false);
-  }, [clearResumeInterval]);
+    setIsLoading(false);
+  }, []);
 
-  // Cleanup on unmount
   useEffect(() => {
-    return () => {
-      stopSpeech();
-    };
-  }, [stopSpeech]);
+    return cleanup;
+  }, [cleanup]);
 
   const getVoice = useCallback((): SpeechSynthesisVoice | null => {
     const voices = window.speechSynthesis.getVoices();
@@ -53,19 +49,19 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
   }, []);
 
   const splitIntoChunks = useCallback((text: string): string[] => {
-    // Split on sentence endings
+    // Split on sentence-ending punctuation
     const sentences = text
       .split(/(?<=[.!?:।])\s+/)
       .filter((s) => s.trim().length > 0);
 
     const chunks: string[] = [];
     for (const sentence of sentences) {
-      if (sentence.length > 150) {
-        // Split long sentences on commas or ellipsis
+      if (sentence.length > 120) {
+        // Split long sentences on commas
         const parts = sentence.split(/[,…]+\s*/);
         let current = "";
         for (const part of parts) {
-          if ((current + part).length > 150 && current.trim()) {
+          if ((current + part).length > 120 && current.trim()) {
             chunks.push(current.trim());
             current = part;
           } else {
@@ -80,98 +76,106 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
     return chunks.filter((c) => c.length > 0);
   }, []);
 
-  const speakText = useCallback((text: string) => {
-    const synth = window.speechSynthesis;
-    synth.cancel();
+  const speakChunks = useCallback(
+    (chunks: string[]) => {
+      const synth = window.speechSynthesis;
+      const voice = getVoice();
+      let index = 0;
+      cancelledRef.current = false;
 
-    const chunks = splitIntoChunks(text);
-    let i = 0;
-    cancelledRef.current = false;
-
-    const voice = getVoice();
-
-    const speakNext = () => {
-      if (cancelledRef.current || i >= chunks.length) {
-        setIsPlaying(false);
-        clearResumeInterval();
-        return;
-      }
-
-      const chunk = chunks[i].trim();
-      if (!chunk) {
-        i++;
-        speakNext();
-        return;
-      }
-
-      const utter = new SpeechSynthesisUtterance(chunk);
-      if (voice) {
-        utter.voice = voice;
-        utter.lang = voice.lang;
-      } else {
-        utter.lang = "en-IN";
-      }
-      utter.rate = 0.85;
-      utter.pitch = 1;
-      utter.volume = 1;
-
-      utter.onend = () => {
-        i++;
-        setTimeout(speakNext, 120);
-      };
-      utter.onerror = (e) => {
-        if (e.error !== "interrupted" && e.error !== "canceled") {
-          console.error("Speech error:", e.error);
+      // Mobile Chrome workaround: resume every 5s to prevent 15s pause
+      if (resumeTimerRef.current) clearInterval(resumeTimerRef.current);
+      resumeTimerRef.current = setInterval(() => {
+        if (synth.speaking && !synth.paused) {
+          synth.resume();
         }
-        i++;
-        setTimeout(speakNext, 200);
+      }, 5000);
+
+      const speakNext = () => {
+        if (cancelledRef.current || index >= chunks.length) {
+          setIsPlaying(false);
+          if (resumeTimerRef.current) {
+            clearInterval(resumeTimerRef.current);
+            resumeTimerRef.current = null;
+          }
+          return;
+        }
+
+        const chunk = chunks[index].trim();
+        if (!chunk) {
+          index++;
+          speakNext();
+          return;
+        }
+
+        const utter = new SpeechSynthesisUtterance(chunk);
+        if (voice) {
+          utter.voice = voice;
+          utter.lang = voice.lang;
+        } else {
+          utter.lang = "en-IN";
+        }
+        utter.rate = 0.85;
+        utter.pitch = 1;
+        utter.volume = 1;
+
+        utter.onend = () => {
+          index++;
+          // Small gap between chunks for natural pacing
+          setTimeout(speakNext, 100);
+        };
+
+        utter.onerror = (e) => {
+          if (e.error !== "interrupted" && e.error !== "canceled") {
+            console.error("Speech error:", e.error);
+          }
+          index++;
+          setTimeout(speakNext, 150);
+        };
+
+        utterancesRef.current.push(utter);
+        synth.speak(utter);
       };
 
-      synth.speak(utter);
-    };
+      setIsPlaying(true);
+      speakNext();
+    },
+    [getVoice]
+  );
 
-    setIsPlaying(true);
+  const convertToTenglish = useCallback(
+    async (text: string): Promise<string> => {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-    // Mobile Chrome workaround: Chrome pauses speech after ~15 seconds
-    clearResumeInterval();
-    resumeIntervalRef.current = setInterval(() => {
-      if (synth.speaking && !synth.paused) {
-        synth.resume();
+      if (!supabaseUrl || !anonKey) return text;
+
+      const response = await fetch(
+        `${supabaseUrl}/functions/v1/text-to-speech`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: anonKey,
+            Authorization: `Bearer ${anonKey}`,
+          },
+          body: JSON.stringify({ text }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Edge function returned ${response.status}`);
       }
-    }, 5000);
 
-    speakNext();
-  }, [getVoice, splitIntoChunks, clearResumeInterval]);
-
-  const convertToTenglish = useCallback(async (text: string): Promise<string> => {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-    if (!supabaseUrl || !anonKey) {
-      return text;
-    }
-
-    const response = await fetch(`${supabaseUrl}/functions/v1/text-to-speech`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "apikey": anonKey,
-        "Authorization": `Bearer ${anonKey}`,
-      },
-      body: JSON.stringify({ text }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Edge function returned ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data.teluguText || text;
-  }, []);
+      const data = await response.json();
+      return data.teluguText || text;
+    },
+    []
+  );
 
   const handleToggle = async () => {
     if (isPlaying) {
-      stopSpeech();
+      cleanup();
       return;
     }
 
@@ -184,36 +188,57 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
       return;
     }
 
-    // Mobile browsers need user gesture to init speech
     const synth = window.speechSynthesis;
+
+    // CRITICAL: Cancel any existing speech and unlock audio on mobile
+    // This MUST happen synchronously in the click handler (user gesture)
     synth.cancel();
+
+    // Speak a silent utterance to unlock speech on iOS/Android
     const silentUtter = new SpeechSynthesisUtterance("");
     silentUtter.volume = 0;
     synth.speak(silentUtter);
 
-    // Ensure voices are loaded (mobile can be slow)
+    // Wait for voices to load (mobile browsers are slow)
     if (synth.getVoices().length === 0) {
       await new Promise<void>((resolve) => {
-        const checkVoices = () => {
-          if (synth.getVoices().length > 0) resolve();
-          else setTimeout(checkVoices, 100);
+        const onVoicesChanged = () => {
+          resolve();
+          synth.removeEventListener("voiceschanged", onVoicesChanged);
         };
-        checkVoices();
-        setTimeout(resolve, 2000); // Max wait 2s
+        synth.addEventListener("voiceschanged", onVoicesChanged);
+        // Fallback timeout
+        setTimeout(resolve, 3000);
       });
     }
 
     setIsLoading(true);
+    cancelledRef.current = false;
 
     try {
       const tenglishText = await convertToTenglish(reviewText);
       if (cancelledRef.current) return;
+
       setIsLoading(false);
-      speakText(tenglishText);
+
+      // Cancel the silent utterance before starting real speech
+      synth.cancel();
+
+      // Small delay to ensure cancel takes effect
+      await new Promise((r) => setTimeout(r, 50));
+
+      const chunks = splitIntoChunks(tenglishText);
+      speakChunks(chunks);
     } catch (err) {
       console.warn("Tenglish conversion failed, using original:", err);
+      if (cancelledRef.current) return;
+
       setIsLoading(false);
-      speakText(reviewText);
+      synth.cancel();
+      await new Promise((r) => setTimeout(r, 50));
+
+      const chunks = splitIntoChunks(reviewText);
+      speakChunks(chunks);
     }
   };
 
