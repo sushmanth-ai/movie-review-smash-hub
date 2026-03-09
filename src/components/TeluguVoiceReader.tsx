@@ -27,6 +27,7 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
     };
     loadVoices();
     window.speechSynthesis.onvoiceschanged = loadVoices;
+    // Some mobile browsers need a delay
     setTimeout(loadVoices, 500);
     setTimeout(loadVoices, 1500);
   }, []);
@@ -48,6 +49,7 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
   };
 
   const getVoice = (): SpeechSynthesisVoice | null => {
+    // Tenglish is Roman script, so English-India voice works best
     return (
       voices.find((v) => v.lang === "en-IN") ||
       voices.find((v) => v.lang.startsWith("en-IN")) ||
@@ -59,18 +61,21 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
 
   const speakText = (text: string) => {
     const synth = window.speechSynthesis;
+    // Cancel any ongoing speech first
     synth.cancel();
 
     const voice = getVoice();
 
-    // Split into chunks for mobile reliability (max ~200 chars)
+    // Split into shorter chunks for mobile reliability (max ~200 chars)
     const sentences = text
       .split(/(?<=[.!?])\s+/)
       .filter((c) => c.trim().length > 0);
 
+    // Further split long sentences
     const chunks: string[] = [];
     for (const sentence of sentences) {
       if (sentence.length > 200) {
+        // Split on commas or mid-point
         const parts = sentence.split(/,\s*/);
         let current = "";
         for (const part of parts) {
@@ -85,11 +90,6 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
       } else {
         chunks.push(sentence);
       }
-    }
-
-    if (chunks.length === 0) {
-      setIsPlaying(false);
-      return;
     }
 
     let i = 0;
@@ -125,6 +125,7 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
         setTimeout(speakNext, 150);
       };
       utter.onerror = (e) => {
+        // "interrupted" is normal when cancelling
         if (e.error !== "interrupted") {
           console.error("Speech error:", e.error);
         }
@@ -137,11 +138,17 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
 
     setIsPlaying(true);
 
-    // Mobile Chrome workaround: periodically call resume()
+    // Mobile Chrome workaround: Chrome pauses speech after ~15 seconds
+    // Periodically call resume() to keep it going
     clearResumeInterval();
     resumeIntervalRef.current = setInterval(() => {
       if (synth.speaking && !synth.paused) {
         synth.resume();
+      }
+      // If speech stopped unexpectedly, clean up
+      if (!synth.speaking && !cancelledRef.current && i < chunks.length) {
+        // Try to resume by speaking next chunk
+        speakNext();
       }
     }, 5000);
 
@@ -163,34 +170,19 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
 
     if (!("speechSynthesis" in window)) {
       toast({
-        title: t("notSupported"),
-        description: t("voiceNotSupported"),
+        title: t('notSupported'),
+        description: t('voiceNotSupported'),
         variant: "destructive",
       });
       return;
     }
 
-    // CRITICAL: On mobile, SpeechSynthesis must be triggered in user gesture context.
-    // We MUST speak something synchronously first to unlock the audio,
-    // then we can speak the real text after the async fetch.
-    const synth = window.speechSynthesis;
-    synth.cancel();
-
-    // Unlock speech synthesis with a silent utterance (synchronous, in gesture context)
-    const unlockUtter = new SpeechSynthesisUtterance(".");
-    unlockUtter.volume = 0.01; // near-silent but not 0 (some browsers ignore volume=0)
-    unlockUtter.rate = 10; // speak as fast as possible
-    const voice = getVoice();
-    if (voice) {
-      unlockUtter.voice = voice;
-      unlockUtter.lang = voice.lang;
-    } else {
-      unlockUtter.lang = "en-IN";
-    }
-    synth.speak(unlockUtter);
+    // Mobile browsers require user gesture to init speech - do a silent utterance
+    const silentUtter = new SpeechSynthesisUtterance("");
+    silentUtter.volume = 0;
+    window.speechSynthesis.speak(silentUtter);
 
     setIsLoading(true);
-    cancelledRef.current = false;
 
     try {
       const response = await fetch(
@@ -206,35 +198,22 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
         }
       );
 
-      if (cancelledRef.current) {
-        setIsLoading(false);
-        return;
-      }
-
       if (response.ok) {
         const data = await response.json();
         if (data.teluguText) {
           setIsLoading(false);
-          // Cancel the unlock utterance before speaking real text
-          synth.cancel();
           speakText(data.teluguText);
           return;
         }
       }
 
-      // Fallback: speak original text
+      // If edge function fails, speak original text
       console.warn("Edge function failed, using original text");
       setIsLoading(false);
-      synth.cancel();
       speakText(reviewText);
     } catch (err) {
-      if (cancelledRef.current) {
-        setIsLoading(false);
-        return;
-      }
       console.warn("Edge function error:", err);
       setIsLoading(false);
-      synth.cancel();
       speakText(reviewText);
     }
   };
@@ -255,10 +234,10 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
           <Volume2 className="w-5 h-5" />
         )}
         {isLoading
-          ? t("loading")
+          ? t('loading')
           : isPlaying
-          ? t("stop")
-          : t("reviewVinandi")}
+          ? t('stop')
+          : t('reviewVinandi')}
       </Button>
     </div>
   );
