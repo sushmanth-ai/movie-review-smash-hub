@@ -60,20 +60,21 @@ export function useTranslateReview(reviewId: string, original: ReviewTexts) {
         return;
       }
       sb.functions
-      .invoke('translate-review', {
-        body: { texts: original, targetLang: language },
-      })
-      .then(({ data, error }) => {
-        if (controller.signal.aborted) return;
-        if (error || !data?.translated) {
-          console.error('Translation failed:', error);
-          setTranslated(original);
-        } else {
-          translationCache.set(cacheKey, data.translated);
-          setTranslated(data.translated);
-        }
-        setIsTranslating(false);
-      });
+        .invoke('translate-review', {
+          body: { texts: original, targetLang: language },
+        })
+        .then(({ data, error }: any) => {
+          if (controller.signal.aborted) return;
+          if (error || !data?.translated) {
+            console.error('Translation failed:', error);
+            setTranslated(original);
+          } else {
+            translationCache.set(cacheKey, data.translated);
+            setTranslated(data.translated);
+          }
+          setIsTranslating(false);
+        });
+    });
 
     return () => {
       controller.abort();
