@@ -14,7 +14,7 @@ interface MovieCardProps {
 export const MovieCard: React.FC<MovieCardProps> = ({ review }) => {
   const navigate = useNavigate();
   const { trackReviewView } = useFirebaseOperations();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const handleCardClick = () => {
     trackReviewView(review.id);
@@ -42,7 +42,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ review }) => {
             
             {/* Title with gradient text */}
             <h3 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-300 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(255,215,0,0.5)] relative z-10 line-clamp-2">
-              {review.title}
+              {review.translations?.[language]?.title || review.title}
             </h3>
           </div>
         </div>

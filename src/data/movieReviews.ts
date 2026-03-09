@@ -1,3 +1,4 @@
+import { Language } from "@/i18n/translations";
 
 export interface MovieReview {
   id: string;
@@ -13,6 +14,17 @@ export interface MovieReview {
   likes: number;
   comments: Comment[];
   views?: number;
+  translations?: {
+    [lang in Language]?: {
+      title?: string;
+      review?: string;
+      firstHalf?: string;
+      secondHalf?: string;
+      positives?: string;
+      negatives?: string;
+      overall?: string;
+    }
+  };
 }
 
 export interface Comment {
@@ -36,7 +48,18 @@ export const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [
     positives: 'Aniruddh BGM💥💥,Loki Direction,Rajini Swag 😎...',
     negatives: 'Second Half middle Portion loo konchem Baaga Excute chesi vunte bagundedhI..',
     overall: "except some portions nakku aite nachindhi guys",
-    rating: '3.8 STARS'
+    rating: '3.8 STARS',
+    translations: {
+      en: {
+        title: 'COOLIE (2025)',
+        review: 'Let\'s check out the details of the movie in this review.',
+        firstHalf: 'Starts by establishing the story setup... followed by the characters... Rajini\'s entry... Monica\'s song... The main interval scene is a major high... Anirudh killed it with the BGM... Every single scene was elevated.',
+        secondHalf: 'The second half starts really well... Character shifts are written well... The track gets a bit lost in the middle... but then it sets up for the pre-climax... Climax gives a high... Anirudh\'s BGM takes the movie to the next level.',
+        positives: 'Anirudh\'s BGM, Lokesh\'s Direction, Rajini\'s Swag...',
+        negatives: 'The middle portion of the second half could have been executed better.',
+        overall: 'Except for some portions, I personally liked it, guys.'
+      }
+    }
   },
 {
     id: 'sir Madam',
@@ -48,7 +71,18 @@ export const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [
     positives: 'Vijay Sethupathi Acting, Heroine performance, Story, screenplay,Fun, Direction 👌',
     negatives: 'No Negatives ',
     overall: "Chaala Bagundhi.. Family tho vellandi Nuvvu kuntu baithaki vastaru...",
-    rating: '4 STARS'
+    rating: '4 STARS',
+    translations: {
+      en: {
+        title: 'SIR MADAM',
+        review: 'Let\'s check the detailed review below.',
+        firstHalf: 'First half is very fun... flows smoothly from start to finish. Hero characterization is crazy... runs with a fast screenplay. Overall a decent first half.',
+        secondHalf: 'Very realistic situations presented on screen... emotions are blended well. Comedy is next level, especially the hilarious climax... post-credit scene is too good.',
+        positives: 'Vijay Sethupathi Acting, Heroine performance, Story, Screenplay, Fun, Direction.',
+        negatives: 'None.',
+        overall: 'Very good! Go with family, you\'ll come out laughing.'
+      }
+    }
   },
 {
     id: 'kingdom',
@@ -60,7 +94,18 @@ export const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [
     positives: 'Gautham Direction in First Half,VD Acting....',
     negatives: 'Second half.. incompleteness feeling in last..Anirudh music kk but dhani ki taggatu scenes padaledu second half loo..',
     overall: "it was Average",
-    rating: '3 STARS'
+    rating: '3 STARS',
+    translations: {
+      en: {
+        title: 'KINGDOM',
+        review: 'Check the detailed review of the movie below.',
+        firstHalf: 'First half is very interesting... engages with conflicts and interesting scenes. World building is great and easy to connect with. Without any dialogue, the hand gesture interval sequence is top notch.',
+        secondHalf: 'The movie loses its way... moves very slowly. Emotions don\'t work out. It feels like post-production was rushed. A good song was removed. The climax is confusing.',
+        positives: 'Gautham\'s Direction in the 1st Half, VD\'s Acting.',
+        negatives: 'Second half feels incomplete at the end. Anirudh\'s music is okay but doesn\'t fit the scenes in the 2nd half.',
+        overall: 'It was Average.'
+      }
+    }
   },
 {
     id: 'mahavtara narsimha',

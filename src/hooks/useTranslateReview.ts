@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { MovieReview } from '@/data/movieReviews';
 
 interface ReviewTexts {
+  title: string;
   review: string;
   firstHalf: string;
   secondHalf: string;
@@ -13,7 +15,11 @@ interface ReviewTexts {
 // Persistent in-memory cache (survives re-renders, clears on page reload)
 const translationCache = new Map<string, ReviewTexts>();
 
-export function useTranslateReview(reviewId: string, original: ReviewTexts) {
+export function useTranslateReview(
+  reviewId: string, 
+  original: ReviewTexts, 
+  localTranslations?: MovieReview['translations']
+) {
   const { language } = useLanguage();
   const [translated, setTranslated] = useState<ReviewTexts>(original);
   const [isTranslating, setIsTranslating] = useState(false);
@@ -21,13 +27,14 @@ export function useTranslateReview(reviewId: string, original: ReviewTexts) {
 
   // Stabilize original texts to avoid unnecessary re-renders
   const stableOriginal = useMemo(() => ({
+    title: original.title || '',
     review: original.review || '',
     firstHalf: original.firstHalf || '',
     secondHalf: original.secondHalf || '',
     positives: original.positives || '',
     negatives: original.negatives || '',
     overall: original.overall || '',
-  }), [original.review, original.firstHalf, original.secondHalf, original.positives, original.negatives, original.overall]);
+  }), [original.title, original.review, original.firstHalf, original.secondHalf, original.positives, original.negatives, original.overall]);
 
   // Stable content fingerprint to avoid duplicate fetches
   const contentKey = useMemo(() => {
@@ -78,8 +85,24 @@ export function useTranslateReview(reviewId: string, original: ReviewTexts) {
     }
 
     // Skip if no content loaded yet
-    if (!stableOriginal.review && !stableOriginal.firstHalf && !stableOriginal.secondHalf) {
+    if (!stableOriginal.review && !stableOriginal.firstHalf && !stableOriginal.secondHalf && !stableOriginal.title) {
       setTranslated(stableOriginal);
+      return;
+    }
+
+    // Check for local hardcoded translations first
+    const local = localTranslations?.[language];
+    if (local) {
+      setTranslated({
+        title: local.title || stableOriginal.title,
+        review: local.review || stableOriginal.review,
+        firstHalf: local.firstHalf || stableOriginal.firstHalf,
+        secondHalf: local.secondHalf || stableOriginal.secondHalf,
+        positives: local.positives || stableOriginal.positives,
+        negatives: local.negatives || stableOriginal.negatives,
+        overall: local.overall || stableOriginal.overall,
+      });
+      setIsTranslating(false);
       return;
     }
 

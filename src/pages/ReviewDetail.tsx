@@ -147,15 +147,16 @@ const ReviewDetail = () => {
     }
   }, [id]);
   const originalTexts = review ? {
+    title: review.title || '',
     review: review.review || '',
     firstHalf: review.firstHalf || '',
     secondHalf: review.secondHalf || '',
     positives: review.positives || '',
     negatives: review.negatives || '',
     overall: review.overall || '',
-  } : { review: '', firstHalf: '', secondHalf: '', positives: '', negatives: '', overall: '' };
+  } : { title: '', review: '', firstHalf: '', secondHalf: '', positives: '', negatives: '', overall: '' };
 
-  const { translated, isTranslating } = useTranslateReview(id || '', originalTexts);
+  const { translated, isTranslating } = useTranslateReview(id || '', originalTexts, review?.translations);
 
   if (!review) {
     return <CurtainAnimation alwaysPlay />;
@@ -240,7 +241,7 @@ const ReviewDetail = () => {
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[shimmer_2s_infinite] rounded-2xl" />
                 <div className="flex items-center gap-2 justify-center relative z-10">
                   <Film className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-                  <span className="line-clamp-2">{review.title}</span>
+                  <span className="line-clamp-2">{translated.title}</span>
                   <Film className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
                 </div>
               </div>

@@ -3,13 +3,15 @@ import { useState, useEffect } from 'react';
 interface CurtainAnimationProps {
   /** If true, plays every time (e.g. on review navigation). Default: once per session */
   alwaysPlay?: boolean;
+  /** A value that, when changed, re-triggers the animation */
+  trigger?: any;
 }
 
-export const CurtainAnimation = ({ alwaysPlay = false }: CurtainAnimationProps) => {
+export const CurtainAnimation = ({ alwaysPlay = false, trigger }: CurtainAnimationProps) => {
   const [phase, setPhase] = useState<'enter' | 'logo' | 'reveal' | 'done'>('done');
 
   useEffect(() => {
-    if (!alwaysPlay) {
+    if (!alwaysPlay && !trigger) {
       const shown = sessionStorage.getItem('curtainShown');
       if (shown) {
         return; // phase already 'done'
@@ -20,14 +22,15 @@ export const CurtainAnimation = ({ alwaysPlay = false }: CurtainAnimationProps) 
     // Start the animation
     setPhase('enter');
 
-    // enter → logo (0.4s), logo → reveal (1.6s), reveal → done (2.4s)
-    const t0 = setTimeout(() => setPhase('logo'), 400);
-    const t1 = setTimeout(() => setPhase('reveal'), 1600);
-    const t2 = setTimeout(() => setPhase('done'), 2400);
-    // Safety: force done after 4s in case something hangs
-    const tSafety = setTimeout(() => setPhase('done'), 4000);
+    // enter → logo (0.3s), logo → reveal (1.2s), reveal → done (1.8s)
+    // Snappier for transitions
+    const t0 = setTimeout(() => setPhase('logo'), 300);
+    const t1 = setTimeout(() => setPhase('reveal'), 1200);
+    const t2 = setTimeout(() => setPhase('done'), 1800);
+    // Safety: force done after 3s in case something hangs
+    const tSafety = setTimeout(() => setPhase('done'), 3000);
     return () => { clearTimeout(t0); clearTimeout(t1); clearTimeout(t2); clearTimeout(tSafety); };
-  }, [alwaysPlay]);
+  }, [alwaysPlay, trigger]);
 
   if (phase === 'done') return null;
 
