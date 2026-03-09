@@ -18,6 +18,7 @@ const SLIDES: StorySlide[] = ['overview', 'firstHalf', 'secondHalf', 'verdict'];
 
 export const StoryViewer: React.FC<StoryViewerProps> = ({ reviews, initialIndex, onClose }) => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [currentReviewIndex, setCurrentReviewIndex] = useState(initialIndex);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [progress, setProgress] = useState(0);
