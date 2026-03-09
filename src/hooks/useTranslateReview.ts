@@ -54,7 +54,12 @@ export function useTranslateReview(reviewId: string, original: ReviewTexts) {
 
     setIsTranslating(true);
 
-    supabase.functions
+    getSupabase().then(sb => {
+      if (!sb || controller.signal.aborted) {
+        setIsTranslating(false);
+        return;
+      }
+      sb.functions
       .invoke('translate-review', {
         body: { texts: original, targetLang: language },
       })
