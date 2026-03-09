@@ -96,7 +96,8 @@ const Index = () => {
           overall: data.overall,
           rating: data.rating,
           likes: 0,
-          comments: []
+          comments: [],
+          translations: data.translations
         });
       });
 

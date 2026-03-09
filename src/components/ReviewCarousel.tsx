@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MovieReview } from "@/data/movieReviews";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface ReviewCarouselProps {
   reviews: MovieReview[];
@@ -8,6 +9,7 @@ interface ReviewCarouselProps {
 
 export const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews }) => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
   const [selectedIndex, setSelectedIndex] = useState(2);
 
   // Limit to first 5 reviews
@@ -86,7 +88,7 @@ export const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews }) => {
               />
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent p-4">
                 <h3 className="text-primary font-bold text-lg md:text-xl line-clamp-2">
-                  {review.title}
+                  {review.translations?.[language]?.title || review.title}
                 </h3>
                 <div className="flex items-center gap-1 mt-1">
                   {[...Array(5)].map((_, i) => (
