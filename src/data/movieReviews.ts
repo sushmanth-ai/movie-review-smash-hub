@@ -194,18 +194,7 @@ export const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [
     positives: 'All positives visuals, making, BGM super 💥 Naaku teliyiani points enno telsukunna..',
     negatives: 'NO Negatives',
     overall: "idhi prathi okkaru chudalsina cinema..super ante..",
-    rating: '4 STARS',
-    translations: {
-      en: {
-        title: 'MAHAVATARA NARSIMHA',
-        review: 'Let\'s check the detailed review of this film.',
-        firstHalf: 'In the first half, the director dives straight into the story without wasting time. There is one particular sequence with top-notch graphics. The rest of the film progresses based on the storyline. A decent first half.',
-        secondHalf: 'The second half and especially the final climax portion are on another level. The visuals, BGM literally gave goosebumps. Waiting for the next installment of this universe.',
-        positives: 'Visuals, Making, BGM are all superb. Got to know many things I didn\'t know before.',
-        negatives: 'No negatives.',
-        overall: 'This is a must-watch film for everyone. It was super.'
-      }
-    }
+    rating: '4 STARS'
   },
   
   {
@@ -218,18 +207,7 @@ export const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [
     positives: 'Keeravani soul pettedu Movie ki..thana BGM chaala Normal scenes ki kuda High icche laa kottedu.. Pawan Kalyan as usual did well..',
     negatives: '2nd half,boring scenes..bad vfx..konni scenes aite idhi Ai tho generate chesaru Anni easy gaa telisi pothundi...',
     overall: "it's a Average movie",
-    rating: '3 STARS',
-    translations: {
-      en: {
-        title: 'HARI HARA VEERA MALLU',
-        review: 'Let\'s check the detailed review of this film.',
-        firstHalf: 'The first half starts very well with the hero introduction scene. The proceedings are good too. Occasionally it feels a bit average in the middle. The pre-interval twist is good. The interval itself is good. Overall, a good first half.',
-        secondHalf: 'Setting aside the story in the second half, this film has the worst VFX I have seen in recent times. The bad graphics are very obvious. Coming back to the story, it feels like we are just watching for the sake of it.',
-        positives: 'Keeravani put his soul into the film. His BGM elevated even normal scenes. Pawan Kalyan as usual did well.',
-        negatives: '2nd half, boring scenes, bad VFX. Some scenes are easily identifiable as AI-generated.',
-        overall: 'It\'s an average movie.'
-      }
-    }
+    rating: '3 STARS'
   },
   
   
@@ -244,18 +222,7 @@ export const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [
     positives: 'Songs, Cinematography, Malavika Manoj.. Parthi Frame chaala grander gaa kanapadutindhi...',
     negatives: 'Anni negatives eyy moive loo..inka em cheppali',
     overall: "it's Below Average movie",
-    rating: '2.8 STARS',
-    translations: {
-      en: {
-        title: 'OH BHAMA AYYO RAMA',
-        review: 'Let\'s check the detailed review of this film.',
-        firstHalf: 'Coming to the first half, I had no idea what the director was trying to say. The film was supposed to have good songs and BGM. But there was nothing else. It felt like watching an old movie.',
-        secondHalf: 'The second half goes along somehow. There is not a single engaging scene. Neither the emotions nor the scenes work. The story is mostly predictable.',
-        positives: 'Songs, Cinematography, Malavika Manoj. Parthi looks very grand on screen.',
-        negatives: 'All negatives in this movie. What else can I say?',
-        overall: 'It\'s a below average movie.'
-      }
-    }
+    rating: '2.8 STARS'
   },
 
   {
@@ -268,18 +235,7 @@ export const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [
     positives: 'Prabhas,shiva shiva shankara song..climax',
     negatives: 'ilogical scenes and songs..artficial drama and emotions..dilogue delivery what not everthing',
     overall: "it's Below Average",
-    rating: '2.8 STARS',
-    translations: {
-      en: {
-        title: 'KANNAPPA',
-        review: 'Let\'s check the detailed review of this film.',
-        firstHalf: 'Coming to the movie... we enjoyed a lot! I haven\'t laughed this much in recent times. I\'ll leave it up to you to figure out in what context. The dialogues, scenes, casting were just... I leave my future to you.',
-        secondHalf: 'The first 30 minutes were boring. The Prabhas scenes, the Shiva Shiva Shankar song, and the climax were good. There\'s nothing else to say.',
-        positives: 'Prabhas, Shiva Shiva Shankara song, climax.',
-        negatives: 'Illogical scenes and songs. Artificial drama and emotions. Dialogue delivery and everything else.',
-        overall: 'It\'s below average.'
-      }
-    }
+    rating: '2.8 STARS'
   },
   {
     id: 'kubera',
@@ -291,18 +247,7 @@ export const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [
     positives: 'Dhanush Acting... What a Man he was.. literally aaa Charcter lo Munighi poyyedu...And Also Rashmika kuda...And Nagarjuna chaala Rojjula Tarvata Fantastic Role padindhi... DSP Music Ramp 🤙🤙Ante.',
     negatives: 'Climax inka konchem baaga end chesunte bagundu anipinchindi',
     overall: 'Bagundhi..I loved It❤....',
-    rating: '4 STARS',
-    translations: {
-      en: {
-        title: 'KUBERA',
-        review: 'Let\'s check the detailed review of this film.',
-        firstHalf: 'In the short beginning, you feel like you\'re watching a Shekar Kammula film. The next proceedings are interesting. The first half feels like a real journey. From the heroine\'s entry onwards, the movie progresses even better.',
-        secondHalf: 'It was really good. I really enjoyed the conversational scenes between the hero and heroine, the scene playouts and drama-emotions. Director Sekhar Kammula didn\'t just write a screenplay — he wrote scene plays. Everything works well.',
-        positives: 'Dhanush acting — what a man, he literally immersed into the character. Rashmika also performed well. Nagarjuna got a fantastic role after many years. DSP music is on a ramp.',
-        negatives: 'The climax could have ended slightly better.',
-        overall: 'It was good. I loved it!'
-      }
-    }
+    rating: '4 STARS'
   },
   {
     id: 'single',
@@ -314,18 +259,7 @@ export const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [
     positives: 'Sree Vishnu performance and dialogues, vennela Kishore comedy...',
     negatives: 'NO NEGATIVES....Vaalu edhi aite movie lo vuntadhi anni cheppi audience ni prepare chesearo.. Adhe delivery cheseru..',
     overall: "it's a Youthful entertainer and worth watch movie",
-    rating: '4 STARS',
-    translations: {
-      en: {
-        title: 'SINGLE',
-        review: 'Let\'s check the detailed review of this film.',
-        firstHalf: 'From the start to the interval, not a single scene feels boring. We get entertained with comedy punches, scenes, and Sree Vishnu one-liners. The story is pretty much what the trailer showed. Overall a very good first half.',
-        secondHalf: 'Same vibe in the second half too — funny scenes throughout. It\'s truly Sree Vishnu\'s one-man show. Vennela Kishore also dominated some scenes alongside. The pre-climax has some slight emotion, and the climax brings it back to the fun zone.',
-        positives: 'Sree Vishnu performance and dialogues, Vennela Kishore comedy.',
-        negatives: 'No negatives. They told the audience exactly what to expect, and they delivered that.',
-        overall: 'It\'s a youthful entertainer and a must-watch movie.'
-      }
-    }
+    rating: '4 STARS'
   },
   
   {
@@ -338,18 +272,7 @@ export const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [
     positives: 'Some comedy scenes,sreleela beauty....',
     negatives: 'Song\'s placements,some boring scenes..in first and second half',
     overall: "It's average",
-    rating: '3 STARS',
-    translations: {
-      en: {
-        title: 'ROBINHOOD',
-        review: 'Let\'s check the detailed review of this film.',
-        firstHalf: 'Coming to the first half, it was okay. It moves at a time-pass pace. Comedy scenes and songs were good, but there was a feeling of something missing.',
-        secondHalf: 'The second half feels flat. There\'s no clarity. Songs feel out of place. But the last 10 minutes were really good — the director wrote it very well. Overall, the movie\'s execution went a bit off.',
-        positives: 'Some comedy scenes, Sreeleela\'s beauty.',
-        negatives: 'Song placements, some boring scenes in both halves.',
-        overall: 'It\'s average.'
-      }
-    }
+    rating: '3 STARS'
   },
   {
     id: 'madsquare',
@@ -361,17 +284,6 @@ export const movieReviewsData: Omit<MovieReview, 'likes' | 'comments'>[] = [
     positives: 'Mad characterizations...craziest one liners...Song\'s and BGM',
     negatives: 'NO Negatives',
     overall: 'Worth watch movie... Friends andhari tho Kalisi velli enjoy Chesi randi....',
-    rating: '4 STARS',
-    translations: {
-      en: {
-        title: 'MAD SQUARE',
-        review: 'Let\'s check the detailed review of this film.',
-        firstHalf: 'From the start, non-stop comedy keeps coming. Good songs. The single-liners especially were terrific. The pre-interval moment was so good it felt unreal.',
-        secondHalf: 'The second half also started on a good note. Fun keeps generating without any gaps. Songs as well. The Laddu character was especially hilarious. Pre-climax and climax were super.',
-        positives: 'Mad characterizations, craziest one-liners, songs and BGM.',
-        negatives: 'No negatives.',
-        overall: 'A worth-watching movie. Go enjoy it with all your friends!'
-      }
-    }
+    rating: '4 STARS'
   }
 ];

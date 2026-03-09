@@ -12,48 +12,12 @@ interface ReviewTexts {
   overall: string;
 }
 
-// Persistent in-memory cache for translated content (clears on page reload)
+// Persistent in-memory cache (survives re-renders, clears on page reload)
 const translationCache = new Map<string, ReviewTexts>();
 
-// Language code map for MyMemory API
-const LANG_CODE_MAP: Record<string, string> = {
-  te: 'te',
-  hi: 'hi',
-  ta: 'ta',
-  en: 'en',
-};
-
-/**
- * Translates a single piece of text using MyMemory free API.
- * No API key required. Limit: 5000 chars/day per IP (usually enough for reviews).
- */
-async function translateText(text: string, targetLang: string, signal: AbortSignal): Promise<string> {
-  if (!text || text.trim() === '') return text;
-  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${targetLang}`;
-  const response = await fetch(url, { signal });
-  if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-  const data = await response.json();
-  const translated = data?.responseData?.translatedText;
-  if (translated && data?.responseStatus === 200) {
-    return translated;
-  }
-  return text; // fallback to original if translation fails
-}
-
-/**
- * Translates all ReviewTexts fields in parallel for speed.
- */
-async function translateAll(texts: ReviewTexts, targetLang: string, signal: AbortSignal): Promise<ReviewTexts> {
-  const fields: (keyof ReviewTexts)[] = ['title', 'review', 'firstHalf', 'secondHalf', 'positives', 'negatives', 'overall'];
-  const results = await Promise.all(
-    fields.map(field => translateText(texts[field], targetLang, signal).catch(() => texts[field]))
-  );
-  return Object.fromEntries(fields.map((f, i) => [f, results[i]])) as ReviewTexts;
-}
-
 export function useTranslateReview(
-  reviewId: string,
-  original: ReviewTexts,
+  reviewId: string, 
+  original: ReviewTexts, 
   localTranslations?: MovieReview['translations']
 ) {
   const { language } = useLanguage();
@@ -61,6 +25,7 @@ export function useTranslateReview(
   const [isTranslating, setIsTranslating] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
+  // Stabilize original texts to avoid unnecessary re-renders
   const stableOriginal = useMemo(() => ({
     title: original.title || '',
     review: original.review || '',
@@ -71,38 +36,61 @@ export function useTranslateReview(
     overall: original.overall || '',
   }), [original.title, original.review, original.firstHalf, original.secondHalf, original.positives, original.negatives, original.overall]);
 
+  // Stable content fingerprint to avoid duplicate fetches
   const contentKey = useMemo(() => {
     return `${reviewId}|${stableOriginal.review}|${stableOriginal.firstHalf}`;
   }, [reviewId, stableOriginal.review, stableOriginal.firstHalf]);
 
+  const translateViaFetch = useCallback(async (
+    texts: ReviewTexts,
+    targetLang: string,
+    signal: AbortSignal
+  ): Promise<ReviewTexts | null> => {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+    if (!supabaseUrl || !anonKey) {
+      console.warn('Missing env vars for translation');
+      return null;
+    }
+
+    const url = `${supabaseUrl}/functions/v1/translate-review`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': anonKey,
+        'Authorization': `Bearer ${anonKey}`,
+      },
+      body: JSON.stringify({ texts, targetLang }),
+      signal,
+    });
+
+    if (!response.ok) {
+      const errText = await response.text().catch(() => '');
+      throw new Error(`Translation failed (${response.status}): ${errText}`);
+    }
+
+    const data = await response.json();
+    return data?.translated || null;
+  }, []);
+
   useEffect(() => {
-    // English: always show the (possibly already-in-English) original
+    // English = show original
     if (language === 'en') {
-      const localEn = localTranslations?.['en'];
-      if (localEn) {
-        setTranslated({
-          title: localEn.title || stableOriginal.title,
-          review: localEn.review || stableOriginal.review,
-          firstHalf: localEn.firstHalf || stableOriginal.firstHalf,
-          secondHalf: localEn.secondHalf || stableOriginal.secondHalf,
-          positives: localEn.positives || stableOriginal.positives,
-          negatives: localEn.negatives || stableOriginal.negatives,
-          overall: localEn.overall || stableOriginal.overall,
-        });
-      } else {
-        setTranslated(stableOriginal);
-      }
+      setTranslated(stableOriginal);
       setIsTranslating(false);
       return;
     }
 
-    // Skip if content not loaded yet
-    if (!stableOriginal.review && !stableOriginal.firstHalf && !stableOriginal.title) {
+    // Skip if no content loaded yet
+    if (!stableOriginal.review && !stableOriginal.firstHalf && !stableOriginal.secondHalf && !stableOriginal.title) {
       setTranslated(stableOriginal);
       return;
     }
 
-    // Use local translations if available (highest priority after English)
+    // Check for local hardcoded translations first
     const local = localTranslations?.[language];
     if (local) {
       setTranslated({
@@ -118,7 +106,6 @@ export function useTranslateReview(
       return;
     }
 
-    // Check in-memory cache
     const cacheKey = `${contentKey}-${language}`;
     const cached = translationCache.get(cacheKey);
     if (cached) {
@@ -127,41 +114,55 @@ export function useTranslateReview(
       return;
     }
 
-    // Auto-translate using MyMemory free API
+    // Abort any in-flight request
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
 
-    const targetLang = LANG_CODE_MAP[language] || language;
+    let retries = 0;
+    const maxRetries = 2;
 
     const doTranslate = async () => {
       if (controller.signal.aborted) return;
       setIsTranslating(true);
 
       try {
-        const result = await translateAll(stableOriginal, targetLang, controller.signal);
+        const result = await translateViaFetch(stableOriginal, language, controller.signal);
         if (controller.signal.aborted) return;
-        translationCache.set(cacheKey, result);
-        setTranslated(result);
+
+        if (result) {
+          translationCache.set(cacheKey, result);
+          setTranslated(result);
+        } else {
+          setTranslated(stableOriginal);
+        }
+        setIsTranslating(false);
       } catch (err: any) {
         if (err.name === 'AbortError' || controller.signal.aborted) return;
-        console.error('Auto-translation failed:', err);
-        setTranslated(stableOriginal);
-      } finally {
-        if (!controller.signal.aborted) {
+        console.error('Translation error (attempt ' + (retries + 1) + '):', err);
+
+        retries++;
+        if (retries <= maxRetries) {
+          // Exponential backoff: 1.5s, 3s
+          const delay = retries * 1500;
+          setTimeout(() => {
+            if (!controller.signal.aborted) doTranslate();
+          }, delay);
+        } else {
+          setTranslated(stableOriginal);
           setIsTranslating(false);
         }
       }
     };
 
-    // Short delay to debounce rapid language switches
-    const timeout = setTimeout(doTranslate, 200);
+    // Small delay to batch rapid language switches
+    const timeout = setTimeout(doTranslate, 150);
 
     return () => {
       clearTimeout(timeout);
       controller.abort();
     };
-  }, [language, contentKey, stableOriginal, localTranslations]);
+  }, [language, contentKey, stableOriginal, translateViaFetch]);
 
   return { translated, isTranslating };
 }

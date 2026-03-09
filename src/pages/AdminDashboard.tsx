@@ -21,17 +21,6 @@ export interface ReviewFormData {
   rating: string;
   trailerUrl?: string;
   adminRatings?: AdminRatings;
-  translations?: {
-    [key: string]: {
-      title?: string;
-      review?: string;
-      firstHalf?: string;
-      secondHalf?: string;
-      positives?: string;
-      negatives?: string;
-      overall?: string;
-    }
-  };
 }
 
 const AdminDashboard = () => {

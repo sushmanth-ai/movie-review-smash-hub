@@ -36,7 +36,7 @@ const RankBadge: React.FC<{ rank: number }> = ({ rank }) => {
 
 const TrendingCard: React.FC<{ review: TrendingReviewData }> = ({ review }) => {
   const navigate = useNavigate();
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   return (
     <div onClick={() => navigate(`/review/${review.reviewId}`)} className={`
       relative group cursor-pointer bg-card/80 backdrop-blur-sm border rounded-xl overflow-hidden
@@ -55,7 +55,7 @@ const TrendingCard: React.FC<{ review: TrendingReviewData }> = ({ review }) => {
         <div className="flex flex-col justify-between flex-1 min-w-0 py-1">
           <div>
             <h4 className="font-bold text-foreground text-sm line-clamp-2 group-hover:text-primary transition-colors">
-              {review.translations?.[language]?.title || review.title}
+              {review.title}
             </h4>
             <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
               <TrendingUp className="w-3 h-3 text-primary" />
