@@ -3,6 +3,7 @@ import { X, ChevronLeft, ChevronRight, Star, ThumbsUp, ThumbsDown, Eye } from 'l
 import { MovieReview } from '@/data/movieReviews';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 interface StoryViewerProps {
   reviews: MovieReview[];
