@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useLanguage } from '@/i18n/LanguageContext';
 
 interface ReviewTexts {
@@ -10,7 +10,7 @@ interface ReviewTexts {
   overall: string;
 }
 
-// Persistent in-memory cache
+// Persistent in-memory cache (survives re-renders, clears on page reload)
 const translationCache = new Map<string, ReviewTexts>();
 
 export function useTranslateReview(reviewId: string, original: ReviewTexts) {
@@ -18,7 +18,21 @@ export function useTranslateReview(reviewId: string, original: ReviewTexts) {
   const [translated, setTranslated] = useState<ReviewTexts>(original);
   const [isTranslating, setIsTranslating] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
-  const retryCountRef = useRef(0);
+
+  // Stabilize original texts to avoid unnecessary re-renders
+  const stableOriginal = useMemo(() => ({
+    review: original.review || '',
+    firstHalf: original.firstHalf || '',
+    secondHalf: original.secondHalf || '',
+    positives: original.positives || '',
+    negatives: original.negatives || '',
+    overall: original.overall || '',
+  }), [original.review, original.firstHalf, original.secondHalf, original.positives, original.negatives, original.overall]);
+
+  // Stable content fingerprint to avoid duplicate fetches
+  const contentKey = useMemo(() => {
+    return `${reviewId}|${stableOriginal.review}|${stableOriginal.firstHalf}`;
+  }, [reviewId, stableOriginal.review, stableOriginal.firstHalf]);
 
   const translateViaFetch = useCallback(async (
     texts: ReviewTexts,
@@ -29,11 +43,13 @@ export function useTranslateReview(reviewId: string, original: ReviewTexts) {
     const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
     if (!supabaseUrl || !anonKey) {
-      console.warn('Missing Supabase env vars for translation');
+      console.warn('Missing env vars for translation');
       return null;
     }
 
-    const response = await fetch(`${supabaseUrl}/functions/v1/translate-review`, {
+    const url = `${supabaseUrl}/functions/v1/translate-review`;
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -45,7 +61,7 @@ export function useTranslateReview(reviewId: string, original: ReviewTexts) {
     });
 
     if (!response.ok) {
-      const errText = await response.text().catch(() => 'Unknown error');
+      const errText = await response.text().catch(() => '');
       throw new Error(`Translation failed (${response.status}): ${errText}`);
     }
 
@@ -54,21 +70,20 @@ export function useTranslateReview(reviewId: string, original: ReviewTexts) {
   }, []);
 
   useEffect(() => {
-    // English = original
+    // English = show original
     if (language === 'en') {
-      setTranslated(original);
+      setTranslated(stableOriginal);
       setIsTranslating(false);
       return;
     }
 
-    // Skip if original is empty (not loaded yet)
-    const hasContent = original.review || original.firstHalf || original.secondHalf;
-    if (!hasContent) {
-      setTranslated(original);
+    // Skip if no content loaded yet
+    if (!stableOriginal.review && !stableOriginal.firstHalf && !stableOriginal.secondHalf) {
+      setTranslated(stableOriginal);
       return;
     }
 
-    const cacheKey = `${reviewId}-${language}`;
+    const cacheKey = `${contentKey}-${language}`;
     const cached = translationCache.get(cacheKey);
     if (cached) {
       setTranslated(cached);
@@ -76,52 +91,55 @@ export function useTranslateReview(reviewId: string, original: ReviewTexts) {
       return;
     }
 
-    // Abort previous request
+    // Abort any in-flight request
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
-    retryCountRef.current = 0;
+
+    let retries = 0;
+    const maxRetries = 2;
 
     const doTranslate = async () => {
+      if (controller.signal.aborted) return;
       setIsTranslating(true);
 
       try {
-        const result = await translateViaFetch(original, language, controller.signal);
+        const result = await translateViaFetch(stableOriginal, language, controller.signal);
         if (controller.signal.aborted) return;
 
         if (result) {
           translationCache.set(cacheKey, result);
           setTranslated(result);
         } else {
-          setTranslated(original);
+          setTranslated(stableOriginal);
         }
+        setIsTranslating(false);
       } catch (err: any) {
-        if (err.name === 'AbortError') return;
-        console.error('Translation error:', err);
+        if (err.name === 'AbortError' || controller.signal.aborted) return;
+        console.error('Translation error (attempt ' + (retries + 1) + '):', err);
 
-        // Retry once after 2 seconds
-        if (retryCountRef.current < 1 && !controller.signal.aborted) {
-          retryCountRef.current++;
+        retries++;
+        if (retries <= maxRetries) {
+          // Exponential backoff: 1.5s, 3s
+          const delay = retries * 1500;
           setTimeout(() => {
             if (!controller.signal.aborted) doTranslate();
-          }, 2000);
-          return;
-        }
-
-        setTranslated(original);
-      } finally {
-        if (!controller.signal.aborted) {
+          }, delay);
+        } else {
+          setTranslated(stableOriginal);
           setIsTranslating(false);
         }
       }
     };
 
-    doTranslate();
+    // Small delay to batch rapid language switches
+    const timeout = setTimeout(doTranslate, 150);
 
     return () => {
+      clearTimeout(timeout);
       controller.abort();
     };
-  }, [language, reviewId, original.review, original.firstHalf, original.secondHalf, translateViaFetch]);
+  }, [language, contentKey, stableOriginal, translateViaFetch]);
 
   return { translated, isTranslating };
 }
