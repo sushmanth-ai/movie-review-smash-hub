@@ -3,6 +3,7 @@ import { X, ChevronLeft, ChevronRight, Star, ThumbsUp, ThumbsDown, Eye } from 'l
 import { MovieReview } from '@/data/movieReviews';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 interface StoryViewerProps {
   reviews: MovieReview[];
@@ -17,6 +18,7 @@ const SLIDES: StorySlide[] = ['overview', 'firstHalf', 'secondHalf', 'verdict'];
 
 export const StoryViewer: React.FC<StoryViewerProps> = ({ reviews, initialIndex, onClose }) => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [currentReviewIndex, setCurrentReviewIndex] = useState(initialIndex);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -128,7 +130,7 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({ reviews, initialIndex,
             {review.views && (
               <div className="flex items-center gap-1.5 mt-3 text-muted-foreground text-sm">
                 <Eye className="w-4 h-4" />
-                <span>{review.views} views</span>
+                <span>{review.views} {t('views')}</span>
               </div>
             )}
           </div>
@@ -139,7 +141,7 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({ reviews, initialIndex,
             <div className="bg-card/60 backdrop-blur-md rounded-2xl p-6 border border-orange-500/30 shadow-[0_0_30px_rgba(251,146,60,0.15)]">
               <div className="flex items-center gap-2 mb-4">
                 <span className="text-2xl">🎬</span>
-                <h3 className="text-xl font-bold text-orange-400">First Half</h3>
+                <h3 className="text-xl font-bold text-orange-400">{t('firstHalf')}</h3>
               </div>
               <p className="text-white/90 leading-relaxed text-base">
                 {review.firstHalf}
@@ -153,7 +155,7 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({ reviews, initialIndex,
             <div className="bg-card/60 backdrop-blur-md rounded-2xl p-6 border border-red-500/30 shadow-[0_0_30px_rgba(239,68,68,0.15)]">
               <div className="flex items-center gap-2 mb-4">
                 <span className="text-2xl">🎥</span>
-                <h3 className="text-xl font-bold text-red-400">Second Half</h3>
+                <h3 className="text-xl font-bold text-red-400">{t('secondHalf')}</h3>
               </div>
               <p className="text-white/90 leading-relaxed text-base">
                 {review.secondHalf}
@@ -168,14 +170,14 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({ reviews, initialIndex,
               <div className="bg-emerald-500/10 backdrop-blur-md rounded-2xl p-5 border border-emerald-500/30">
                 <div className="flex items-center gap-2 mb-3">
                   <ThumbsUp className="w-5 h-5 text-emerald-400" />
-                  <h3 className="text-lg font-bold text-emerald-400">Positives</h3>
+                  <h3 className="text-lg font-bold text-emerald-400">{t('positives')}</h3>
                 </div>
                 <p className="text-white/90 text-sm leading-relaxed">{review.positives}</p>
               </div>
               <div className="bg-red-500/10 backdrop-blur-md rounded-2xl p-5 border border-red-500/30">
                 <div className="flex items-center gap-2 mb-3">
                   <ThumbsDown className="w-5 h-5 text-red-400" />
-                  <h3 className="text-lg font-bold text-red-400">Negatives</h3>
+                  <h3 className="text-lg font-bold text-red-400">{t('negatives')}</h3>
                 </div>
                 <p className="text-white/90 text-sm leading-relaxed">{review.negatives}</p>
               </div>
@@ -186,7 +188,7 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({ reviews, initialIndex,
                 onClick={handleReadFull}
                 className="w-full py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold rounded-full text-base hover:scale-105 transition-transform shadow-[0_0_20px_rgba(239,68,68,0.4)]"
               >
-                Read Full Review →
+                {t('readMore')} →
               </button>
             </div>
           </div>

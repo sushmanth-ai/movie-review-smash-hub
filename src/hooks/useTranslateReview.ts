@@ -40,6 +40,12 @@ export function useTranslateReview(reviewId: string, original: ReviewTexts) {
       return;
     }
 
+    // Skip if original text is empty (review not loaded yet)
+    if (!original.review && !original.firstHalf) {
+      setTranslated(original);
+      return;
+    }
+
     const cacheKey = `${reviewId}-${language}`;
     const cached = translationCache.get(cacheKey);
     if (cached) {
@@ -79,7 +85,7 @@ export function useTranslateReview(reviewId: string, original: ReviewTexts) {
     return () => {
       controller.abort();
     };
-  }, [language, reviewId, original.review]);
+  }, [language, reviewId, original.review, original.firstHalf]);
 
   return { translated, isTranslating };
 }
