@@ -9,7 +9,7 @@ interface TeluguVoiceReaderProps {
 }
 
 export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
-  reviewText,
+  reviewText
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -44,15 +44,15 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
       voices.find((v) => v.lang.startsWith("en-IN")) ||
       voices.find((v) => v.lang.includes("IN")) ||
       voices.find((v) => v.lang.startsWith("en")) ||
-      null
-    );
+      null);
+
   }, []);
 
   const splitIntoChunks = useCallback((text: string): string[] => {
     // Split on sentence-ending punctuation
-    const sentences = text
-      .split(/(?<=[.!?:।])\s+/)
-      .filter((s) => s.trim().length > 0);
+    const sentences = text.
+    split(/(?<=[.!?:।])\s+/).
+    filter((s) => s.trim().length > 0);
 
     const chunks: string[] = [];
     for (const sentence of sentences) {
@@ -157,9 +157,9 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
           headers: {
             "Content-Type": "application/json",
             apikey: anonKey,
-            Authorization: `Bearer ${anonKey}`,
+            Authorization: `Bearer ${anonKey}`
           },
-          body: JSON.stringify({ text }),
+          body: JSON.stringify({ text })
         }
       );
 
@@ -183,7 +183,7 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
       toast({
         title: t("notSupported"),
         description: t("voiceNotSupported"),
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
@@ -244,21 +244,21 @@ export const TeluguVoiceReader: React.FC<TeluguVoiceReaderProps> = ({
 
   return (
     <div className="flex justify-center mt-6">
-      <Button
-        onClick={handleToggle}
-        disabled={isLoading}
-        variant="outline"
-        className="flex items-center gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground font-bold px-6 py-3 rounded-xl shadow-[0_0_15px_rgba(255,215,0,0.3)] transition-all"
-      >
-        {isLoading ? (
-          <Loader2 className="w-5 h-5 animate-spin" />
-        ) : isPlaying ? (
-          <VolumeX className="w-5 h-5" />
-        ) : (
-          <Volume2 className="w-5 h-5" />
-        )}
-        {isLoading ? t("loading") : isPlaying ? t("stop") : t("reviewVinandi")}
-      </Button>
-    </div>
-  );
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
+    </div>);
+
 };
