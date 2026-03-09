@@ -28,6 +28,27 @@
 
   <body>
     <div id="root"></div>
+    <noscript>
+      <div style="color:gold;background:#000;padding:2rem;text-align:center;font-family:sans-serif;">
+        <h1>SM Review 3.0</h1>
+        <p>Please enable JavaScript to use this app.</p>
+      </div>
+    </noscript>
+    <script>
+      // Catch fatal JS errors before React loads
+      window.addEventListener('error', function(e) {
+        var root = document.getElementById('root');
+        if (root && !root.hasChildNodes()) {
+          root.innerHTML = '<div style="color:gold;background:#000;padding:2rem;text-align:center;font-family:sans-serif;">' +
+            '<h1>⚠️ Loading Error</h1>' +
+            '<p style="color:#ccc;">' + (e.message || 'Unknown error') + '</p>' +
+            '<p style="color:#999;font-size:12px;">' + (e.filename || '') + ':' + (e.lineno || '') + '</p>' +
+            '<button onclick="caches.keys().then(function(k){k.forEach(function(n){caches.delete(n)})});location.reload()" ' +
+            'style="background:gold;color:#000;padding:8px 24px;border:none;border-radius:20px;font-weight:bold;margin-top:16px;cursor:pointer;">Clear Cache & Reload</button>' +
+            '</div>';
+        }
+      });
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
