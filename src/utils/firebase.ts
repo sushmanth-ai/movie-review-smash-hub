@@ -1,5 +1,6 @@
-import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
-import { getFirestore, type Firestore } from 'firebase/firestore';
+
+import { initializeApp, getApps } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBgw0O4B_NbCvGfxOzSgEtNNYYYLoxFpic",
@@ -12,8 +13,8 @@ const firebaseConfig = {
   measurementId: "G-CXB0LNYWFH"
 };
 
-let app: FirebaseApp | undefined;
-let db: Firestore | undefined;
+let app;
+let db;
 
 try {
   app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
@@ -21,7 +22,6 @@ try {
   console.log('Firebase initialized successfully');
 } catch (error) {
   console.error('Firebase initialization error:', error);
-  // App will continue without Firebase - static data will be used
 }
 
 export { db };

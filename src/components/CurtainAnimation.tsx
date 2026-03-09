@@ -6,27 +6,23 @@ interface CurtainAnimationProps {
 }
 
 export const CurtainAnimation = ({ alwaysPlay = false }: CurtainAnimationProps) => {
-  const [phase, setPhase] = useState<'enter' | 'logo' | 'reveal' | 'done'>('done');
+  const [phase, setPhase] = useState<'enter' | 'logo' | 'reveal' | 'done'>('enter');
 
   useEffect(() => {
     if (!alwaysPlay) {
       const shown = sessionStorage.getItem('curtainShown');
       if (shown) {
-        return; // phase already 'done'
+        setPhase('done');
+        return;
       }
       sessionStorage.setItem('curtainShown', 'true');
     }
-
-    // Start the animation
-    setPhase('enter');
 
     // enter → logo (0.4s), logo → reveal (1.6s), reveal → done (2.4s)
     const t0 = setTimeout(() => setPhase('logo'), 400);
     const t1 = setTimeout(() => setPhase('reveal'), 1600);
     const t2 = setTimeout(() => setPhase('done'), 2400);
-    // Safety: force done after 4s in case something hangs
-    const tSafety = setTimeout(() => setPhase('done'), 4000);
-    return () => { clearTimeout(t0); clearTimeout(t1); clearTimeout(t2); clearTimeout(tSafety); };
+    return () => { clearTimeout(t0); clearTimeout(t1); clearTimeout(t2); };
   }, [alwaysPlay]);
 
   if (phase === 'done') return null;

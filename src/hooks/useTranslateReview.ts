@@ -1,19 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/i18n/LanguageContext';
-
-// Lazy-load supabase to prevent crash when env vars are missing (e.g. Vercel without config)
-let _supabase: any = null;
-async function getSupabase() {
-  if (!_supabase) {
-    try {
-      const mod = await import('@/integrations/supabase/client');
-      _supabase = mod.supabase;
-    } catch {
-      return null;
-    }
-  }
-  return _supabase;
-}
 
 interface ReviewTexts {
   review: string;
@@ -40,12 +27,6 @@ export function useTranslateReview(reviewId: string, original: ReviewTexts) {
       return;
     }
 
-    // Skip if original text is empty (review not loaded yet)
-    if (!original.review && !original.firstHalf) {
-      setTranslated(original);
-      return;
-    }
-
     const cacheKey = `${reviewId}-${language}`;
     const cached = translationCache.get(cacheKey);
     if (cached) {
@@ -60,32 +41,26 @@ export function useTranslateReview(reviewId: string, original: ReviewTexts) {
 
     setIsTranslating(true);
 
-    getSupabase().then(sb => {
-      if (!sb || controller.signal.aborted) {
+    supabase.functions
+      .invoke('translate-review', {
+        body: { texts: original, targetLang: language },
+      })
+      .then(({ data, error }) => {
+        if (controller.signal.aborted) return;
+        if (error || !data?.translated) {
+          console.error('Translation failed:', error);
+          setTranslated(original);
+        } else {
+          translationCache.set(cacheKey, data.translated);
+          setTranslated(data.translated);
+        }
         setIsTranslating(false);
-        return;
-      }
-      sb.functions
-        .invoke('translate-review', {
-          body: { texts: original, targetLang: language },
-        })
-        .then(({ data, error }: any) => {
-          if (controller.signal.aborted) return;
-          if (error || !data?.translated) {
-            console.error('Translation failed:', error);
-            setTranslated(original);
-          } else {
-            translationCache.set(cacheKey, data.translated);
-            setTranslated(data.translated);
-          }
-          setIsTranslating(false);
-        });
-    });
+      });
 
     return () => {
       controller.abort();
     };
-  }, [language, reviewId, original.review, original.firstHalf]);
+  }, [language, reviewId, original.review]);
 
   return { translated, isTranslating };
 }
