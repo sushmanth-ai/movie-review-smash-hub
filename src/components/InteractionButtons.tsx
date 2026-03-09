@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Heart, MessageCircle, Share2 } from 'lucide-react';
 import { MovieReview } from '@/data/movieReviews';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 interface InteractionButtonsProps {
   review: MovieReview;
@@ -18,6 +19,8 @@ export const InteractionButtons: React.FC<InteractionButtonsProps> = ({
   onShare,
   isLiked = false
 }) => {
+  const { t } = useLanguage();
+  
   return (
     <div className="flex justify-around items-center pt-4 border-t border-gray-700">
       <Button
@@ -51,7 +54,7 @@ export const InteractionButtons: React.FC<InteractionButtonsProps> = ({
         className="flex items-center gap-2 text-white hover:text-green-500 transition-colors"
       >
         <Share2 className="w-4 h-4" />
-        Share
+        {t('share')}
       </Button>
     </div>
   );

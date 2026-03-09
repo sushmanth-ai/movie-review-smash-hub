@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { generateDeviceFingerprint } from '@/utils/deviceFingerprint';
 
 const PUSH_SUBSCRIBED_KEY = 'sm_push_subscribed';
