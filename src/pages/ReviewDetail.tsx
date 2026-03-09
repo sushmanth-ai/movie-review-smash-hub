@@ -100,7 +100,8 @@ const ReviewDetail = () => {
             trailerUrl: data.trailerUrl || '',
             likes: 0,
             comments: [],
-            views: data.views || 0
+            views: data.views || 0,
+            translations: data.translations
           };
           setReview(firebaseReview);
           loadLikes(setReviewFromList);
