@@ -141,7 +141,7 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({ reviews, initialIndex,
             <div className="bg-card/60 backdrop-blur-md rounded-2xl p-6 border border-orange-500/30 shadow-[0_0_30px_rgba(251,146,60,0.15)]">
               <div className="flex items-center gap-2 mb-4">
                 <span className="text-2xl">🎬</span>
-                <h3 className="text-xl font-bold text-orange-400">First Half</h3>
+                <h3 className="text-xl font-bold text-orange-400">{t('firstHalf')}</h3>
               </div>
               <p className="text-white/90 leading-relaxed text-base">
                 {review.firstHalf}
