@@ -130,7 +130,7 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({ reviews, initialIndex,
             {review.views && (
               <div className="flex items-center gap-1.5 mt-3 text-muted-foreground text-sm">
                 <Eye className="w-4 h-4" />
-                <span>{review.views} views</span>
+                <span>{review.views} {t('views')}</span>
               </div>
             )}
           </div>
