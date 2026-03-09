@@ -1,6 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/i18n/LanguageContext';
+
+// Lazy-load supabase to prevent crash when env vars are missing (e.g. Vercel without config)
+let _supabase: any = null;
+async function getSupabase() {
+  if (!_supabase) {
+    try {
+      const mod = await import('@/integrations/supabase/client');
+      _supabase = mod.supabase;
+    } catch {
+      return null;
+    }
+  }
+  return _supabase;
+}
 
 interface ReviewTexts {
   review: string;
