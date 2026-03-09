@@ -38,7 +38,7 @@ const Index = () => {
   
   const location = useLocation();
   const [activeTab, setActiveTab] = useState('home');
-  const [isAnimatingReviews, setIsAnimatingReviews] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
     const hash = location.hash;
@@ -46,10 +46,10 @@ const Index = () => {
     if (hash === '#search') newTab = 'search';
     else if (hash === '#reviews') newTab = 'reviews';
     
-    // Trigger logo animation if switching to reviews on mobile
-    if (newTab === 'reviews' && activeTab !== 'reviews' && window.innerWidth < 768) {
-      setIsAnimatingReviews(true);
-      setTimeout(() => setIsAnimatingReviews(false), 1200);
+    // Trigger logo animation if switching tabs
+    if (newTab !== activeTab) {
+      setIsTransitioning(true);
+      setTimeout(() => setIsTransitioning(false), 900); // Fast 0.9s transition
     }
     setActiveTab(newTab);
   }, [location.hash]);
@@ -252,14 +252,20 @@ const Index = () => {
 
       <div className="pt-20 md:pt-28" />
 
-      {/* SM Logo Animation Overlay for Mobile */}
-      {isAnimatingReviews && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/95 backdrop-blur-md md:hidden">
-          <img 
-            src="https://res.cloudinary.com/dvdmk59a1/image/upload/v1762242791/SM_Image_m8js8c.jpg" 
-            alt="SM Reviews Logo" 
-            className="h-40 w-40 object-cover rounded-full border-4 border-yellow-400 shadow-[0_0_50px_rgba(255,215,0,1)] animate-bounce" 
-          />
+      {/* SM Logo Animation Overlay for all transitions */}
+      {isTransitioning && (
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background/95 backdrop-blur-md">
+          <div className="relative group flex-shrink-0 animate-in fade-in zoom-in duration-300">
+            <div className="absolute -inset-4 bg-gradient-to-r from-yellow-400 via-primary to-yellow-400 rounded-full blur-xl opacity-80 animate-pulse" />
+            <img 
+              src="https://res.cloudinary.com/dvdmk59a1/image/upload/v1762242791/SM_Image_m8js8c.jpg" 
+              alt="SM Reviews Logo" 
+              className="relative h-32 w-32 md:h-48 md:w-48 object-cover rounded-full border-4 border-yellow-400 shadow-[0_0_50px_rgba(255,215,0,1)] animate-bounce" 
+            />
+          </div>
+          <h2 className="mt-8 text-3xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-primary to-yellow-300 animate-pulse uppercase">
+            {activeTab === 'home' ? 'Loading' : activeTab}
+          </h2>
         </div>
       )}
 
