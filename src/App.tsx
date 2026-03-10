@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -21,44 +22,60 @@ import {
   FestivalOverlay
 } from "./components/festival";
 
+import NotificationOverlay from "./components/NotificationOverlay";
+import { useFCM } from "./hooks/useFCM";
+
 const queryClient = new QueryClient();
 
-const App = () => (
-  <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <LanguageProvider>
-        <FestivalProvider>
-          <Toaster />
-          <Sonner />
-          
-          {/* Festival Decorations */}
-          <FestivalOverlay />
-          <FestivalParticles />
-          <FestivalBanner />
-          
-          <BrowserRouter>
-            <div className="flex flex-col min-h-screen relative z-10">
-              <div className="flex-1 pb-20 md:pb-0">
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/review/:id" element={<ReviewDetail />} />
-                  <Route path="/news" element={<NewsFeed />} />
-                  <Route path="/news/:id" element={<NewsDetail />} />
-                  <Route path="/admin/login" element={<AdminLogin />} />
-                  <Route path="/admin/dashboard" element={<AdminDashboard />} />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
+const App = () => {
+  const { requestPermission } = useFCM();
+
+  useEffect(() => {
+    // Attempt to register for push notifications on mount
+    const timer = setTimeout(() => {
+      requestPermission();
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [requestPermission]);
+
+  return (
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <LanguageProvider>
+          <FestivalProvider>
+            <Toaster />
+            <Sonner />
+            <NotificationOverlay />
+            
+            {/* Festival Decorations */}
+            <FestivalOverlay />
+            <FestivalParticles />
+            <FestivalBanner />
+            
+            <BrowserRouter>
+              <div className="flex flex-col min-h-screen relative z-10">
+                <div className="flex-1 pb-20 md:pb-0">
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/review/:id" element={<ReviewDetail />} />
+                    <Route path="/news" element={<NewsFeed />} />
+                    <Route path="/news/:id" element={<NewsDetail />} />
+                    <Route path="/admin/login" element={<AdminLogin />} />
+                    <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </div>
+                <MobileNavbar />
               </div>
-              <MobileNavbar />
-            </div>
-          </BrowserRouter>
-        </FestivalProvider>
-        </LanguageProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
-  </ErrorBoundary>
-);
+            </BrowserRouter>
+          </FestivalProvider>
+          </LanguageProvider>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
+  );
+};
 
 export default App;
