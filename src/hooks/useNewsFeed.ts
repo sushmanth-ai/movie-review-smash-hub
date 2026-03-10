@@ -42,7 +42,12 @@ export const useNewsFeed = () => {
     setError(null);
 
     try {
-      const resp = await fetch(`${SUPABASE_URL}/functions/v1/fetch-news`, {
+      const url = new URL(`${SUPABASE_URL}/functions/v1/fetch-news`);
+      if (force) {
+        url.searchParams.set('t', Date.now().toString());
+      }
+
+      const resp = await fetch(url.toString(), {
         headers: { 'apikey': SUPABASE_ANON_KEY },
       });
 
