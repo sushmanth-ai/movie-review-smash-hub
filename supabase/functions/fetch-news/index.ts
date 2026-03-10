@@ -189,7 +189,7 @@ Deno.serve(async (req) => {
     const feedPromises = RSS_FEEDS.map(async (feedUrl) => {
       try {
         const cacheBust = `${feedUrl.includes('?') ? '&' : '?'}t=${Date.now()}`;
-        const apiUrl = `${RSS2JSON_API}?rss_url=${encodeURIComponent(feedUrl + cacheBust)}`;
+        const apiUrl = `${RSS2JSON_API}?rss_url=${encodeURIComponent(feedUrl + cacheBust)}&t=${Date.now()}`;
         const resp = await fetch(apiUrl, { signal: AbortSignal.timeout(12000) });
         if (!resp.ok) return [];
         const data = await resp.json();
