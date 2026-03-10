@@ -48,7 +48,13 @@ export const useNewsFeed = () => {
       }
 
       const resp = await fetch(url.toString(), {
-        headers: { 'apikey': SUPABASE_ANON_KEY },
+        cache: 'no-store',
+        headers: { 
+          'apikey': SUPABASE_ANON_KEY,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        },
       });
 
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
