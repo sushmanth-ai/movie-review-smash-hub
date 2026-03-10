@@ -5,7 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { RefreshCw, Clock, ChevronUp, ChevronDown } from 'lucide-react';
 import { format } from 'date-fns';
 
-const DEFAULT_IMAGE = '/placeholder.svg';
+// Removed DEFAULT_IMAGE - using inline fallback instead
 
 const NewsCard = ({ item, onClick }: { item: NewsItem; onClick: () => void }) => {
   const [imgError, setImgError] = useState(false);

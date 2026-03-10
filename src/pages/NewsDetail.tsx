@@ -23,7 +23,7 @@ const NewsDetail = () => {
     );
   }
 
-  const image = article.image && !imgError ? article.image : DEFAULT_IMAGE;
+  const hasImage = article.image && article.image.length > 10 && !imgError;
 
   const handleShare = async () => {
     if (navigator.share) {
