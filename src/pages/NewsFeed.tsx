@@ -9,7 +9,7 @@ const DEFAULT_IMAGE = '/placeholder.svg';
 
 const NewsCard = ({ item, onClick }: { item: NewsItem; onClick: () => void }) => {
   const [imgError, setImgError] = useState(false);
-  const bgImage = item.image && !imgError ? item.image : DEFAULT_IMAGE;
+  const hasImage = item.image && item.image.length > 10 && !imgError;
 
   return (
     <div
@@ -18,13 +18,19 @@ const NewsCard = ({ item, onClick }: { item: NewsItem; onClick: () => void }) =>
     >
       {/* Background Image */}
       <div className="absolute inset-0">
-        <img
-          src={bgImage}
-          alt={item.title}
-          className="w-full h-full object-cover"
-          onError={() => setImgError(true)}
-          loading="lazy"
-        />
+        {hasImage ? (
+          <img
+            src={item.image}
+            alt={item.title}
+            className="w-full h-full object-cover"
+            onError={() => setImgError(true)}
+            loading="lazy"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-primary/30 via-background to-primary/10 flex items-center justify-center">
+            <span className="text-6xl">🎬</span>
+          </div>
+        )}
         {/* Gradient overlays */}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/20" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-transparent h-32" />
