@@ -10,6 +10,8 @@ import NotFound from "./pages/NotFound";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import ReviewDetail from "./pages/ReviewDetail";
+import NewsFeed from "./pages/NewsFeed";
+import NewsDetail from "./pages/NewsDetail";
 import Footer from "./components/Footer";
 import { MobileNavbar } from "./components/MobileNavbar";
 import { 
