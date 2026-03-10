@@ -23,8 +23,11 @@ export const useNewsFeed = () => {
   const [error, setError] = useState<string | null>(null);
 
   const fetchNews = useCallback(async (force = false) => {
-    // Check cache first
-    if (!force) {
+    // On force refresh, wipe the old localStorage cache immediately
+    if (force) {
+      try { localStorage.removeItem(CACHE_KEY); } catch {}
+    } else {
+      // Check cache first (non-forced loads only)
       try {
         const cached = localStorage.getItem(CACHE_KEY);
         if (cached) {
@@ -42,25 +45,24 @@ export const useNewsFeed = () => {
     setError(null);
 
     try {
+      // Always add timestamp to bust any edge/CDN caching
       const url = new URL(`${SUPABASE_URL}/functions/v1/fetch-news`);
-      if (force) {
-        url.searchParams.set('t', Date.now().toString());
-      }
+      url.searchParams.set('t', Date.now().toString());
 
       const resp = await fetch(url.toString(), {
         cache: 'no-store',
-        headers: { 
+        headers: {
           'apikey': SUPABASE_ANON_KEY,
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Pragma': 'no-cache',
-          'Expires': '0'
+          'Expires': '0',
         },
       });
 
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const data = await resp.json();
 
-      if (data.items) {
+      if (data.items && data.items.length > 0) {
         setNews(data.items);
         localStorage.setItem(CACHE_KEY, JSON.stringify({ items: data.items, timestamp: Date.now() }));
       }
