@@ -26,93 +26,104 @@ interface NewsItem {
   pubDate: string;
 }
 
-// Tollywood/Telugu movie keywords for filtering
-const TOLLYWOOD_KEYWORDS = [
-  "tollywood", "telugu", "movie", "film", "cinema", "box office",
-  "review", "trailer", "teaser", "song", "shoot", "cast",
-  "hero", "heroine", "director", "producer", "star",
-  "blockbuster", "hit", "flop", "collection", "crore",
-  "ott", "release", "first look", "motion poster", "pre-release",
-  "audio", "lyrical", "shooting", "wrap", "schedule",
-  // Common Telugu film industry names
-  "mahesh", "prabhas", "allu arjun", "jr ntr", "ram charan",
-  "chiranjeevi", "nani", "ravi teja", "vijay deverakonda",
-  "pawan kalyan", "balakrishna", "nagarjuna", "venkatesh",
-  "rajamouli", "trivikram", "sukumar", "koratala",
-  "pushpa", "rrr", "baahubali", "salaar",
-  // Telugu words commonly in titles
-  "గ", "చి", "సి", "మూ", "హీ",
+// Keywords that indicate movie/Tollywood content
+const MOVIE_KEYWORDS = [
+  "movie", "film", "cinema", "box office", "review", "trailer", "teaser",
+  "song", "shoot", "cast", "hero", "heroine", "director", "producer",
+  "blockbuster", "hit", "flop", "collection", "crore", "ott", "release",
+  "first look", "motion poster", "pre-release", "audio launch", "lyrical",
+  "shooting", "wrap", "schedule", "sequel", "remake", "dubbed",
+  "tollywood", "telugu movie", "telugu film", "south film",
+  "mass", "pan india", "pan-india", "theatrical",
+  // Actor names
+  "mahesh babu", "prabhas", "allu arjun", "jr ntr", "ram charan",
+  "chiranjeevi", "nani", "ravi teja", "vijay deverakonda", "vijay devarakonda",
+  "pawan kalyan", "balakrishna", "nagarjuna", "venkatesh", "nithin",
+  "nithiin", "siddharth", "rana", "sharwanand", "sudheer babu",
+  "varun tej", "sai dharam tej", "bellamkonda", "sundeep kishan",
+  "naga chaitanya", "akhil", "adivi sesh", "vishwak sen", "naga shaurya",
+  "allari naresh", "suhas", "priyadarshi", "naveen polishetty",
+  "samantha", "rashmika", "pooja hegde", "sree leela", "sreeleela",
+  "anupama", "mrunal", "keerthy suresh", "kajal",
+  // Director names
+  "rajamouli", "trivikram", "sukumar", "koratala", "boyapati",
+  "anil ravipudi", "parasuram", "gopichand malineni", "harish shankar",
+  "sekhar kammula", "venky atluri", "buchi babu", "sandeep reddy vanga",
+  "nag ashwin", "hanu raghavapudi", "sreenu vaitla",
+  // Movie titles / franchises
+  "pushpa", "rrr", "baahubali", "salaar", "spirit", "devara",
+  "game changer", "saripodhaa sanivaaram",
+  // Industry terms
+  "pre-release event", "audio function", "title poster", "look test",
+  "censored", "runtime", "songs released", "item song", "interval",
+  "climax", "screen count", "advance booking", "satellite rights",
+  "digital rights", "streaming", "amazon prime", "netflix", "hotstar",
+  "zee5", "aha", "sun nxt",
 ];
 
-// Non-Tollywood keywords to exclude
+// Definite non-movie content to exclude
 const EXCLUDE_KEYWORDS = [
-  "cricket", "politics", "election", "modi", "congress", "bjp",
-  "stock market", "ipl", "sports", "weather", "recipe", "health tips",
-  "astrology", "horoscope", "rashi", "panchangam",
+  "cricket", "politics", "election", "modi", "congress", "bjp", "tdp",
+  "ysrcp", "ycp", "jagan", "chandrababu", "stock market", "ipl",
+  "sports", "weather", "recipe", "health tips", "astrology", "horoscope",
+  "rashi", "panchangam", "real estate", "gold price", "petrol price",
+  "metro", "railway", "flight", "airport", "temple", "devotional",
+  "chatgpt", "gemini ai", "world cup", "t20", "odi",
 ];
 
-function isTollywoodNews(title: string, description: string): boolean {
+function isTollywoodMovieNews(title: string, description: string, link: string): boolean {
   const text = `${title} ${description}`.toLowerCase();
-  
-  // Exclude non-movie content
+  const url = link.toLowerCase();
+
+  // Check URL path for movie categories (many Telugu sites use /movie/ or /telugu-movie/ paths)
+  const movieUrlPatterns = ["/movie", "/telugu-movie", "/review", "/box-office", "/tollywood", "/gossip"];
+  const nonMovieUrlPatterns = ["/politics", "/sports", "/cricket", "/business", "/tech", "/lifestyle", "/health"];
+
+  for (const pattern of nonMovieUrlPatterns) {
+    if (url.includes(pattern)) return false;
+  }
+
+  // Hard exclude non-movie content
   for (const keyword of EXCLUDE_KEYWORDS) {
     if (text.includes(keyword)) return false;
   }
-  
-  // These sources are primarily Tollywood, so be lenient
-  // Check if it contains any movie-related keyword
-  for (const keyword of TOLLYWOOD_KEYWORDS) {
-    if (text.includes(keyword.toLowerCase())) return true;
+
+  // Check URL for movie category
+  for (const pattern of movieUrlPatterns) {
+    if (url.includes(pattern)) return true;
   }
-  
-  // For Telugu movie sites, most content IS Tollywood, so include if not excluded
-  return true;
+
+  // Check content for movie keywords
+  for (const keyword of MOVIE_KEYWORDS) {
+    if (text.includes(keyword)) return true;
+  }
+
+  // Not clearly movie-related, exclude
+  return false;
 }
 
 function extractAllImages(item: any): string {
-  // Try multiple image sources in order of quality
   const candidates: string[] = [];
-  
-  // 1. Thumbnail from RSS2JSON
-  if (item.thumbnail && item.thumbnail.length > 10) {
-    candidates.push(item.thumbnail);
-  }
-  
-  // 2. Enclosure
-  if (item.enclosure?.link && item.enclosure.link.length > 10) {
-    candidates.push(item.enclosure.link);
-  }
-  if (item.enclosure?.url && item.enclosure.url.length > 10) {
-    candidates.push(item.enclosure.url);
-  }
-  
-  // 3. Media content
-  if (item["media:content"]?.url) {
-    candidates.push(item["media:content"].url);
-  }
-  
-  // 4. Extract from content HTML
+
+  if (item.thumbnail && item.thumbnail.length > 10) candidates.push(item.thumbnail);
+  if (item.enclosure?.link && item.enclosure.link.length > 10) candidates.push(item.enclosure.link);
+  if (item.enclosure?.url && item.enclosure.url.length > 10) candidates.push(item.enclosure.url);
+  if (item["media:content"]?.url) candidates.push(item["media:content"].url);
+
   const contentHtml = item.content || item.description || "";
   const imgMatches = contentHtml.matchAll(/<img[^>]+src=["']([^"']+)["']/gi);
   for (const match of imgMatches) {
-    if (match[1] && match[1].length > 10 && !match[1].includes("data:")) {
-      candidates.push(match[1]);
-    }
+    if (match[1] && match[1].length > 10 && !match[1].includes("data:")) candidates.push(match[1]);
   }
-  
-  // 5. Extract og:image or any image URL from content
+
   const urlMatches = contentHtml.matchAll(/https?:\/\/[^\s"'<>]+\.(?:jpg|jpeg|png|webp|gif)/gi);
-  for (const match of urlMatches) {
-    candidates.push(match[0]);
-  }
-  
-  // Return first valid candidate
+  for (const match of urlMatches) candidates.push(match[0]);
+
   for (const url of candidates) {
-    // Skip tiny icons/trackers
     if (url.includes("gravatar") || url.includes("1x1") || url.includes("pixel") || url.includes("favicon")) continue;
     return url;
   }
-  
+
   return "";
 }
 
@@ -150,7 +161,7 @@ Deno.serve(async (req) => {
           .map((item: any) => {
             const title = stripHtml(item.title || "");
             const description = stripHtml(item.description || "").slice(0, 200);
-            
+
             return {
               id: btoa(item.link || item.title).slice(0, 40),
               title,
@@ -160,11 +171,9 @@ Deno.serve(async (req) => {
               image: extractAllImages(item),
               source,
               pubDate: item.pubDate || new Date().toISOString(),
-              _isTollywood: isTollywoodNews(title, description),
-            };
+            } as NewsItem;
           })
-          .filter((item: any) => item._isTollywood)
-          .map(({ _isTollywood, ...rest }: any) => rest as NewsItem);
+          .filter((item: NewsItem) => isTollywoodMovieNews(item.title, item.description, item.link));
       } catch (e) {
         console.error(`Feed error for ${feedUrl}:`, e);
         return [];
@@ -176,7 +185,6 @@ Deno.serve(async (req) => {
       .filter((r) => r.status === "fulfilled")
       .flatMap((r) => (r as PromiseFulfilledResult<NewsItem[]>).value);
 
-    // Sort by date descending, take top 20
     allItems.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
     const top = allItems.slice(0, 20);
 
