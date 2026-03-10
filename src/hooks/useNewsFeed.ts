@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://mhrbffdkssemqijcipni.supabase.co';
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ocmJmZmRrc3NlbXFpamNpcG5pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxNTM1NzIsImV4cCI6MjA3NzcyOTU3Mn0.GIOdnlm0Gm7MD4bMz33w5ij65pfsuTg6lfTisQUulog';
@@ -14,16 +14,23 @@ export interface NewsItem {
   pubDate: string;
 }
 
-const CACHE_KEY = 'sm_news_cache_v3';
+const CACHE_KEY = 'sm_news_cache_v4';
 const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
 
-// RSS Feeds to fetch
+// Multiple RSS-to-JSON services for fallback
+const RSS2JSON_SERVICES = [
+  (feedUrl: string) =>
+    `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}&t=${Date.now()}`,
+  (feedUrl: string) =>
+    `https://rss2json.com/api.json?rss_url=${encodeURIComponent(feedUrl)}&t=${Date.now()}`,
+];
+
 const RSS_FEEDS = [
-  { url: 'https://www.telugu360.com/feed/', source: 'Telugu360' },
-  { url: 'https://www.123telugu.com/feed', source: '123Telugu' },
-  { url: 'https://www.greatandhra.com/rss', source: 'GreatAndhra' },
-  { url: 'https://www.gulte.com/feed/', source: 'Gulte' },
-  { url: 'https://www.mirchi9.com/feed/', source: 'Mirchi9' },
+  'https://www.telugu360.com/feed/',
+  'https://www.123telugu.com/feed',
+  'https://www.greatandhra.com/rss',
+  'https://www.gulte.com/feed/',
+  'https://www.mirchi9.com/feed/',
 ];
 
 const TOLLYWOOD_NAMES = [
@@ -42,15 +49,19 @@ const TOLLYWOOD_KEYWORDS = [
   'tollywood', 'telugu movie', 'telugu film', 'telugu cinema',
   'pushpa', 'rrr', 'baahubali', 'salaar', 'kalki', 'spirit', 'devara',
   'box office', 'first look', 'motion poster', 'pre-release',
-  'audio launch', 'song release', 'ott release',
+  'audio launch', 'song release',
 ];
 
 const EXCLUDE_KEYWORDS = [
   'cricket', 'politics', 'election', 'modi', 'congress', 'bjp',
   'ysrcp', 'jagan mohan', 'chandrababu', 'stock market', 'ipl',
   'sports', 'horoscope', 'astrology', 'real estate', 'gold price',
-  'petrol price', 'world cup', 'revanth reddy', 'panchayat',
+  'revanth reddy',
 ];
+
+function stripHtml(html: string): string {
+  return html?.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, ' ').trim() || '';
+}
 
 function isTollywoodNews(title: string, desc: string, link: string): boolean {
   const text = `${title} ${desc}`.toLowerCase();
@@ -59,132 +70,132 @@ function isTollywoodNews(title: string, desc: string, link: string): boolean {
   if (url.includes('/politics') || url.includes('/sports') || url.includes('/cricket')) return false;
   for (const n of TOLLYWOOD_NAMES) if (text.includes(n)) return true;
   for (const kw of TOLLYWOOD_KEYWORDS) if (text.includes(kw)) return true;
-  const genericTerms = ['movie', 'film', 'cinema', 'trailer', 'song', 'director', 'review', 'release', 'poster', 'ott'];
-  for (const kw of genericTerms) if (text.includes(kw)) return true;
+  const generic = ['movie', 'film', 'cinema', 'trailer', 'song', 'director', 'review', 'release', 'poster', 'ott'];
+  for (const kw of generic) if (text.includes(kw)) return true;
   return false;
 }
 
-function stripHtml(html: string): string {
-  return html?.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, ' ').trim() || '';
-}
-
-function extractImage(xml: string): string {
-  const media = xml.match(/<media:(?:content|thumbnail)[^>]+url=["']([^"']+)["']/i);
-  if (media?.[1]) return media[1];
-  const enc = xml.match(/<enclosure[^>]+url=["']([^"']+)["']/i);
-  if (enc?.[1] && /\.(jpg|jpeg|png|webp|gif)/i.test(enc[1])) return enc[1];
-  const img = xml.match(/<img[^>]+src=["']([^"']+)["']/i);
-  if (img?.[1] && !img[1].startsWith('data:')) return img[1];
+function extractImage(item: any): string {
+  if (item.thumbnail && item.thumbnail.length > 10) return item.thumbnail;
+  if (item.enclosure?.link && item.enclosure.link.length > 10) return item.enclosure.link;
+  const htmlFields = [item.content, item.description];
+  for (const html of htmlFields) {
+    if (!html) continue;
+    const match = html.match(/<img[^>]+src=["']([^"']+)["']/i);
+    if (match?.[1] && !match[1].startsWith('data:')) return match[1];
+  }
   return '';
 }
 
-function getXmlTag(xml: string, tag: string): string {
-  const re = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i');
-  const m = xml.match(re);
-  return m ? m[1].replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').trim() : '';
-}
-
-async function fetchFeedViaProxy(feedUrl: string, source: string): Promise<NewsItem[]> {
-  // Use allorigins.win as a CORS proxy - returns fresh content every request
-  const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(feedUrl)}&t=${Date.now()}`;
-  const resp = await fetch(proxyUrl, { signal: AbortSignal.timeout(15000) });
-  if (!resp.ok) throw new Error(`Proxy error ${resp.status}`);
-  const json = await resp.json();
-  const xml: string = json.contents || '';
-  if (!xml) return [];
-
-  const items: NewsItem[] = [];
-  const itemRegex = /<item[\s>]([\s\S]*?)<\/item>/gi;
-  let match;
-  while ((match = itemRegex.exec(xml)) !== null) {
-    const block = match[1];
-    const title = stripHtml(getXmlTag(block, 'title'));
-    const link = getXmlTag(block, 'link').trim() || '';
-    const desc = stripHtml(getXmlTag(block, 'description')).slice(0, 200);
-    const contentRaw = getXmlTag(block, 'content:encoded') || getXmlTag(block, 'description');
-    const content = stripHtml(contentRaw);
-    const pubDate = getXmlTag(block, 'pubDate') || new Date().toISOString();
-    const image = extractImage(block);
-
-    if (!title || title.length < 5) continue;
-    if (!isTollywoodNews(title, desc, link)) continue;
-
-    items.push({
-      id: btoa(unescape(encodeURIComponent((link || title).slice(0, 60)))).slice(0, 40),
-      title,
-      description: desc,
-      content,
-      link,
-      image,
-      source,
-      pubDate,
-    });
-  }
-  return items;
-}
-
+// --------- Strategy 1: Supabase Edge Function (deployed version) ---------
 async function fetchFromEdgeFunction(): Promise<NewsItem[]> {
-  const url = new URL(`${SUPABASE_URL}/functions/v1/fetch-news`);
-  url.searchParams.set('t', Date.now().toString());
-  const resp = await fetch(url.toString(), {
-    cache: 'no-store',
+  console.log('[NewsFeed] Trying Supabase Edge Function...');
+  const url = `${SUPABASE_URL}/functions/v1/fetch-news?t=${Date.now()}`;
+  const resp = await fetch(url, {
     headers: {
-      apikey: SUPABASE_ANON_KEY,
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-      Pragma: 'no-cache',
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
     },
   });
-  if (!resp.ok) throw new Error(`Edge fn HTTP ${resp.status}`);
+  if (!resp.ok) throw new Error(`Edge function HTTP ${resp.status}`);
   const data = await resp.json();
-  return data.items || [];
+  if (!data.items || data.items.length === 0) throw new Error('Edge function returned no items');
+  console.log(`[NewsFeed] Edge function returned ${data.items.length} items`);
+  return data.items;
 }
 
-async function fetchAllNews(): Promise<NewsItem[]> {
-  // Try frontend proxy fetching first — no server caching, always fresh
-  try {
-    const results = await Promise.allSettled(
-      RSS_FEEDS.map(({ url, source }) => fetchFeedViaProxy(url, source))
-    );
-    const all: NewsItem[] = results
-      .filter(r => r.status === 'fulfilled')
-      .flatMap(r => (r as PromiseFulfilledResult<NewsItem[]>).value);
+// --------- Strategy 2: Direct rss2json.com from frontend ---------
+async function fetchFeedFromRss2Json(feedUrl: string): Promise<NewsItem[]> {
+  for (const buildUrl of RSS2JSON_SERVICES) {
+    try {
+      const apiUrl = buildUrl(feedUrl);
+      const resp = await fetch(apiUrl, { signal: AbortSignal.timeout(10000) });
+      if (!resp.ok) continue;
+      const data = await resp.json();
+      if (data.status !== 'ok' || !data.items) continue;
 
-    if (all.length > 0) {
-      // Deduplicate
-      const seen = new Set<string>();
-      const unique = all.filter(item => {
-        const key = item.title.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 30);
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
-      unique.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
-      return unique.slice(0, 25);
+      const source = data.feed?.title?.split('|')[0]?.trim() || 'News';
+      return data.items
+        .map((item: any) => {
+          const title = stripHtml(item.title || '');
+          const description = stripHtml(item.description || '').slice(0, 200);
+          return {
+            id: btoa(unescape(encodeURIComponent((item.link || item.title || '').slice(0, 60)))).slice(0, 40),
+            title,
+            description,
+            content: stripHtml(item.content || item.description || ''),
+            link: item.link || '',
+            image: extractImage(item),
+            source,
+            pubDate: item.pubDate || new Date().toISOString(),
+          } as NewsItem;
+        })
+        .filter((item: NewsItem) => item.title.length >= 5 && isTollywoodNews(item.title, item.description, item.link));
+    } catch {
+      continue;
     }
+  }
+  return [];
+}
+
+async function fetchAllFromRss2Json(): Promise<NewsItem[]> {
+  console.log('[NewsFeed] Trying direct rss2json from frontend...');
+  const results = await Promise.allSettled(RSS_FEEDS.map(url => fetchFeedFromRss2Json(url)));
+  const all: NewsItem[] = results
+    .filter(r => r.status === 'fulfilled')
+    .flatMap(r => (r as PromiseFulfilledResult<NewsItem[]>).value);
+
+  // Deduplicate
+  const seen = new Set<string>();
+  const unique = all.filter(item => {
+    const key = item.title.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 30);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  unique.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
+  console.log(`[NewsFeed] rss2json returned ${unique.length} items`);
+  return unique.slice(0, 25);
+}
+
+// --------- Main fetch with fallback chain ---------
+async function fetchAllNews(): Promise<NewsItem[]> {
+  // Strategy 1: Try Supabase Edge Function first
+  try {
+    const items = await fetchFromEdgeFunction();
+    if (items.length > 0) return items;
   } catch (e) {
-    console.warn('[NewsFeed] Proxy fetch failed, falling back to edge fn:', e);
+    console.warn('[NewsFeed] Edge function failed:', e);
   }
 
-  // Fall back to edge function
-  return fetchFromEdgeFunction();
+  // Strategy 2: Try direct rss2json from frontend
+  try {
+    const items = await fetchAllFromRss2Json();
+    if (items.length > 0) return items;
+  } catch (e) {
+    console.warn('[NewsFeed] rss2json failed:', e);
+  }
+
+  throw new Error('All news sources failed. Please check your internet connection and try again.');
 }
 
 export const useNewsFeed = () => {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const fetchCount = useRef(0);
 
   const fetchNews = useCallback(async (force = false) => {
-    // On force refresh, wipe old cache
+    // On force refresh, clear the local cache
     if (force) {
       try { localStorage.removeItem(CACHE_KEY); } catch {}
     } else {
-      // Serve from cache if still fresh
+      // Use cache if still fresh
       try {
         const cached = localStorage.getItem(CACHE_KEY);
         if (cached) {
           const { items, timestamp } = JSON.parse(cached);
-          if (Date.now() - timestamp < CACHE_DURATION) {
+          if (Date.now() - timestamp < CACHE_DURATION && items?.length > 0) {
             setNews(items);
             setIsLoading(false);
             return;
@@ -195,18 +206,27 @@ export const useNewsFeed = () => {
 
     setIsLoading(true);
     setError(null);
+    fetchCount.current += 1;
+    const currentFetch = fetchCount.current;
 
     try {
       const items = await fetchAllNews();
+
+      // Prevent stale responses from overriding newer ones
+      if (currentFetch !== fetchCount.current) return;
+
       if (items.length > 0) {
         setNews(items);
         localStorage.setItem(CACHE_KEY, JSON.stringify({ items, timestamp: Date.now() }));
       }
     } catch (e: any) {
-      console.error('[NewsFeed] Fetch error:', e);
-      setError(e.message);
+      if (currentFetch !== fetchCount.current) return;
+      console.error('[NewsFeed] All fetches failed:', e);
+      setError(e.message || 'Failed to fetch news');
     } finally {
-      setIsLoading(false);
+      if (currentFetch === fetchCount.current) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
