@@ -10,6 +10,8 @@ import NotFound from "./pages/NotFound";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import ReviewDetail from "./pages/ReviewDetail";
+import NewsFeed from "./pages/NewsFeed";
+import NewsDetail from "./pages/NewsDetail";
 import Footer from "./components/Footer";
 import { MobileNavbar } from "./components/MobileNavbar";
 import { 
@@ -41,6 +43,8 @@ const App = () => (
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/review/:id" element={<ReviewDetail />} />
+                  <Route path="/news" element={<NewsFeed />} />
+                  <Route path="/news/:id" element={<NewsDetail />} />
                   <Route path="/admin/login" element={<AdminLogin />} />
                   <Route path="/admin/dashboard" element={<AdminDashboard />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
