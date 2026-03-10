@@ -14,7 +14,7 @@ export interface NewsItem {
   pubDate: string;
 }
 
-const CACHE_KEY = 'sm_news_cache';
+const CACHE_KEY = 'sm_news_cache_v2';
 const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
 
 export const useNewsFeed = () => {
