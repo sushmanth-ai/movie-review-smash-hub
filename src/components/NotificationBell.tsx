@@ -1,12 +1,12 @@
 import React from 'react';
-import { Bell, BellRing, BellOff, Loader2 } from 'lucide-react';
-import { useFCM } from '@/hooks/useFCM';
+import { Bell, BellRing, BellOff } from 'lucide-react';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useToast } from '@/hooks/use-toast';
 import { useSound } from '@/hooks/useSound';
 import { useLanguage } from '@/i18n/LanguageContext';
 
 export const NotificationBell = () => {
-  const { token, isSupported, isLoading, requestPermission, removeToken } = useFCM();
+  const { isSupported, isSubscribed, isLoading, permission, subscribe } = usePushNotifications();
   const { toast } = useToast();
   const { playSound } = useSound();
   const { t } = useLanguage();
@@ -16,17 +16,38 @@ export const NotificationBell = () => {
   const handleClick = async () => {
     playSound('click');
 
-    if (token) {
-      await removeToken();
+    if (permission === 'denied') {
+      toast({
+        title: t('notificationsBlocked'),
+        description: t('notificationsBlockedDesc'),
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (isSubscribed) {
+      toast({
+        title: t('notificationsActive'),
+        description: t('notificationsActiveDesc'),
+      });
+      return;
+    }
+
+    const success = await subscribe();
+    if (success) {
+      playSound('popup');
+      toast({
+        title: t('notificationsEnabled'),
+        description: t('notificationsEnabledDesc'),
+      });
     } else {
-      const newToken = await requestPermission();
-      if (newToken) {
-        playSound('popup');
-      }
+      toast({
+        title: t('notificationsFailed'),
+        description: t('notificationsFailedDesc'),
+        variant: 'destructive',
+      });
     }
   };
-
-  const isSubscribed = !!token;
 
   return (
     <button
@@ -34,20 +55,22 @@ export const NotificationBell = () => {
       disabled={isLoading}
       className={`relative p-2 rounded-full transition-all duration-300 ${
         isSubscribed
-          ? 'bg-primary/20 text-primary hover:bg-primary/30 border border-primary/50'
-          : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-primary border border-transparent'
-      } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-      title={isSubscribed ? "Disable Notifications" : "Enable Notifications"}
+          ? 'bg-primary/20 text-primary hover:bg-primary/30'
+          : permission === 'denied'
+          ? 'bg-destructive/20 text-destructive'
+          : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-primary'
+      } ${isLoading ? 'animate-pulse' : ''}`}
+      title={isSubscribed ? t('notificationsActive') : t('enableNotifications')}
     >
-      {isLoading ? (
-        <Loader2 className="w-5 h-5 animate-spin" />
+      {permission === 'denied' ? (
+        <BellOff className="w-5 h-5" />
       ) : isSubscribed ? (
         <BellRing className="w-5 h-5" />
       ) : (
         <Bell className="w-5 h-5" />
       )}
       {isSubscribed && (
-        <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-background bg-green-500 animate-pulse" />
+        <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-background bg-green-500" />
       )}
     </button>
   );

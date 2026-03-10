@@ -56,9 +56,22 @@ export const useAdminReviews = () => {
         createdAt: new Date()
       });
 
+      // Auto-send push notification to all subscribers
+      try {
+        await sendPushNotification(
+          `🎬 New Review: ${data.title}`,
+          `${data.review?.slice(0, 100) || 'Check out the latest review!'}`,
+          '/',
+          `review-${Date.now()}`,
+          data.image || undefined
+        );
+      } catch (e) {
+        console.error('Push notification failed:', e);
+      }
+      
       toast({
         title: "Success",
-        description: "Review added! Notification will be sent automatically. 🔔",
+        description: "Review added & notification sent! 🔔",
       });
     } catch (error) {
       console.error('Error adding review:', error);

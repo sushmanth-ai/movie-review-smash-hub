@@ -19,7 +19,6 @@ import { useToast } from '@/hooks/use-toast';
 import { StoryCircles } from '@/components/StoryCircles';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { useLanguage } from '@/i18n/LanguageContext';
-import NotificationToggle from '@/components/NotificationToggle';
 
 const Index = () => {
   const { playSound } = useSound();
@@ -388,11 +387,6 @@ const Index = () => {
             )}
           </div>
         )}
-
-        {/* Push Notifications Setup */}
-        <div className="max-w-md mx-auto mb-16">
-          <NotificationToggle />
-        </div>
 
         {/* Contact Support Section */}
         <div className="mt-16 mb-8">
