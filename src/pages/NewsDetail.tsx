@@ -37,12 +37,18 @@ const NewsDetail = () => {
     <div className="min-h-screen bg-background pb-24 md:pb-8">
       {/* Hero Image */}
       <div className="relative w-full h-64 md:h-96">
-        <img
-          src={image}
-          alt={article.title}
-          className="w-full h-full object-cover"
-          onError={() => setImgError(true)}
-        />
+        {hasImage ? (
+          <img
+            src={article.image}
+            alt={article.title}
+            className="w-full h-full object-cover"
+            onError={() => setImgError(true)}
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-primary/30 via-background to-primary/10 flex items-center justify-center">
+            <span className="text-8xl">🎬</span>
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
 
         {/* Top bar */}
