@@ -4,7 +4,7 @@ import { ArrowLeft, Clock, ExternalLink, Share2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { NewsItem } from '@/hooks/useNewsFeed';
 
-const DEFAULT_IMAGE = '/placeholder.svg';
+// Removed DEFAULT_IMAGE - using inline fallback
 
 const NewsDetail = () => {
   const location = useLocation();
