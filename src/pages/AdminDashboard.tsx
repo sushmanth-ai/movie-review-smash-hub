@@ -159,22 +159,42 @@ const AdminDashboard = () => {
         {/* Tab buttons */}
         <div className="flex gap-2 mb-6">
           <Button
-            onClick={() => { setShowPolls(false); setShowForm(false); }}
-            variant={!showPolls ? "default" : "outline"}
-            className={!showPolls ? "bg-white text-primary" : "bg-white/10 text-white border-white/20"}
+            onClick={() => { setActiveTab('reviews'); setShowForm(false); setShowUpdates(false); }}
+            variant={activeTab === 'reviews' ? "default" : "outline"}
+            className={activeTab === 'reviews' ? "bg-white text-primary" : "bg-white/10 text-white border-white/20"}
           >
             🎬 Reviews
           </Button>
           <Button
-            onClick={() => { setShowPolls(true); setShowForm(false); }}
-            variant={showPolls ? "default" : "outline"}
-            className={showPolls ? "bg-white text-primary" : "bg-white/10 text-white border-white/20"}
+            onClick={() => { setActiveTab('polls'); setShowForm(false); setShowUpdates(false); }}
+            variant={activeTab === 'polls' ? "default" : "outline"}
+            className={activeTab === 'polls' ? "bg-white text-primary" : "bg-white/10 text-white border-white/20"}
           >
             📊 Polls
           </Button>
+          <Button
+            onClick={() => { setActiveTab('updates'); setShowForm(false); setShowUpdates(false); }}
+            variant={activeTab === 'updates' ? "default" : "outline"}
+            className={activeTab === 'updates' ? "bg-white text-primary" : "bg-white/10 text-white border-white/20"}
+          >
+            📰 Updates
+          </Button>
         </div>
 
-        {showPolls ? (
+        {activeTab === 'updates' ? (
+          showUpdates ? (
+            <UpdateForm onClose={() => setShowUpdates(false)} />
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-6xl mb-4">📰</p>
+              <h2 className="text-xl font-bold text-white mb-2">Movie Updates</h2>
+              <p className="text-white/70 mb-6">Publish breaking news, trailers, teasers, and more</p>
+              <Button onClick={() => setShowUpdates(true)} className="bg-white text-primary hover:bg-white/90">
+                <Plus className="w-4 h-4 mr-2" /> Publish New Update
+              </Button>
+            </div>
+          )
+        ) : activeTab === 'polls' ? (
           <PollManager reviews={reviews.map(r => ({ id: r.id, title: r.title }))} />
         ) : !showForm ? (
           <>
