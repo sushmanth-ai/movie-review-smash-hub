@@ -54,9 +54,9 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose }) => {
       await addUpdate({
         movieName: form.movieName.trim(),
         title: form.title.trim(),
-        description: form.description.trim() || undefined,
-        imageUrl: form.imageUrl.trim() || undefined,
-        videoUrl: form.videoUrl.trim() || undefined,
+        description: form.description.trim(),
+        imageUrl: form.imageUrl.trim(),
+        videoUrl: form.videoUrl.trim(),
         type: detectType(),
         category: form.category as any,
       });

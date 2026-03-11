@@ -69,8 +69,13 @@ export const useMovieUpdates = (pageSize = 15) => {
     if (!db) return null;
     let docId = '';
     try {
+      // Sanitize data (Firestore doesn't allow undefined fields)
+      const cleanData = Object.fromEntries(
+        Object.entries(data).filter(([_, v]) => v !== undefined)
+      );
+
       const docRef = await addDoc(collection(db, 'movie_updates'), {
-        ...data,
+        ...cleanData,
         createdAt: Timestamp.now(),
         likes: 0,
         comments: 0,
