@@ -5,9 +5,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useMovieUpdates } from '@/hooks/useMovieUpdates';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
 
 const CATEGORIES = [
   { value: 'announcement', label: '📢 Announcement' },
@@ -27,6 +28,7 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose }) => {
   const { addUpdate } = useMovieUpdates();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
     movieName: '',
     title: '',
@@ -47,6 +49,7 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose }) => {
     if (!form.movieName.trim() || !form.title.trim()) return;
 
     setSaving(true);
+    setError(null);
     try {
       await addUpdate({
         movieName: form.movieName.trim(),
@@ -61,9 +64,11 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose }) => {
       onClose();
     } catch (err: any) {
       console.error('[UpdateForm] Publish failed:', err);
+      const msg = err?.message || 'Check connection and permissions';
+      setError(msg);
       toast({ 
         title: 'Error publishing update', 
-        description: err?.message || 'Check connection and permissions', 
+        description: msg, 
         variant: 'destructive' 
       });
     } finally {
@@ -78,6 +83,15 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose }) => {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Publishing Failed</AlertTitle>
+              <AlertDescription className="font-mono text-xs break-all">
+                {error}
+              </AlertDescription>
+            </Alert>
+          )}
           <div>
             <Label>🎬 Movie Name *</Label>
             <Input value={form.movieName} onChange={(e) => setForm(p => ({ ...p, movieName: e.target.value }))} required placeholder="e.g. Pushpa 3" />
