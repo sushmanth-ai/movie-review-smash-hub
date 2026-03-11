@@ -24,7 +24,31 @@ interface NewsItem {
   image: string;
   source: string;
   pubDate: string;
+  isBreaking: boolean;
+  breakingTag: string;
 }
+
+// Breaking news keywords
+const BREAKING_KEYWORDS: { keyword: string; tag: string }[] = [
+  { keyword: "trailer", tag: "🎬 Trailer" },
+  { keyword: "teaser", tag: "🎬 Teaser" },
+  { keyword: "first look", tag: "👀 First Look" },
+  { keyword: "release date", tag: "📅 Release Date" },
+  { keyword: "box office", tag: "💰 Box Office" },
+  { keyword: "review", tag: "⭐ Review" },
+  { keyword: "blockbuster", tag: "🔥 Blockbuster" },
+  { keyword: "record", tag: "🏆 Record" },
+  { keyword: "official", tag: "📢 Official" },
+  { keyword: "announcement", tag: "📢 Announcement" },
+  { keyword: "motion poster", tag: "🎬 Motion Poster" },
+  { keyword: "song release", tag: "🎵 Song Release" },
+  { keyword: "audio launch", tag: "🎵 Audio Launch" },
+  { keyword: "pre-release", tag: "🎉 Pre-Release" },
+  { keyword: "advance booking", tag: "🎟️ Booking" },
+  { keyword: "collections", tag: "💰 Collections" },
+  { keyword: "ott release", tag: "📺 OTT Release" },
+  { keyword: "digital rights", tag: "📺 Digital Rights" },
+];
 
 const TOLLYWOOD_NAMES = [
   "mahesh babu", "prabhas", "allu arjun", "jr ntr", "ntr",
@@ -43,8 +67,7 @@ const TOLLYWOOD_NAMES = [
   "nag ashwin", "hanu raghavapudi", "sreenu vaitla", "gopichand",
   "ram pothineni", "nikhil", "siddhu jonnalagadda",
   "dil raju", "mythri", "geetha arts", "vyjayanthi",
-  "tharun bhascker", "nani", "surekha", "allu sirish",
-  "kamal haasan", "rajinikanth",
+  "tharun bhascker", "surekha", "allu sirish",
 ];
 
 const TOLLYWOOD_KEYWORDS = [
@@ -56,7 +79,6 @@ const TOLLYWOOD_KEYWORDS = [
   "pan india", "pan-india", "theatrical release",
   "aha video", "advance booking", "digital rights", "satellite rights",
   "item song", "song release", "audio launch",
-  "gaayapadda simham", "jana nayagan",
 ];
 
 const EXCLUDE_KEYWORDS = [
@@ -91,8 +113,6 @@ function isTollywoodMovieNews(title: string, desc: string, link: string): boolea
   for (const p of EXCLUDE_URL_PATHS) {
     if (url.includes(p)) return false;
   }
-
-  // Check Tollywood-specific signals
   for (const p of MOVIE_URL_PATHS) {
     if (url.includes(p)) return true;
   }
@@ -103,7 +123,6 @@ function isTollywoodMovieNews(title: string, desc: string, link: string): boolea
     if (text.includes(kw)) return true;
   }
 
-  // Generic movie terms - require at least one to pass for Telugu sites
   const genericMovieTerms = [
     "movie", "film", "cinema", "trailer", "teaser", "song",
     "shoot", "director", "producer", "sequel", "blockbuster",
@@ -113,13 +132,21 @@ function isTollywoodMovieNews(title: string, desc: string, link: string): boolea
   for (const kw of genericMovieTerms) {
     if (text.includes(kw)) return true;
   }
-
   return false;
+}
+
+function detectBreaking(title: string, desc: string): { isBreaking: boolean; tag: string } {
+  const text = `${title} ${desc}`.toLowerCase();
+  for (const { keyword, tag } of BREAKING_KEYWORDS) {
+    if (text.includes(keyword)) {
+      return { isBreaking: true, tag };
+    }
+  }
+  return { isBreaking: false, tag: "" };
 }
 
 function extractImage(item: any): string {
   const candidates: string[] = [];
-
   if (item.thumbnail && item.thumbnail.length > 10) candidates.push(item.thumbnail);
   if (item.enclosure?.link && item.enclosure.link.length > 10) candidates.push(item.enclosure.link);
   if (item.enclosure?.url && item.enclosure.url.length > 10) candidates.push(item.enclosure.url);
@@ -142,7 +169,6 @@ function extractImage(item: any): string {
   return "";
 }
 
-// Scrape og:image from article page for items without images
 async function fetchOgImage(url: string): Promise<string> {
   try {
     const resp = await fetch(url, {
@@ -151,11 +177,9 @@ async function fetchOgImage(url: string): Promise<string> {
     });
     if (!resp.ok) return "";
     const html = await resp.text();
-    // Look for og:image
     const ogMatch = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)
       || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
     if (ogMatch?.[1]) return ogMatch[1];
-    // Look for twitter:image
     const twMatch = html.match(/<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i)
       || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']twitter:image["']/i);
     if (twMatch?.[1]) return twMatch[1];
@@ -200,6 +224,7 @@ Deno.serve(async (req) => {
           .map((item: any) => {
             const title = stripHtml(item.title || "");
             const description = stripHtml(item.description || "").slice(0, 200);
+            const { isBreaking, tag } = detectBreaking(title, description);
             return {
               id: btoa(item.link || item.title).slice(0, 40),
               title,
@@ -209,6 +234,8 @@ Deno.serve(async (req) => {
               image: extractImage(item),
               source,
               pubDate: item.pubDate || new Date().toISOString(),
+              isBreaking,
+              breakingTag: tag,
             } as NewsItem;
           })
           .filter((item: NewsItem) => {
@@ -235,10 +262,16 @@ Deno.serve(async (req) => {
       return true;
     });
 
-    allItems.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
-    const top = allItems.slice(0, 20);
+    // Sort: breaking first, then by date
+    allItems.sort((a, b) => {
+      if (a.isBreaking && !b.isBreaking) return -1;
+      if (!a.isBreaking && b.isBreaking) return 1;
+      return new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime();
+    });
 
-    // Fetch og:image for items without images (parallel, max 10)
+    const top = allItems.slice(0, 25);
+
+    // Fetch og:image for items without images
     const needImage = top.filter((item) => !item.image);
     if (needImage.length > 0) {
       const ogPromises = needImage.slice(0, 10).map(async (item) => {

@@ -1,16 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Clock, ExternalLink, Share2 } from 'lucide-react';
-import { format } from 'date-fns';
+import { ArrowLeft, Clock, ExternalLink, Share2, Eye, Flame } from 'lucide-react';
+import { formatDistanceToNow, format } from 'date-fns';
 import { NewsItem } from '@/hooks/useNewsFeed';
-
-// Removed DEFAULT_IMAGE - using inline fallback
+import { useNewsViews } from '@/hooks/useNewsViews';
 
 const NewsDetail = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const article = location.state?.article as NewsItem | undefined;
   const [imgError, setImgError] = useState(false);
+
+  const { views, trackView } = useNewsViews(article?.id || '');
+
+  useEffect(() => {
+    if (article) trackView();
+  }, [article?.id]);
 
   if (!article) {
     return (
@@ -25,10 +30,18 @@ const NewsDetail = () => {
 
   const hasImage = article.image && article.image.length > 10 && !imgError;
 
+  const timeAgo = (() => {
+    try {
+      return formatDistanceToNow(new Date(article.pubDate), { addSuffix: true });
+    } catch {
+      return '';
+    }
+  })();
+
   const handleShare = async () => {
     if (navigator.share) {
       try {
-        await navigator.share({ title: article.title, text: article.description, url: window.location.href });
+        await navigator.share({ title: `🎬 ${article.title}`, text: article.description, url: window.location.href });
       } catch {}
     }
   };
@@ -36,7 +49,7 @@ const NewsDetail = () => {
   return (
     <div className="min-h-screen bg-background pb-24 md:pb-8">
       {/* Hero Image */}
-      <div className="relative w-full h-64 md:h-96">
+      <div className="relative w-full h-72 md:h-[28rem]">
         {hasImage ? (
           <img
             src={article.image}
@@ -66,17 +79,33 @@ const NewsDetail = () => {
             <Share2 className="w-5 h-5" />
           </button>
         </div>
+
+        {/* Breaking badge */}
+        {article.isBreaking && (
+          <div className="absolute top-14 left-4 z-10">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600/90 backdrop-blur-sm text-white text-xs font-bold shadow-lg shadow-red-600/30 animate-pulse">
+              <Flame className="w-3.5 h-3.5" />
+              <span>{article.breakingTag || 'BREAKING'}</span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Content */}
       <div className="px-4 md:px-8 max-w-3xl mx-auto -mt-8 relative z-10 space-y-4">
-        {/* Source badge */}
-        <span className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-primary/90 text-primary-foreground uppercase tracking-wider">
-          {article.source}
-        </span>
+        {/* Source + Views row */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-primary/90 text-primary-foreground uppercase tracking-wider">
+            {article.source}
+          </span>
+          <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
+            <Eye className="w-3.5 h-3.5" />
+            <span>{views > 0 ? `${views} views` : 'New'}</span>
+          </div>
+        </div>
 
         {/* Title */}
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground leading-tight">
+        <h1 className="text-2xl md:text-3xl font-extrabold text-foreground leading-tight">
           {article.title}
         </h1>
 
@@ -84,7 +113,7 @@ const NewsDetail = () => {
         <div className="flex items-center gap-4 text-muted-foreground text-sm">
           <div className="flex items-center gap-1.5">
             <Clock className="w-4 h-4" />
-            <span>{format(new Date(article.pubDate), 'MMMM dd, yyyy • hh:mm a')}</span>
+            <span>{timeAgo} • {format(new Date(article.pubDate), 'MMM dd, yyyy')}</span>
           </div>
         </div>
 

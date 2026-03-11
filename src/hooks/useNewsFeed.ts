@@ -12,10 +12,12 @@ export interface NewsItem {
   image: string;
   source: string;
   pubDate: string;
+  isBreaking: boolean;
+  breakingTag: string;
 }
 
-const CACHE_KEY = 'sm_news_cache_v2';
-const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
+const CACHE_KEY = 'sm_news_cache_v3';
+const CACHE_DURATION = 30 * 60 * 1000;
 
 export const useNewsFeed = () => {
   const [news, setNews] = useState<NewsItem[]>([]);
@@ -23,7 +25,6 @@ export const useNewsFeed = () => {
   const [error, setError] = useState<string | null>(null);
 
   const fetchNews = useCallback(async (force = false) => {
-    // Check cache first
     if (!force) {
       try {
         const cached = localStorage.getItem(CACHE_KEY);
