@@ -23,7 +23,7 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({ reviews, initialIndex,
   const [currentSlide, setCurrentSlide] = useState(0);
   const [progress, setProgress] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const startTimeRef = useRef<number>(Date.now());
   const elapsedRef = useRef<number>(0);
 
