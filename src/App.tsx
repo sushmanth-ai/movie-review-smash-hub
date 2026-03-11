@@ -12,6 +12,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import ReviewDetail from "./pages/ReviewDetail";
 import NewsFeed from "./pages/NewsFeed";
 import NewsDetail from "./pages/NewsDetail";
+import MovieUpdates from "./pages/MovieUpdates";
 import Footer from "./components/Footer";
 import { MobileNavbar } from "./components/MobileNavbar";
 import { 
