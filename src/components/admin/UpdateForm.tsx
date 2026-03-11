@@ -59,8 +59,13 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose }) => {
       });
       toast({ title: '✅ Update Published!', description: `${form.movieName} update is now live.` });
       onClose();
-    } catch (err) {
-      toast({ title: 'Error', description: 'Failed to publish update', variant: 'destructive' });
+    } catch (err: any) {
+      console.error('[UpdateForm] Publish failed:', err);
+      toast({ 
+        title: 'Error publishing update', 
+        description: err?.message || 'Check connection and permissions', 
+        variant: 'destructive' 
+      });
     } finally {
       setSaving(false);
     }
