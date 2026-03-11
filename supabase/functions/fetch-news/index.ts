@@ -121,6 +121,11 @@ function isTollywoodMovieNews(title: string, desc: string, link: string): boolea
   const text = `${title} ${desc}`.toLowerCase();
   const url = link.toLowerCase();
 
+  // Exclude gallery/photo posts by title pattern
+  for (const pattern of EXCLUDE_TITLE_PATTERNS) {
+    if (pattern.test(title)) return false;
+  }
+
   for (const kw of EXCLUDE_KEYWORDS) {
     if (text.includes(kw)) return false;
   }
