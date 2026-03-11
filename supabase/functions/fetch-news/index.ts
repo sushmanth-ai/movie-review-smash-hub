@@ -259,6 +259,8 @@ Deno.serve(async (req) => {
           })
           .filter((item: NewsItem) => {
             if (!item.title || item.title.length < 5) return false;
+            // Skip items with no content at all (gallery stubs)
+            if (!item.description && !item.content) return false;
             return isTollywoodMovieNews(item.title, item.description, item.link);
           });
       } catch (e) {
