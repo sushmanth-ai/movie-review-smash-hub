@@ -95,6 +95,20 @@ const EXCLUDE_KEYWORDS = [
 const EXCLUDE_URL_PATHS = [
   "/politics", "/sports", "/cricket", "/business", "/tech",
   "/lifestyle", "/health", "/bollywood", "/editorial",
+  "/gallery", "/slideshow", "/slideshows", "/imgpages",
+];
+
+const EXCLUDE_TITLE_PATTERNS = [
+  /^photos?\s*:/i,
+  /^pics?\s*:/i,
+  /^glamorous\s+pics/i,
+  /^alluring\s+/i,
+  /^amazing\s+/i,
+  /^stunning\s+/i,
+  /^gorgeous\s+/i,
+  /^hot\s+pics/i,
+  /^latest\s+pics/i,
+  /^beautiful\s+/i,
 ];
 
 const MOVIE_URL_PATHS = [
