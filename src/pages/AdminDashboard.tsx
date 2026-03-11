@@ -29,6 +29,8 @@ const AdminDashboard = () => {
   const { toast } = useToast();
   const [showForm, setShowForm] = useState(false);
   const [showPolls, setShowPolls] = useState(false);
+  const [showUpdates, setShowUpdates] = useState(false);
+  const [activeTab, setActiveTab] = useState<'reviews' | 'polls' | 'updates'>('reviews');
   const [editingReview, setEditingReview] = useState<{ id: string; data: ReviewFormData } | null>(null);
   const [sendingDigest, setSendingDigest] = useState(false);
   
