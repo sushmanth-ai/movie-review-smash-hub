@@ -113,7 +113,7 @@ async function sendWebPush(
       "Authorization": `vapid t=${jwt}, k=${vapidPublicKey}`,
       "Content-Type": "application/octet-stream",
       "Content-Encoding": "aes128gcm",
-      "TTL": "86400",
+      "TTL": "3600",
       "Urgency": "high",
     },
     body: new TextEncoder().encode(payload),

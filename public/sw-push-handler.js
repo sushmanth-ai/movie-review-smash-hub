@@ -26,8 +26,10 @@ self.addEventListener('push', (event) => {
     tag: data.tag,
     renotify: true,
     vibrate: [200, 100, 200, 100, 200, 100, 400],
-    requireInteraction: true,
+    requireInteraction: false, // Set to false to allow auto-dismiss after 5s
     silent: false,
+    priority: 2, // Max priority for some browsers
+    timestamp: Date.now(),
     data: {
       url: data.url,
     },

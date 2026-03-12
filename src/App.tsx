@@ -22,10 +22,14 @@ import {
   FestivalParticles, 
   FestivalOverlay
 } from "./components/festival";
+import { useAutoSubscribe } from "./hooks/useAutoSubscribe";
 
 const queryClient = new QueryClient();
 
-const App = () => (
+const App = () => {
+  useAutoSubscribe();
+  
+  return (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -64,5 +68,6 @@ const App = () => (
     </QueryClientProvider>
   </ErrorBoundary>
 );
+};
 
 export default App;
