@@ -103,7 +103,8 @@ export const useMovieUpdates = (pageSize = 15) => {
         `${catInfo.emoji} ${data.movieName}: ${data.title}`,
         '/updates',
         undefined,
-        data.imageUrl
+        data.imageUrl,
+        data.movieName
       );
     } catch (e) {
       console.error('[Push] Notification failed (update was saved):', e);

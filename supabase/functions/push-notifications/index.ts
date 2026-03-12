@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
     }
 
     if (action === "send") {
-      const { title, message, url: notifUrl, image } = body;
+      const { title, message, url: notifUrl, image, movieName } = body;
       const { data: subscriptions } = await supabase.from("push_subscriptions").select("*");
 
       const payload = JSON.stringify({
@@ -70,6 +70,7 @@ Deno.serve(async (req) => {
         body: message || "New update!",
         url: notifUrl || "/",
         image: image || null,
+        movieName: movieName || null,
         timestamp: Date.now(),
       });
 
