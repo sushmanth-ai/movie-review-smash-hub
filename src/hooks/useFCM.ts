@@ -34,8 +34,7 @@ export const useFCM = () => {
           const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
           
           const currentToken = await getToken(messaging, {
-            // Add VAPID key if you have one, or configure in Firebase Console -> Cloud Messaging -> Web configuration
-            // vapidKey: 'YOUR_VAPID_KEY_HERE', 
+            vapidKey: 'BJFXB2o1_eHqc2UgntTJR7aJ9OM9wvlaD5kgI3bagBa8RQvhYPKLoKXJFWgFPHYJipsLE26MPQJWf3SylJgkXKc', 
             serviceWorkerRegistration: registration,
           });
 
