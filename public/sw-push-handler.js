@@ -1,62 +1,52 @@
-// Push notification handlers - injected into PWA service worker scope
-// This file is imported by the main service worker
-
+// Premium Push Notification Handler
 self.addEventListener('push', (event) => {
   let data = {
     title: 'SM Review 3.0',
     body: 'New update available!',
-    icon: '/pwa-icon-192.png',
     url: '/',
-    tag: 'sm-review-update',
     image: null,
   };
 
   try {
     if (event.data) {
-      data = { ...data, ...event.data.json() };
+      data = JSON.parse(event.data.text());
     }
   } catch (e) {
-    console.error('Push data parse error:', e);
+    console.error('Push Parse Error:', e);
   }
 
   const options = {
     body: data.body,
-    icon: data.icon,
+    icon: '/pwa-icon-192.png',
     badge: '/pwa-icon-192.png',
-    tag: data.tag,
-    renotify: true,
-    vibrate: [200, 100, 200, 100, 200, 100, 400],
-    requireInteraction: false, // Set to false to allow auto-dismiss after 5s
-    silent: false,
-    priority: 2, // Max priority for some browsers
+    image: data.image,
+    vibrate: [500, 110, 500, 110, 450, 110, 200, 110, 170, 40], // Complex premium vibration
     timestamp: Date.now(),
+    renotify: true,
+    tag: 'sm-news-' + (data.movieName || 'update'),
+    requireInteraction: false, // Auto-dismiss after system default (usually 5-10s)
+    silent: false,
+    priority: 2, // Max priority
     data: {
       url: data.url,
     },
     actions: [
-      { action: 'open', title: '🎬 Open' },
-      { action: 'dismiss', title: '✖️ Dismiss' },
+      { action: 'open', title: '🎬 Open Now' },
+      { action: 'dismiss', title: '✖️ Close' },
     ],
   };
-
-  // Add large image if provided
-  if (data.image) {
-    options.image = data.image;
-  }
 
   event.waitUntil(self.registration.showNotification(data.title, options));
 });
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-
   if (event.action === 'dismiss') return;
 
   const url = event.notification.data?.url || '/';
-
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
-      for (const client of windowClients) {
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      for (const client of clients) {
         if (client.url.includes(self.location.origin) && 'focus' in client) {
           client.navigate(url);
           return client.focus();

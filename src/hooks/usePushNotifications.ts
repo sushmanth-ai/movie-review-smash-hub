@@ -83,8 +83,16 @@ export const usePushNotifications = () => {
 
       // 5. Register with backend
       const deviceHash = generateDeviceFingerprint();
+      const subJson = subscription.toJSON();
+      
       await callPushFunction('subscribe', 'POST', {
-        subscription: subscription.toJSON(),
+        subscription: {
+          endpoint: subJson.endpoint,
+          keys: {
+            p256dh: subJson.keys?.p256dh,
+            auth: subJson.keys?.auth,
+          }
+        },
         deviceHash,
       });
 

@@ -7,8 +7,8 @@ import { useNavigate } from 'react-router-dom';
 
 export const GlobalNotificationListener = () => {
   const navigate = useNavigate();
-  // Keep track of when we started listening so we don't show toasts for old updates
-  const initTimeRef = useRef(Date.now());
+  // Keep track of when we started listening (with 10s buffer for safety)
+  const initTimeRef = useRef(Date.now() - 10000);
   const isInitialLoadRef = useRef(true);
 
   useEffect(() => {
