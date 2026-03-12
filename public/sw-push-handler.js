@@ -34,7 +34,7 @@ self.addEventListener('push', (event) => {
     timestamp: data.timestamp || Date.now(),
     renotify: true,
     tag: 'sm-news-' + (data.movieName || 'update'),
-    requireInteraction: false,
+    requireInteraction: true,
     silent: false,
     priority: 2,
     data: {
