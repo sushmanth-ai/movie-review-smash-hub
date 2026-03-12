@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { db } from '@/utils/firebase';
 import {
-  collection, addDoc, query, orderBy, onSnapshot, doc, updateDoc, increment, getDoc, setDoc, limit, Timestamp, startAfter, getDocs
+  collection, addDoc, query, orderBy, onSnapshot, doc, updateDoc, increment, limit, Timestamp
 } from 'firebase/firestore';
 import { sendPushNotification } from './usePushNotifications';
 
@@ -60,20 +60,28 @@ export const useMovieUpdates = (pageSize = 15) => {
       });
       setUpdates(items);
       setLoading(false);
-    }, () => setLoading(false));
+    }, (err) => {
+      console.error('[MovieUpdates] Snapshot error:', err);
+      setLoading(false);
+    });
 
     return () => unsub();
   }, [pageSize]);
 
   const addUpdate = useCallback(async (data: Omit<MovieUpdate, 'id' | 'createdAt' | 'likes' | 'comments' | 'views'>) => {
-    if (!db) return null;
+    if (!db) throw new Error('Database not initialized');
+
+    // Validate required fields
+    if (!data.movieName?.trim()) throw new Error('Movie name is required');
+    if (!data.title?.trim()) throw new Error('Title is required');
+
+    // Sanitize - remove undefined fields
+    const cleanData = Object.fromEntries(
+      Object.entries(data).filter(([_, v]) => v !== undefined && v !== '')
+    );
+
     let docId = '';
     try {
-      // Sanitize data (Firestore doesn't allow undefined fields)
-      const cleanData = Object.fromEntries(
-        Object.entries(data).filter(([_, v]) => v !== undefined)
-      );
-
       const docRef = await addDoc(collection(db, 'movie_updates'), {
         ...cleanData,
         createdAt: Timestamp.now(),
@@ -84,20 +92,21 @@ export const useMovieUpdates = (pageSize = 15) => {
       docId = docRef.id;
     } catch (e) {
       console.error('[MovieUpdates] Firestore addDoc failed:', e);
-      throw e;
+      throw new Error('Failed to save update. Check your connection.');
     }
 
-    // Trigger push notification
+    // Trigger push notification (non-blocking)
     try {
       const catInfo = getCategoryInfo(data.category);
       await sendPushNotification(
         'SM Reviews',
         `${catInfo.emoji} ${data.movieName}: ${data.title}`,
-        `/updates`
+        '/updates',
+        undefined,
+        data.imageUrl
       );
     } catch (e) {
-      console.error('[Push] Failed:', e);
-      // We don't throw here as the update was successfully saved to Firestore
+      console.error('[Push] Notification failed (update was saved):', e);
     }
 
     return docId;
@@ -108,8 +117,13 @@ export const useMovieUpdates = (pageSize = 15) => {
     const key = `update_liked_${updateId}`;
     if (localStorage.getItem(key)) return;
     localStorage.setItem(key, '1');
-    const ref = doc(db, 'movie_updates', updateId);
-    await updateDoc(ref, { likes: increment(1) });
+    try {
+      const ref = doc(db, 'movie_updates', updateId);
+      await updateDoc(ref, { likes: increment(1) });
+    } catch (e) {
+      console.error('[MovieUpdates] Like failed:', e);
+      localStorage.removeItem(key);
+    }
   }, []);
 
   const trackView = useCallback(async (updateId: string) => {
@@ -117,8 +131,12 @@ export const useMovieUpdates = (pageSize = 15) => {
     const key = `update_viewed_${updateId}`;
     if (sessionStorage.getItem(key)) return;
     sessionStorage.setItem(key, '1');
-    const ref = doc(db, 'movie_updates', updateId);
-    await updateDoc(ref, { views: increment(1) });
+    try {
+      const ref = doc(db, 'movie_updates', updateId);
+      await updateDoc(ref, { views: increment(1) });
+    } catch (e) {
+      console.error('[MovieUpdates] View track failed:', e);
+    }
   }, []);
 
   return { updates, loading, addUpdate, likeUpdate, trackView };
