@@ -3,7 +3,6 @@ import { db } from '@/utils/firebase';
 import {
   collection, addDoc, query, orderBy, onSnapshot, doc, updateDoc, increment, limit, Timestamp
 } from 'firebase/firestore';
-import { sendPushNotification } from './usePushNotifications';
 
 export interface MovieUpdate {
   id: string;
@@ -95,20 +94,9 @@ export const useMovieUpdates = (pageSize = 15) => {
       throw new Error('Failed to save update. Check your connection.');
     }
 
-    // Trigger push notification (non-blocking)
-    try {
-      const catInfo = getCategoryInfo(data.category);
-      await sendPushNotification(
-        'SM Reviews',
-        `${catInfo.emoji} ${data.movieName}: ${data.title}`,
-        '/updates',
-        undefined,
-        data.imageUrl,
-        data.movieName
-      );
-    } catch (e) {
-      console.error('[Push] Notification failed (update was saved):', e);
-    }
+    // Not triggering push manually here anymore.
+    // Firebase Cloud Functions will listen to this doc creation
+    // and automatically dispatch the FCM notification.
 
     return docId;
   }, []);

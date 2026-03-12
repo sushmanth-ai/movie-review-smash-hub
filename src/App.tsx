@@ -22,12 +22,12 @@ import {
   FestivalParticles, 
   FestivalOverlay
 } from "./components/festival";
-import { useAutoSubscribe } from "./hooks/useAutoSubscribe";
+import { useFCM } from "./hooks/useFCM";
 
 const queryClient = new QueryClient();
 
 const App = () => {
-  useAutoSubscribe();
+  useFCM();
   
   return (
   <ErrorBoundary>
