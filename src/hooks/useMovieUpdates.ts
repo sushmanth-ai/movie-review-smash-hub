@@ -3,6 +3,7 @@ import { db } from '@/utils/firebase';
 import {
   collection, addDoc, query, orderBy, onSnapshot, doc, updateDoc, increment, limit, Timestamp
 } from 'firebase/firestore';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface MovieUpdate {
   id: string;
