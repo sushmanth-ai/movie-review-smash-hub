@@ -1,4 +1,6 @@
-// Push notification service worker handler
+// Push notification handlers - injected into PWA service worker scope
+// This file is imported by the main service worker
+
 self.addEventListener('push', (event) => {
   let data = {
     title: 'SM Review 3.0',
@@ -23,7 +25,9 @@ self.addEventListener('push', (event) => {
     badge: '/pwa-icon-192.png',
     tag: data.tag,
     renotify: true,
-    vibrate: [200, 100, 200],
+    vibrate: [200, 100, 200, 100, 200, 100, 400],
+    requireInteraction: true,
+    silent: false,
     data: {
       url: data.url,
     },
@@ -33,6 +37,7 @@ self.addEventListener('push', (event) => {
     ],
   };
 
+  // Add large image if provided
   if (data.image) {
     options.image = data.image;
   }

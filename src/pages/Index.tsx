@@ -14,6 +14,7 @@ import { TrendingReviews } from '@/components/TrendingReviews';
 import { useTrendingReviews } from '@/hooks/useTrendingReviews';
 import { useSound } from '@/hooks/useSound';
 import { NotificationBell } from '@/components/NotificationBell';
+import { useAutoSubscribe } from '@/hooks/useAutoSubscribe';
 import { useToast } from '@/hooks/use-toast';
 import { StoryCircles } from '@/components/StoryCircles';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
@@ -23,6 +24,7 @@ const Index = () => {
   const { playSound } = useSound();
   const { toast } = useToast();
   const { t } = useLanguage();
+  useAutoSubscribe();
   const [searchTerm, setSearchTerm] = useState('');
   const [reviews, setReviews] = useState<MovieReview[]>([]);
   const [newComment, setNewComment] = useState<{

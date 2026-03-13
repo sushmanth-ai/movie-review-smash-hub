@@ -3,7 +3,7 @@ import { db } from '@/utils/firebase';
 import {
   collection, addDoc, query, orderBy, onSnapshot, doc, updateDoc, increment, limit, Timestamp
 } from 'firebase/firestore';
-import { supabase } from '@/integrations/supabase/client';
+import { sendPushNotification } from './usePushNotifications';
 
 export interface MovieUpdate {
   id: string;
@@ -95,21 +95,18 @@ export const useMovieUpdates = (pageSize = 15) => {
       throw new Error('Failed to save update. Check your connection.');
     }
 
-    // Trigger push notification to all subscribed users
+    // Trigger push notification (non-blocking)
     try {
-      const catInfo = getCategoryInfo(cleanData.category as string || 'announcement');
-      await supabase.functions.invoke('push-notifications?action=send', {
-        body: {
-          title: 'SM Reviews',
-          message: `${catInfo.emoji} ${cleanData.movieName}: ${cleanData.title}`,
-          url: '/updates',
-          image: cleanData.imageUrl || null,
-          movieName: cleanData.movieName || '',
-        },
-      });
-      console.log('[MovieUpdates] Push notification sent');
-    } catch (pushErr) {
-      console.error('[MovieUpdates] Push notification failed (non-blocking):', pushErr);
+      const catInfo = getCategoryInfo(data.category);
+      await sendPushNotification(
+        'SM Reviews',
+        `${catInfo.emoji} ${data.movieName}: ${data.title}`,
+        '/updates',
+        undefined,
+        data.imageUrl
+      );
+    } catch (e) {
+      console.error('[Push] Notification failed (update was saved):', e);
     }
 
     return docId;

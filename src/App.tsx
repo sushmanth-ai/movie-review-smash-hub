@@ -15,21 +15,16 @@ import NewsDetail from "./pages/NewsDetail";
 import MovieUpdates from "./pages/MovieUpdates";
 import Footer from "./components/Footer";
 import { MobileNavbar } from "./components/MobileNavbar";
-import { GlobalNotificationListener } from "./components/GlobalNotificationListener";
 import { 
   FestivalProvider, 
   FestivalBanner, 
   FestivalParticles, 
   FestivalOverlay
 } from "./components/festival";
-import { useFCM } from "./hooks/useFCM";
 
 const queryClient = new QueryClient();
 
-const App = () => {
-  useFCM();
-  
-  return (
+const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -44,7 +39,6 @@ const App = () => {
           <FestivalBanner />
           
           <BrowserRouter>
-            <GlobalNotificationListener />
             <div className="flex flex-col min-h-screen relative z-10">
               <div className="flex-1 pb-20 md:pb-0">
                 <Routes>
@@ -68,6 +62,5 @@ const App = () => {
     </QueryClientProvider>
   </ErrorBoundary>
 );
-};
 
 export default App;

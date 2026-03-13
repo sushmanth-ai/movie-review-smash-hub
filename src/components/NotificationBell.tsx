@@ -1,23 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Bell, BellRing, BellOff } from 'lucide-react';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useToast } from '@/hooks/use-toast';
 import { useSound } from '@/hooks/useSound';
 import { useLanguage } from '@/i18n/LanguageContext';
 
 export const NotificationBell = () => {
-  const [permission, setPermission] = useState<NotificationPermission>('default');
-  const [isSupported, setIsSupported] = useState(false);
-  
+  const { isSupported, isSubscribed, isLoading, permission, subscribe } = usePushNotifications();
   const { toast } = useToast();
   const { playSound } = useSound();
   const { t } = useLanguage();
-
-  useEffect(() => {
-    if ('Notification' in window) {
-      setIsSupported(true);
-      setPermission(Notification.permission);
-    }
-  }, []);
 
   if (!isSupported) return null;
 
@@ -33,7 +25,7 @@ export const NotificationBell = () => {
       return;
     }
 
-    if (permission === 'granted') {
+    if (isSubscribed) {
       toast({
         title: t('notificationsActive'),
         description: t('notificationsActiveDesc'),
@@ -41,16 +33,13 @@ export const NotificationBell = () => {
       return;
     }
 
-    const newPermission = await Notification.requestPermission();
-    setPermission(newPermission);
-    
-    if (newPermission === 'granted') {
+    const success = await subscribe();
+    if (success) {
       playSound('popup');
       toast({
         title: t('notificationsEnabled'),
         description: t('notificationsEnabledDesc'),
       });
-      // The `useFCM` hook in App.tsx automatically captures the token once this permission is granted on the window scope.
     } else {
       toast({
         title: t('notificationsFailed'),
@@ -60,18 +49,17 @@ export const NotificationBell = () => {
     }
   };
 
-  const isSubscribed = permission === 'granted';
-
   return (
     <button
       onClick={handleClick}
+      disabled={isLoading}
       className={`relative p-2 rounded-full transition-all duration-300 ${
         isSubscribed
           ? 'bg-primary/20 text-primary hover:bg-primary/30'
           : permission === 'denied'
           ? 'bg-destructive/20 text-destructive'
           : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-primary'
-      }`}
+      } ${isLoading ? 'animate-pulse' : ''}`}
       title={isSubscribed ? t('notificationsActive') : t('enableNotifications')}
     >
       {permission === 'denied' ? (

@@ -23,7 +23,7 @@ export default defineConfig(({ mode }) => ({
       workbox: {
         navigateFallbackDenylist: [/^\/~oauth/],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,mp3,wav}'],
-        importScripts: ['/firebase-messaging-sw.js'],
+        importScripts: ['/sw-push-handler.js'],
         skipWaiting: true,
         clientsClaim: true,
         cleanupOutdatedCaches: true,
