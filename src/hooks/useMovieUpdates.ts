@@ -95,9 +95,22 @@ export const useMovieUpdates = (pageSize = 15) => {
       throw new Error('Failed to save update. Check your connection.');
     }
 
-    // Not triggering push manually here anymore.
-    // Firebase Cloud Functions will listen to this doc creation
-    // and automatically dispatch the FCM notification.
+    // Trigger push notification to all subscribed users
+    try {
+      const catInfo = getCategoryInfo(cleanData.category as string || 'announcement');
+      await supabase.functions.invoke('push-notifications?action=send', {
+        body: {
+          title: 'SM Reviews',
+          message: `${catInfo.emoji} ${cleanData.movieName}: ${cleanData.title}`,
+          url: '/updates',
+          image: cleanData.imageUrl || null,
+          movieName: cleanData.movieName || '',
+        },
+      });
+      console.log('[MovieUpdates] Push notification sent');
+    } catch (pushErr) {
+      console.error('[MovieUpdates] Push notification failed (non-blocking):', pushErr);
+    }
 
     return docId;
   }, []);
