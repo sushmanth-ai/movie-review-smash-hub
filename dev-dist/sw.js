@@ -69,7 +69,7 @@ if (!self.define) {
 }
 define(['./workbox-5a5d9309'], (function (workbox) { 'use strict';
 
-  importScripts("/sw-push-handler.js");
+  importScripts("/firebase-messaging-sw.js");
   self.skipWaiting();
   workbox.clientsClaim();
 
@@ -79,8 +79,11 @@ define(['./workbox-5a5d9309'], (function (workbox) { 'use strict';
    * See https://goo.gl/S9QRab
    */
   workbox.precacheAndRoute([{
+    "url": "registerSW.js",
+    "revision": "3ca0b8505b4bec776b69afdba2768812"
+  }, {
     "url": "index.html",
-    "revision": "0.qoe1ipr5f9"
+    "revision": "0.oov7igs7evg"
   }], {});
   workbox.cleanupOutdatedCaches();
   workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("index.html"), {

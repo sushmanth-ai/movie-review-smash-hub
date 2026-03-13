@@ -84,13 +84,14 @@ Deno.serve(async (req) => {
             endpoint: sub.endpoint,
             keys: { p256dh: sub.p256dh, auth: sub.auth }
           }, payload, {
-            Urgency: "high",
+            urgency: "high",
             TTL: 3600
           });
           sent++;
-        } catch (err) {
+        } catch (err: unknown) {
           failed++;
-          if (err.statusCode === 410 || err.statusCode === 404) {
+          const pushErr = err as { statusCode?: number };
+          if (pushErr.statusCode === 410 || pushErr.statusCode === 404) {
             expired.push(sub.endpoint);
           }
         }
@@ -106,8 +107,8 @@ Deno.serve(async (req) => {
     }
 
     return new Response("Unknown Action", { status: 400 });
-  } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
+  } catch (err: unknown) {
+    return new Response(JSON.stringify({ error: (err as Error).message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

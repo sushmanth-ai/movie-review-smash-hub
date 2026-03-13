@@ -1,10 +1,10 @@
-// Push notification service worker handler
+// Push notification service worker handler - WA2/WhatsApp style
 self.addEventListener('push', (event) => {
   let data = {
-    title: 'SM Review 3.0',
+    title: 'SM Reviews',
     body: 'New update available!',
     icon: '/pwa-icon-192.png',
-    url: '/',
+    url: '/updates',
     tag: 'sm-review-update',
     image: null,
   };
@@ -19,23 +19,21 @@ self.addEventListener('push', (event) => {
 
   const options = {
     body: data.body,
-    icon: data.icon,
+    icon: '/pwa-icon-192.png',
     badge: '/pwa-icon-192.png',
-    tag: data.tag,
+    image: data.image || undefined,
+    tag: data.tag || 'sm-review-update',
     renotify: true,
-    vibrate: [200, 100, 200],
+    requireInteraction: true,
+    vibrate: [500, 110, 500, 110, 450, 110, 200, 110, 170, 40],
     data: {
-      url: data.url,
+      url: data.url || '/updates',
     },
     actions: [
-      { action: 'open', title: '🎬 Open' },
-      { action: 'dismiss', title: '✖️ Dismiss' },
+      { action: 'open', title: '📰 Read Update' },
+      { action: 'share', title: '🔗 Share' },
     ],
   };
-
-  if (data.image) {
-    options.image = data.image;
-  }
 
   event.waitUntil(self.registration.showNotification(data.title, options));
 });
@@ -45,17 +43,22 @@ self.addEventListener('notificationclick', (event) => {
 
   if (event.action === 'dismiss') return;
 
-  const url = event.notification.data?.url || '/';
+  const urlToOpen = new URL(event.notification.data?.url || '/updates', self.location.origin).href;
+
+  if (event.action === 'share') {
+    event.waitUntil(clients.openWindow(urlToOpen + '?share=true'));
+    return;
+  }
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
       for (const client of windowClients) {
         if (client.url.includes(self.location.origin) && 'focus' in client) {
-          client.navigate(url);
+          client.navigate(urlToOpen);
           return client.focus();
         }
       }
-      return clients.openWindow(url);
+      return clients.openWindow(urlToOpen);
     })
   );
 });
