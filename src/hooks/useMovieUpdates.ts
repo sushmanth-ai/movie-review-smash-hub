@@ -3,7 +3,6 @@ import { db } from '@/utils/firebase';
 import {
   collection, addDoc, query, orderBy, onSnapshot, doc, updateDoc, increment, getDoc, setDoc, limit, Timestamp, startAfter, getDocs
 } from 'firebase/firestore';
-import { sendPushNotification } from './usePushNotifications';
 
 export interface MovieUpdate {
   id: string;
@@ -67,40 +66,34 @@ export const useMovieUpdates = (pageSize = 15) => {
 
   const addUpdate = useCallback(async (data: Omit<MovieUpdate, 'id' | 'createdAt' | 'likes' | 'comments' | 'views'>) => {
     if (!db) return null;
-    let docId = '';
-    try {
-      // Sanitize data (Firestore doesn't allow undefined fields)
-      const cleanData = Object.fromEntries(
-        Object.entries(data).filter(([_, v]) => v !== undefined)
-      );
-
-      const docRef = await addDoc(collection(db, 'movie_updates'), {
-        ...cleanData,
-        createdAt: Timestamp.now(),
-        likes: 0,
-        comments: 0,
-        views: 0,
-      });
-      docId = docRef.id;
-    } catch (e) {
-      console.error('[MovieUpdates] Firestore addDoc failed:', e);
-      throw e;
-    }
+    const docRef = await addDoc(collection(db, 'movie_updates'), {
+      ...data,
+      createdAt: Timestamp.now(),
+      likes: 0,
+      comments: 0,
+      views: 0,
+    });
 
     // Trigger push notification
     try {
       const catInfo = getCategoryInfo(data.category);
-      await sendPushNotification(
-        'SM Reviews',
-        `${catInfo.emoji} ${data.movieName}: ${data.title}`,
-        `/updates`
-      );
+      await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/push-notifications`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          title: 'SM Reviews',
+          body: `${catInfo.emoji} ${data.movieName}: ${data.title}`,
+          url: `/updates`,
+        }),
+      });
     } catch (e) {
       console.error('[Push] Failed:', e);
-      // We don't throw here as the update was successfully saved to Firestore
     }
 
-    return docId;
+    return docRef.id;
   }, []);
 
   const likeUpdate = useCallback(async (updateId: string) => {
