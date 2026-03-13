@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useMovieUpdates, getCategoryInfo, MovieUpdate } from '@/hooks/useMovieUpdates';
-import { Heart, Share2, Eye, Clock, ChevronRight, Play, ImageIcon } from 'lucide-react';
+import { Heart, Share2, Eye, Clock, ChevronRight, Play, Image as ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
