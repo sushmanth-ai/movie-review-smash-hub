@@ -34,9 +34,11 @@ const AdminDashboard = () => {
   const [showUpdates, setShowUpdates] = useState(false);
   const [activeTab, setActiveTab] = useState<'reviews' | 'polls' | 'updates'>('reviews');
   const [editingReview, setEditingReview] = useState<{ id: string; data: ReviewFormData } | null>(null);
+  const [editingUpdate, setEditingUpdate] = useState<MovieUpdate | null>(null);
   const [sendingDigest, setSendingDigest] = useState(false);
   
   const { reviews, loading, addReview, updateReview, deleteReview } = useAdminReviews();
+  const { updates, loading: updatesLoading, removeUpdate } = useMovieUpdates();
 
   const handleSendWeeklyDigest = async () => {
     setSendingDigest(true);
