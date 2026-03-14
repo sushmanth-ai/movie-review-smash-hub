@@ -108,6 +108,19 @@ const AdminDashboard = () => {
       await updateReview(editingReview.id, data);
     } else {
       await addReview(data);
+      // Send push notification to all subscribers
+      try {
+        await sendPushNotification(
+          `🎬 ${data.title}`,
+          `⭐ New Review: ${data.title} - Rating: ${data.rating}/5 | Read now on SM Reviews!`,
+          `/review/${encodeURIComponent(data.title)}`,
+          'new-review',
+          data.image || undefined
+        );
+        toast({ title: '🔔 Notification Sent!', description: 'All subscribers have been notified.' });
+      } catch (err) {
+        console.error('[Push] Failed to send notification:', err);
+      }
     }
     setShowForm(false);
     setEditingReview(null);

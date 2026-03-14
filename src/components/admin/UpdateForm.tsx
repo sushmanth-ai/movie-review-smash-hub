@@ -179,6 +179,19 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose }) => {
         category: form.category as any,
       });
 
+      // Send push notification to all subscribers
+      try {
+        await sendPushNotification(
+          `🔥 ${form.movieName}`,
+          `${form.title} | SM Reviews`,
+          '/movie-updates',
+          'movie-update',
+          imageUrl || undefined
+        );
+      } catch (err) {
+        console.error('[Push] Notification send failed:', err);
+      }
+
       toast({ title: '✅ Update Published!', description: `${form.movieName} update is now live.` });
       onClose();
     } catch (err: any) {
