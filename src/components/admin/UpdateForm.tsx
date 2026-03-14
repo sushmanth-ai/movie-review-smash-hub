@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import { useMovieUpdates } from '@/hooks/useMovieUpdates';
+import { useMovieUpdates, type MovieUpdate } from '@/hooks/useMovieUpdates';
 import { useToast } from '@/hooks/use-toast';
 import { sendPushNotification } from '@/hooks/usePushNotifications';
 import { Loader as Loader2, CircleAlert as AlertCircle, Upload, Image, Video, X } from 'lucide-react';
