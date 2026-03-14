@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import { useMovieUpdates } from '@/hooks/useMovieUpdates';
+import { useMovieUpdates, type MovieUpdate } from '@/hooks/useMovieUpdates';
 import { useToast } from '@/hooks/use-toast';
 import { sendPushNotification } from '@/hooks/usePushNotifications';
 import { Loader as Loader2, CircleAlert as AlertCircle, Upload, Image, Video, X } from 'lucide-react';
@@ -28,10 +28,11 @@ const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
 
 interface UpdateFormProps {
   onClose: () => void;
+  editingUpdate?: MovieUpdate | null;
 }
 
-export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose }) => {
-  const { addUpdate } = useMovieUpdates();
+export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose, editingUpdate }) => {
+  const { addUpdate, editUpdate } = useMovieUpdates();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,12 +45,12 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose }) => {
   const videoInputRef = useRef<HTMLInputElement>(null);
   
   const [form, setForm] = useState({
-    movieName: '',
-    title: '',
-    description: '',
-    imageUrl: '',
-    videoUrl: '',
-    category: 'announcement' as string,
+    movieName: editingUpdate?.movieName || '',
+    title: editingUpdate?.title || '',
+    description: editingUpdate?.description || '',
+    imageUrl: editingUpdate?.imageUrl || '',
+    videoUrl: editingUpdate?.videoUrl || '',
+    category: editingUpdate?.category || 'announcement' as string,
   });
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -169,7 +170,7 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose }) => {
         setUploading(false);
       }
 
-      await addUpdate({
+      const updateData = {
         movieName: form.movieName.trim(),
         title: form.title.trim(),
         description: form.description.trim() || undefined,
@@ -177,22 +178,27 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose }) => {
         videoUrl: videoUrl || undefined,
         type: detectType(),
         category: form.category as any,
-      });
+      };
 
-      // Send push notification to all subscribers
-      try {
-        await sendPushNotification(
-          `🔥 ${form.movieName}`,
-          `${form.title} | SM Reviews`,
-          '/movie-updates',
-          'movie-update',
-          imageUrl || undefined
-        );
-      } catch (err) {
-        console.error('[Push] Notification send failed:', err);
+      if (editingUpdate) {
+        await editUpdate(editingUpdate.id, updateData);
+        toast({ title: '✅ Update Edited!', description: `${form.movieName} update has been updated.` });
+      } else {
+        await addUpdate(updateData);
+        // Send push notification only for new updates
+        try {
+          await sendPushNotification(
+            `🔥 ${form.movieName}`,
+            `${form.title} | SM Reviews`,
+            '/movie-updates',
+            'movie-update',
+            imageUrl || undefined
+          );
+        } catch (err) {
+          console.error('[Push] Notification send failed:', err);
+        }
+        toast({ title: '✅ Update Published!', description: `${form.movieName} update is now live.` });
       }
-
-      toast({ title: '✅ Update Published!', description: `${form.movieName} update is now live.` });
       onClose();
     } catch (err: any) {
       console.error('[UpdateForm] Publish failed:', err);
