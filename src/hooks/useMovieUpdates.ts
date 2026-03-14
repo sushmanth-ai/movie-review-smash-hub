@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { db } from '@/utils/firebase';
 import {
-  collection, addDoc, query, orderBy, onSnapshot, doc, updateDoc, increment, limit, Timestamp
+  collection, addDoc, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc, increment, limit, Timestamp
 } from 'firebase/firestore';
 import { sendPushNotification } from './usePushNotifications';
 
@@ -32,7 +32,7 @@ const CATEGORY_INFO: Record<string, { emoji: string; label: string }> = {
 
 export const getCategoryInfo = (category: string) => CATEGORY_INFO[category] || { emoji: '📰', label: 'Update' };
 
-export const useMovieUpdates = (pageSize = 15) => {
+export const useMovieUpdates = (pageSize = 50) => {
   const [updates, setUpdates] = useState<MovieUpdate[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -70,12 +70,9 @@ export const useMovieUpdates = (pageSize = 15) => {
 
   const addUpdate = useCallback(async (data: Omit<MovieUpdate, 'id' | 'createdAt' | 'likes' | 'comments' | 'views'>) => {
     if (!db) throw new Error('Database not initialized');
-
-    // Validate required fields
     if (!data.movieName?.trim()) throw new Error('Movie name is required');
     if (!data.title?.trim()) throw new Error('Title is required');
 
-    // Sanitize - remove undefined fields
     const cleanData = Object.fromEntries(
       Object.entries(data).filter(([_, v]) => v !== undefined && v !== '')
     );
@@ -95,7 +92,6 @@ export const useMovieUpdates = (pageSize = 15) => {
       throw new Error('Failed to save update. Check your connection.');
     }
 
-    // Trigger push notification (non-blocking)
     try {
       const catInfo = getCategoryInfo(data.category);
       await sendPushNotification(
@@ -110,6 +106,31 @@ export const useMovieUpdates = (pageSize = 15) => {
     }
 
     return docId;
+  }, []);
+
+  const editUpdate = useCallback(async (updateId: string, data: Partial<Omit<MovieUpdate, 'id' | 'createdAt' | 'likes' | 'comments' | 'views'>>) => {
+    if (!db) throw new Error('Database not initialized');
+    const cleanData = Object.fromEntries(
+      Object.entries(data).filter(([_, v]) => v !== undefined)
+    );
+    try {
+      const ref = doc(db, 'movie_updates', updateId);
+      await updateDoc(ref, cleanData);
+    } catch (e) {
+      console.error('[MovieUpdates] Edit failed:', e);
+      throw new Error('Failed to update. Check your connection.');
+    }
+  }, []);
+
+  const removeUpdate = useCallback(async (updateId: string) => {
+    if (!db) throw new Error('Database not initialized');
+    try {
+      const ref = doc(db, 'movie_updates', updateId);
+      await deleteDoc(ref);
+    } catch (e) {
+      console.error('[MovieUpdates] Delete failed:', e);
+      throw new Error('Failed to delete update.');
+    }
   }, []);
 
   const likeUpdate = useCallback(async (updateId: string) => {
@@ -139,5 +160,5 @@ export const useMovieUpdates = (pageSize = 15) => {
     }
   }, []);
 
-  return { updates, loading, addUpdate, likeUpdate, trackView };
+  return { updates, loading, addUpdate, editUpdate, removeUpdate, likeUpdate, trackView };
 };

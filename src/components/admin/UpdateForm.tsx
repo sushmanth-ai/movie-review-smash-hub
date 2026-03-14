@@ -28,10 +28,11 @@ const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
 
 interface UpdateFormProps {
   onClose: () => void;
+  editingUpdate?: MovieUpdate | null;
 }
 
-export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose }) => {
-  const { addUpdate } = useMovieUpdates();
+export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose, editingUpdate }) => {
+  const { addUpdate, editUpdate } = useMovieUpdates();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
