@@ -170,7 +170,7 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose, editingUpdate }
         setUploading(false);
       }
 
-      await addUpdate({
+      const updateData = {
         movieName: form.movieName.trim(),
         title: form.title.trim(),
         description: form.description.trim() || undefined,
@@ -178,22 +178,27 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose, editingUpdate }
         videoUrl: videoUrl || undefined,
         type: detectType(),
         category: form.category as any,
-      });
+      };
 
-      // Send push notification to all subscribers
-      try {
-        await sendPushNotification(
-          `🔥 ${form.movieName}`,
-          `${form.title} | SM Reviews`,
-          '/movie-updates',
-          'movie-update',
-          imageUrl || undefined
-        );
-      } catch (err) {
-        console.error('[Push] Notification send failed:', err);
+      if (editingUpdate) {
+        await editUpdate(editingUpdate.id, updateData);
+        toast({ title: '✅ Update Edited!', description: `${form.movieName} update has been updated.` });
+      } else {
+        await addUpdate(updateData);
+        // Send push notification only for new updates
+        try {
+          await sendPushNotification(
+            `🔥 ${form.movieName}`,
+            `${form.title} | SM Reviews`,
+            '/movie-updates',
+            'movie-update',
+            imageUrl || undefined
+          );
+        } catch (err) {
+          console.error('[Push] Notification send failed:', err);
+        }
+        toast({ title: '✅ Update Published!', description: `${form.movieName} update is now live.` });
       }
-
-      toast({ title: '✅ Update Published!', description: `${form.movieName} update is now live.` });
       onClose();
     } catch (err: any) {
       console.error('[UpdateForm] Publish failed:', err);
