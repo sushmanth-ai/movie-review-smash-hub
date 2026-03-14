@@ -1,5 +1,5 @@
-// Push notification handlers - injected into PWA service worker scope
-// This file is imported by the main service worker
+// Push notification handlers - WhatsApp/Way2News style floating notifications
+// This file is imported by the main service worker via workbox importScripts
 
 self.addEventListener('push', (event) => {
   let data = {
@@ -25,19 +25,16 @@ self.addEventListener('push', (event) => {
     badge: '/pwa-icon-192.png',
     tag: data.tag,
     renotify: true,
-    vibrate: [200, 100, 200, 100, 200, 100, 400],
     requireInteraction: true,
     silent: false,
-    data: {
-      url: data.url,
-    },
+    vibrate: [300, 100, 300, 100, 400],
+    data: { url: data.url },
     actions: [
-      { action: 'open', title: '🎬 Open' },
+      { action: 'open', title: '🎬 Read Now' },
       { action: 'dismiss', title: '✖️ Dismiss' },
     ],
   };
 
-  // Add large image if provided
   if (data.image) {
     options.image = data.image;
   }
