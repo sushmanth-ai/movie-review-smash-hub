@@ -45,12 +45,12 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose, editingUpdate }
   const videoInputRef = useRef<HTMLInputElement>(null);
   
   const [form, setForm] = useState({
-    movieName: '',
-    title: '',
-    description: '',
-    imageUrl: '',
-    videoUrl: '',
-    category: 'announcement' as string,
+    movieName: editingUpdate?.movieName || '',
+    title: editingUpdate?.title || '',
+    description: editingUpdate?.description || '',
+    imageUrl: editingUpdate?.imageUrl || '',
+    videoUrl: editingUpdate?.videoUrl || '',
+    category: editingUpdate?.category || 'announcement' as string,
   });
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
