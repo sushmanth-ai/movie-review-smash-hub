@@ -9,6 +9,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { useMovieUpdates } from '@/hooks/useMovieUpdates';
 import { useToast } from '@/hooks/use-toast';
+import { sendPushNotification } from '@/hooks/usePushNotifications';
 import { Loader as Loader2, CircleAlert as AlertCircle, Upload, Image, Video, X } from 'lucide-react';
 import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 
@@ -177,6 +178,19 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose }) => {
         type: detectType(),
         category: form.category as any,
       });
+
+      // Send push notification to all subscribers
+      try {
+        await sendPushNotification(
+          `🔥 ${form.movieName}`,
+          `${form.title} | SM Reviews`,
+          '/movie-updates',
+          'movie-update',
+          imageUrl || undefined
+        );
+      } catch (err) {
+        console.error('[Push] Notification send failed:', err);
+      }
 
       toast({ title: '✅ Update Published!', description: `${form.movieName} update is now live.` });
       onClose();
