@@ -200,15 +200,79 @@ const AdminDashboard = () => {
 
         {activeTab === 'updates' ? (
           showUpdates ? (
-            <UpdateForm onClose={() => setShowUpdates(false)} />
+            <UpdateForm onClose={() => { setShowUpdates(false); setEditingUpdate(null); }} editingUpdate={editingUpdate} />
           ) : (
-            <div className="text-center py-12">
-              <p className="text-6xl mb-4">📰</p>
-              <h2 className="text-xl font-bold text-white mb-2">Movie Updates</h2>
-              <p className="text-white/70 mb-6">Publish breaking news, trailers, teasers, and more</p>
-              <Button onClick={() => setShowUpdates(true)} className="bg-white text-primary hover:bg-white/90">
-                <Plus className="w-4 h-4 mr-2" /> Publish New Update
-              </Button>
+            <div>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold text-white">Movie Updates ({updates.length})</h2>
+                <Button onClick={() => { setEditingUpdate(null); setShowUpdates(true); }} className="bg-white text-primary hover:bg-white/90">
+                  <Plus className="w-4 h-4 mr-2" /> Publish New Update
+                </Button>
+              </div>
+
+              {updatesLoading ? (
+                <div className="text-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-white mx-auto" />
+                </div>
+              ) : updates.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-6xl mb-4">📰</p>
+                  <p className="text-white/70">No updates published yet</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {updates.map((update) => {
+                    const catInfo = getCategoryInfo(update.category);
+                    return (
+                      <div key={update.id} className="bg-white/10 backdrop-blur-sm rounded-lg p-4 flex items-start gap-4">
+                        {update.imageUrl && (
+                          <img src={update.imageUrl} alt={update.title} className="w-20 h-20 object-cover rounded-lg flex-shrink-0" />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs bg-white/20 text-white px-2 py-0.5 rounded-full">{catInfo.emoji} {catInfo.label}</span>
+                            <span className="text-xs text-white/50">{update.createdAt.toLocaleDateString()}</span>
+                          </div>
+                          <h3 className="text-white font-bold truncate">{update.movieName}</h3>
+                          <p className="text-white/70 text-sm truncate">{update.title}</p>
+                          <div className="flex gap-3 text-xs text-white/50 mt-1">
+                            <span>👁 {update.views}</span>
+                            <span>❤️ {update.likes}</span>
+                            <span>💬 {update.comments}</span>
+                          </div>
+                        </div>
+                        <div className="flex gap-2 flex-shrink-0">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => { setEditingUpdate(update); setShowUpdates(true); }}
+                            className="bg-white/10 border-white/20 text-white hover:bg-white/30 h-8 w-8 p-0"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={async () => {
+                              if (window.confirm(`Delete "${update.title}"?`)) {
+                                try {
+                                  await removeUpdate(update.id);
+                                  toast({ title: '🗑️ Update deleted' });
+                                } catch (err) {
+                                  toast({ title: 'Delete failed', variant: 'destructive' });
+                                }
+                              }
+                            }}
+                            className="bg-red-500/20 border-red-500/30 text-red-300 hover:bg-red-500/40 h-8 w-8 p-0"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )
         ) : activeTab === 'polls' ? (
