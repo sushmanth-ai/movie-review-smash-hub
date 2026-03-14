@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { LogOut, Plus, Chrome as Home, Bell, Loader as Loader2 } from 'lucide-react';
+import { LogOut, Plus, Chrome as Home, Bell, Loader as Loader2, Pencil, Trash2 } from 'lucide-react';
 import { ReviewList } from '@/components/admin/ReviewList';
 import { ReviewForm } from '@/components/admin/ReviewForm';
 import { useAdminReviews } from '@/hooks/useAdminReviews';
 import { AdminRatings } from '@/types/ratings';
 import { PollManager } from '@/components/admin/PollManager';
 import { UpdateForm } from '@/components/admin/UpdateForm';
+import { useMovieUpdates, getCategoryInfo, type MovieUpdate } from '@/hooks/useMovieUpdates';
 import { sendPushNotification } from '@/hooks/usePushNotifications';
 
 export interface ReviewFormData {
