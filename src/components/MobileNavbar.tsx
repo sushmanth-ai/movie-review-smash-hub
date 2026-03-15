@@ -23,7 +23,7 @@ export const MobileNavbar = () => {
   const navItems = [
     { name: 'Home', path: '/', icon: Home, id: 'home' },
     { name: 'Updates', path: '/updates', icon: Clapperboard, id: 'updates' },
-    { name: 'Search', path: '/#search', icon: Search, id: 'search' },
+    { name: 'Lucky Draw', path: '/lucky-draw', icon: Gift, id: 'luckydraw' },
     { name: 'Reviews', path: '/#reviews', icon: Star, id: 'reviews' },
     { name: 'Admin', path: '/admin/dashboard', icon: Shield, id: 'admin' },
   ];
