@@ -33,7 +33,7 @@ const LuckyDraw = () => {
   const [spinning, setSpinning] = useState(false);
   const [winner, setWinner] = useState<Entry | null>(null);
   const [highlightIndex, setHighlightIndex] = useState<number | null>(null);
-  const spinIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const spinIntervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     fetchEntries();
