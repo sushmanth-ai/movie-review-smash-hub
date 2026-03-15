@@ -13,6 +13,7 @@ import ReviewDetail from "./pages/ReviewDetail";
 import NewsFeed from "./pages/NewsFeed";
 import NewsDetail from "./pages/NewsDetail";
 import MovieUpdates from "./pages/MovieUpdates";
+import LuckyDraw from "./pages/LuckyDraw";
 import Footer from "./components/Footer";
 import { MobileNavbar } from "./components/MobileNavbar";
 import { 
