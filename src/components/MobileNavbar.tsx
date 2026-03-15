@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Chrome as Home, Search, Star, Shield, Clapperboard } from 'lucide-react';
+import { Chrome as Home, Search, Star, Shield, Clapperboard, Gift } from 'lucide-react';
 import { useLanguage } from '@/i18n/LanguageContext';
 
 export const MobileNavbar = () => {
