@@ -14,27 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      lucky_draw_entries: {
-        Row: {
-          created_at: string
-          id: string
-          name: string
-          phone: string | null
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          name: string
-          phone?: string | null
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          name?: string
-          phone?: string | null
-        }
-        Relationships: []
-      }
       prediction_movies: {
         Row: {
           actual_collection: string | null

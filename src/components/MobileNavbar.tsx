@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Chrome as Home, Search, Star, Shield, Clapperboard, Gift } from 'lucide-react';
+import { Chrome as Home, Search, Star, Shield, Clapperboard } from 'lucide-react';
 import { useLanguage } from '@/i18n/LanguageContext';
 
 export const MobileNavbar = () => {
@@ -23,7 +23,7 @@ export const MobileNavbar = () => {
   const navItems = [
     { name: 'Home', path: '/', icon: Home, id: 'home' },
     { name: 'Updates', path: '/updates', icon: Clapperboard, id: 'updates' },
-    { name: 'Lucky Draw', path: '/lucky-draw', icon: Gift, id: 'luckydraw' },
+    { name: 'Search', path: '/#search', icon: Search, id: 'search' },
     { name: 'Reviews', path: '/#reviews', icon: Star, id: 'reviews' },
     { name: 'Admin', path: '/admin/dashboard', icon: Shield, id: 'admin' },
   ];
