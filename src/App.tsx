@@ -13,6 +13,7 @@ import ReviewDetail from "./pages/ReviewDetail";
 import NewsFeed from "./pages/NewsFeed";
 import NewsDetail from "./pages/NewsDetail";
 import MovieUpdates from "./pages/MovieUpdates";
+import LuckyDraw from "./pages/LuckyDraw";
 import Footer from "./components/Footer";
 import { MobileNavbar } from "./components/MobileNavbar";
 import { 
@@ -47,6 +48,7 @@ const App = () => (
                   <Route path="/updates" element={<MovieUpdates />} />
                   <Route path="/news" element={<NewsFeed />} />
                   <Route path="/news/:id" element={<NewsDetail />} />
+                  <Route path="/lucky-draw" element={<LuckyDraw />} />
                   <Route path="/admin/login" element={<AdminLogin />} />
                   <Route path="/admin/dashboard" element={<AdminDashboard />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

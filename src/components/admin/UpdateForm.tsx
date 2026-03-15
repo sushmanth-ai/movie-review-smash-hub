@@ -11,7 +11,7 @@ import { useMovieUpdates, type MovieUpdate } from '@/hooks/useMovieUpdates';
 import { useToast } from '@/hooks/use-toast';
 import { sendPushNotification } from '@/hooks/usePushNotifications';
 import { Loader as Loader2, CircleAlert as AlertCircle, Upload, Image, Video, X } from 'lucide-react';
-import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { supabase } from '@/integrations/supabase/client';
 
 const CATEGORIES = [
   { value: 'announcement', label: '📢 Announcement' },
@@ -23,8 +23,8 @@ const CATEGORIES = [
   { value: 'breaking-news', label: '🔥 Breaking News' },
 ];
 
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
-const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+const MAX_VIDEO_SIZE = 50 * 1024 * 1024;
 
 interface UpdateFormProps {
   onClose: () => void;
@@ -56,22 +56,18 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose, editingUpdate }
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     if (file.size > MAX_IMAGE_SIZE) {
       toast({ title: 'Image too large', description: 'Maximum image size is 5MB', variant: 'destructive' });
       return;
     }
-
     if (!file.type.startsWith('image/')) {
       toast({ title: 'Invalid file', description: 'Please select an image file', variant: 'destructive' });
       return;
     }
-
     if (selectedVideo) {
       toast({ title: 'Cannot upload both', description: 'Remove the video first to upload an image', variant: 'destructive' });
       return;
     }
-
     setSelectedImage(file);
     setImagePreview(URL.createObjectURL(file));
     setForm(p => ({ ...p, imageUrl: '' }));
@@ -80,22 +76,18 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose, editingUpdate }
   const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     if (file.size > MAX_VIDEO_SIZE) {
       toast({ title: 'Video too large', description: 'Maximum video size is 50MB', variant: 'destructive' });
       return;
     }
-
     if (!file.type.startsWith('video/')) {
       toast({ title: 'Invalid file', description: 'Please select a video file', variant: 'destructive' });
       return;
     }
-
     if (selectedImage) {
       toast({ title: 'Cannot upload both', description: 'Remove the image first to upload a video', variant: 'destructive' });
       return;
     }
-
     setSelectedVideo(file);
     setForm(p => ({ ...p, videoUrl: '' }));
   };
@@ -112,24 +104,36 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose, editingUpdate }
     if (videoInputRef.current) videoInputRef.current.value = '';
   };
 
-  const uploadFile = async (file: File, path: string): Promise<string> => {
-    const storage = getStorage();
-    const fileRef = storageRef(storage, path);
-    
-    return new Promise((resolve, reject) => {
-      const task = uploadBytesResumable(fileRef, file);
-      task.on('state_changed',
-        (snapshot) => {
-          const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-          setUploadProgress(progress);
-        },
-        (error) => reject(error),
-        async () => {
-          const url = await getDownloadURL(task.snapshot.ref);
-          resolve(url);
-        }
-      );
-    });
+  const uploadFileToSupabase = async (file: File, folder: string): Promise<string> => {
+    const timestamp = Date.now();
+    const safeName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
+    const filePath = `${folder}/${timestamp}_${safeName}`;
+
+    setUploading(true);
+    setUploadProgress(10);
+
+    const { data, error } = await supabase.storage
+      .from('movie-updates')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false,
+      });
+
+    setUploadProgress(90);
+
+    if (error) {
+      console.error('[Upload] Supabase storage error:', error);
+      throw new Error(`Upload failed: ${error.message}`);
+    }
+
+    const { data: urlData } = supabase.storage
+      .from('movie-updates')
+      .getPublicUrl(data.path);
+
+    setUploadProgress(100);
+    setUploading(false);
+
+    return urlData.publicUrl;
   };
 
   const detectType = (): 'image' | 'text' | 'video' => {
@@ -152,22 +156,12 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose, editingUpdate }
       let imageUrl = form.imageUrl.trim();
       let videoUrl = form.videoUrl.trim();
 
-      // Upload image if selected from device
       if (selectedImage) {
-        setUploading(true);
-        const timestamp = Date.now();
-        const safeName = selectedImage.name.replace(/[^a-zA-Z0-9.]/g, '_');
-        imageUrl = await uploadFile(selectedImage, `movie_updates/images/${timestamp}_${safeName}`);
-        setUploading(false);
+        imageUrl = await uploadFileToSupabase(selectedImage, 'images');
       }
 
-      // Upload video if selected from device
       if (selectedVideo) {
-        setUploading(true);
-        const timestamp = Date.now();
-        const safeName = selectedVideo.name.replace(/[^a-zA-Z0-9.]/g, '_');
-        videoUrl = await uploadFile(selectedVideo, `movie_updates/videos/${timestamp}_${safeName}`);
-        setUploading(false);
+        videoUrl = await uploadFileToSupabase(selectedVideo, 'videos');
       }
 
       const updateData = {
@@ -185,12 +179,11 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose, editingUpdate }
         toast({ title: '✅ Update Edited!', description: `${form.movieName} update has been updated.` });
       } else {
         await addUpdate(updateData);
-        // Send push notification only for new updates
         try {
           await sendPushNotification(
             `🔥 ${form.movieName}`,
             `${form.title} | SM Reviews`,
-            '/movie-updates',
+            '/updates',
             'movie-update',
             imageUrl || undefined
           );
@@ -217,7 +210,7 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose, editingUpdate }
   return (
     <Card className="bg-white/95 max-w-2xl mx-auto">
       <CardHeader>
-        <h2 className="text-2xl font-bold text-black">📰 Publish Movie Update</h2>
+        <h2 className="text-2xl font-bold text-black">{editingUpdate ? '✏️ Edit Update' : '📰 Publish Movie Update'}</h2>
         <p className="text-sm text-gray-500">Upload images/videos from your device or paste URLs</p>
       </CardHeader>
       <CardContent>
@@ -323,7 +316,6 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose, editingUpdate }
             </Select>
           </div>
 
-          {/* Preview */}
           {(imagePreview || form.imageUrl || form.title) && (
             <div className="rounded-lg overflow-hidden border border-gray-200 p-3 bg-gray-50">
               <p className="text-xs font-semibold mb-2 text-gray-500">Preview</p>
@@ -338,7 +330,7 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose, editingUpdate }
           <div className="flex gap-4 pt-4">
             <Button type="submit" disabled={isBusy} className="flex-1">
               {isBusy ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
-              {uploading ? 'Uploading...' : 'Publish Update'}
+              {uploading ? 'Uploading...' : editingUpdate ? 'Save Changes' : 'Publish Update'}
             </Button>
             <Button type="button" variant="outline" onClick={onClose} disabled={isBusy} className="flex-1">Cancel</Button>
           </div>
