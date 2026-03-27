@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { Star } from 'lucide-react';
+import { Star, Upload, X, Image as ImageIcon } from 'lucide-react';
 import { ReviewFormData } from '@/pages/AdminDashboard';
 import { AdminRatings, calculateAdminOverall } from '@/types/ratings';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ReviewFormProps {
   initialData?: ReviewFormData;
