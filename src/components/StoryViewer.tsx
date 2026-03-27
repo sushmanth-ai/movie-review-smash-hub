@@ -20,7 +20,9 @@ const SLIDES: StorySlide[] = ['overview', 'firstHalf', 'secondHalf', 'verdict'];
 export const StoryViewer: React.FC<StoryViewerProps> = ({ reviews, initialIndex, onClose }) => {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { trackReviewView } = useFirebaseOperations();
   const [currentReviewIndex, setCurrentReviewIndex] = useState(initialIndex);
+  const trackedRef = useRef<Set<string>>(new Set());
   const [currentSlide, setCurrentSlide] = useState(0);
   const [progress, setProgress] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
