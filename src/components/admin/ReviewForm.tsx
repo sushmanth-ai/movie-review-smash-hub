@@ -364,8 +364,8 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
           </div>
 
           <div className="flex gap-4 pt-4">
-            <Button type="submit" className="flex-1">
-              {isEditing ? 'Update Review' : 'Add Review'}
+            <Button type="submit" className="flex-1" disabled={uploading}>
+              {uploading ? '⏳ Uploading...' : isEditing ? 'Update Review' : 'Add Review'}
             </Button>
             <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
               Cancel
