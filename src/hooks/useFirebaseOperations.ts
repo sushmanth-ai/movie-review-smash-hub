@@ -627,6 +627,7 @@ Full review: ${window.location.origin}/review/${review.id}
 
     try {
       const viewsRef = doc(db, 'reviewViews', reviewId);
+      const reviewRef = doc(db, 'reviews', reviewId);
       
       await runTransaction(db, async (transaction) => {
         const viewsDoc = await transaction.get(viewsRef);
@@ -637,6 +638,13 @@ Full review: ${window.location.origin}/review/${review.id}
           lastUpdated: new Date().toISOString()
         }, { merge: true });
       });
+
+      // Also update the reviews document views field
+      try {
+        await updateDoc(reviewRef, { views: increment(1) });
+      } catch (e) {
+        // Review doc may not exist for static reviews, ignore
+      }
       
       console.log('Review view tracked successfully');
     } catch (error) {
