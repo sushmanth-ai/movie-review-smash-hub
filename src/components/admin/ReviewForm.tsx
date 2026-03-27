@@ -132,14 +132,68 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
           </div>
 
           <div>
-            <Label htmlFor="image">🖼️ Poster Image URL</Label>
-            <Input
-              id="image"
-              value={formData.image}
-              onChange={(e) => handleChange('image', e.target.value)}
-              required
-              placeholder="https://example.com/image.jpg"
-            />
+            <Label>🖼️ Movie Poster Image</Label>
+            <div className="space-y-3">
+              {/* Image Preview */}
+              {(formData.image || imagePreview) && (
+                <div className="relative w-32 h-44 rounded-lg overflow-hidden border-2 border-primary/30">
+                  <img
+                    src={imagePreview || formData.image}
+                    alt="Poster preview"
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData(prev => ({ ...prev, image: '' }));
+                      setImagePreview(null);
+                      setSelectedFile(null);
+                      if (fileInputRef.current) fileInputRef.current.value = '';
+                    }}
+                    className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+
+              {/* Upload Button */}
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex items-center gap-2"
+                  disabled={uploading}
+                >
+                  <Upload className="w-4 h-4" />
+                  {uploading ? 'Uploading...' : 'Upload from Device'}
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageSelect}
+                />
+              </div>
+
+              {/* OR URL input */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">OR paste URL:</span>
+                <Input
+                  value={selectedFile ? '' : formData.image}
+                  onChange={(e) => {
+                    handleChange('image', e.target.value);
+                    setSelectedFile(null);
+                    setImagePreview(null);
+                  }}
+                  placeholder="https://example.com/image.jpg"
+                  className="flex-1"
+                  disabled={!!selectedFile}
+                />
+              </div>
+            </div>
           </div>
 
           <div>
