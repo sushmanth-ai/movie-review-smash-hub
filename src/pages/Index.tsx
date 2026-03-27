@@ -118,16 +118,18 @@ const Index = () => {
       const allReviews = [...firebaseReviews, ...staticReviews];
       setReviews(allReviews);
 
-      // Load likes, comments, and views for all reviews
-      loadLikes(setReviews);
-      loadComments(setReviews, (author, text) => {
-        playSound('popup');
-        toast({
-          title: `🔔 ${author} replied!`,
-          description: text.length > 50 ? text.substring(0, 50) + '...' : text,
+      // Load likes, comments, and views after state update
+      setTimeout(() => {
+        loadLikes(setReviews);
+        loadComments(setReviews, (author, text) => {
+          playSound('popup');
+          toast({
+            title: `🔔 ${author} replied!`,
+            description: text.length > 50 ? text.substring(0, 50) + '...' : text,
+          });
         });
-      });
-      loadReviewViews(setReviews);
+        loadReviewViews(setReviews);
+      }, 100);
     });
     return () => unsubscribe();
   }, []);

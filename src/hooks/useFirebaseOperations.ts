@@ -667,7 +667,7 @@ Full review: ${window.location.origin}/review/${review.id}
       setReviews(prevReviews => 
         prevReviews.map(review => ({
           ...review,
-          views: viewsMap[review.id] || 0
+          views: Math.max(review.views || 0, viewsMap[review.id] || 0)
         }))
       );
 
