@@ -32,6 +32,11 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
   onCancel,
   isEditing
 }) => {
+  const [uploading, setUploading] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [formData, setFormData] = useState<ReviewFormData>({
     title: '',
     image: '',
