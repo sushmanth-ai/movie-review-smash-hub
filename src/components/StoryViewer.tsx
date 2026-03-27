@@ -32,6 +32,14 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({ reviews, initialIndex,
 
   const review = reviews[currentReviewIndex];
 
+  // Track view when story changes
+  useEffect(() => {
+    if (review && !trackedRef.current.has(review.id)) {
+      trackedRef.current.add(review.id);
+      trackReviewView(review.id);
+    }
+  }, [currentReviewIndex, review?.id]);
+
   const resetTimer = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
     elapsedRef.current = 0;
