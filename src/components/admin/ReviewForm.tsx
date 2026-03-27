@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { Star } from 'lucide-react';
+import { Star, Upload, X, Image as ImageIcon } from 'lucide-react';
 import { ReviewFormData } from '@/pages/AdminDashboard';
 import { AdminRatings, calculateAdminOverall } from '@/types/ratings';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ReviewFormProps {
   initialData?: ReviewFormData;
@@ -31,6 +32,11 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
   onCancel,
   isEditing
 }) => {
+  const [uploading, setUploading] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [formData, setFormData] = useState<ReviewFormData>({
     title: '',
     image: '',
@@ -82,14 +88,48 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) return;
+    setSelectedFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const uploadImage = async (file: File): Promise<string> => {
+    const ext = file.name.split('.').pop();
+    const fileName = `review-${Date.now()}.${ext}`;
+    const { data, error } = await supabase.storage
+      .from('review-images')
+      .upload(fileName, file, { contentType: file.type });
+    if (error) throw error;
+    const { data: urlData } = supabase.storage
+      .from('review-images')
+      .getPublicUrl(data.path);
+    return urlData.publicUrl;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Calculate overall rating from admin ratings
-    const adminOverall = calculateAdminOverall(formData.adminRatings!);
-    onSubmit({
-      ...formData,
-      rating: `${adminOverall} STARS`
-    });
+    setUploading(true);
+    try {
+      let imageUrl = formData.image;
+      if (selectedFile) {
+        imageUrl = await uploadImage(selectedFile);
+      }
+      const adminOverall = calculateAdminOverall(formData.adminRatings!);
+      onSubmit({
+        ...formData,
+        image: imageUrl,
+        rating: `${adminOverall} STARS`
+      });
+      setSelectedFile(null);
+      setImagePreview(null);
+    } catch (err) {
+      console.error('Upload failed:', err);
+    } finally {
+      setUploading(false);
+    }
   };
 
   const renderStars = (value: number) => {
@@ -131,14 +171,68 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
           </div>
 
           <div>
-            <Label htmlFor="image">🖼️ Poster Image URL</Label>
-            <Input
-              id="image"
-              value={formData.image}
-              onChange={(e) => handleChange('image', e.target.value)}
-              required
-              placeholder="https://example.com/image.jpg"
-            />
+            <Label>🖼️ Movie Poster Image</Label>
+            <div className="space-y-3">
+              {/* Image Preview */}
+              {(formData.image || imagePreview) && (
+                <div className="relative w-32 h-44 rounded-lg overflow-hidden border-2 border-primary/30">
+                  <img
+                    src={imagePreview || formData.image}
+                    alt="Poster preview"
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData(prev => ({ ...prev, image: '' }));
+                      setImagePreview(null);
+                      setSelectedFile(null);
+                      if (fileInputRef.current) fileInputRef.current.value = '';
+                    }}
+                    className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+
+              {/* Upload Button */}
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex items-center gap-2"
+                  disabled={uploading}
+                >
+                  <Upload className="w-4 h-4" />
+                  {uploading ? 'Uploading...' : 'Upload from Device'}
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageSelect}
+                />
+              </div>
+
+              {/* OR URL input */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">OR paste URL:</span>
+                <Input
+                  value={selectedFile ? '' : formData.image}
+                  onChange={(e) => {
+                    handleChange('image', e.target.value);
+                    setSelectedFile(null);
+                    setImagePreview(null);
+                  }}
+                  placeholder="https://example.com/image.jpg"
+                  className="flex-1"
+                  disabled={!!selectedFile}
+                />
+              </div>
+            </div>
           </div>
 
           <div>
@@ -270,8 +364,8 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
           </div>
 
           <div className="flex gap-4 pt-4">
-            <Button type="submit" className="flex-1">
-              {isEditing ? 'Update Review' : 'Add Review'}
+            <Button type="submit" className="flex-1" disabled={uploading}>
+              {uploading ? '⏳ Uploading...' : isEditing ? 'Update Review' : 'Add Review'}
             </Button>
             <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
               Cancel
