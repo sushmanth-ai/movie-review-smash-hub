@@ -88,14 +88,48 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) return;
+    setSelectedFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const uploadImage = async (file: File): Promise<string> => {
+    const ext = file.name.split('.').pop();
+    const fileName = `review-${Date.now()}.${ext}`;
+    const { data, error } = await supabase.storage
+      .from('review-images')
+      .upload(fileName, file, { contentType: file.type });
+    if (error) throw error;
+    const { data: urlData } = supabase.storage
+      .from('review-images')
+      .getPublicUrl(data.path);
+    return urlData.publicUrl;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Calculate overall rating from admin ratings
-    const adminOverall = calculateAdminOverall(formData.adminRatings!);
-    onSubmit({
-      ...formData,
-      rating: `${adminOverall} STARS`
-    });
+    setUploading(true);
+    try {
+      let imageUrl = formData.image;
+      if (selectedFile) {
+        imageUrl = await uploadImage(selectedFile);
+      }
+      const adminOverall = calculateAdminOverall(formData.adminRatings!);
+      onSubmit({
+        ...formData,
+        image: imageUrl,
+        rating: `${adminOverall} STARS`
+      });
+      setSelectedFile(null);
+      setImagePreview(null);
+    } catch (err) {
+      console.error('Upload failed:', err);
+    } finally {
+      setUploading(false);
+    }
   };
 
   const renderStars = (value: number) => {
