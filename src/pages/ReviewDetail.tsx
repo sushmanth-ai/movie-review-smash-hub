@@ -467,7 +467,7 @@ const ReviewDetail = () => {
               rating={
                 review.adminOverall ??
                 (review.adminRatings
-                  ? Object.values(review.adminRatings).reduce((a: number, b: number) => a + b, 0) /
+                  ? (Object.values(review.adminRatings) as number[]).reduce((a, b) => a + b, 0) /
                     Object.values(review.adminRatings).length
                   : parseFloat(review.rating?.match(/[\d.]+/)?.[0] || "0"))
               }
