@@ -212,10 +212,13 @@ export const SMCriticsMeter: React.FC<SMCriticsMeterProps> = ({ rating, size = 3
         {/* Needle */}
         <g
           style={{
-            transform: `rotate(${animAngle}deg)`,
+            transform: `rotate(${animAngle}deg) translateZ(0)`,
             transformOrigin: `${cx}px ${cy}px`,
+            transformBox: "fill-box" as any,
             transition: "filter 400ms ease",
-            filter: `drop-shadow(0 0 8px ${activeZone.glow})`,
+            filter: `drop-shadow(0 0 10px ${activeZone.glow})${isMoving ? " blur(0.6px)" : ""}`,
+            willChange: "transform",
+            backfaceVisibility: "hidden",
           }}
         >
           {/* Needle main */}
@@ -224,6 +227,16 @@ export const SMCriticsMeter: React.FC<SMCriticsMeterProps> = ({ rating, size = 3
             fill="url(#needle-grad)"
             stroke="rgba(0,0,0,0.4)"
             strokeWidth="0.5"
+          />
+          {/* Glowing tip */}
+          <circle
+            cx={cx}
+            cy={cy - r + strokeWidth + 6}
+            r={3.2}
+            fill="#ffffff"
+            style={{
+              filter: `drop-shadow(0 0 6px ${activeZone.color}) drop-shadow(0 0 12px ${activeZone.glow})`,
+            }}
           />
           {/* Counterweight */}
           <circle cx={cx} cy={cy + 18} r={6} fill="#3a3a3a" stroke="#1a1a1a" strokeWidth="1" />
