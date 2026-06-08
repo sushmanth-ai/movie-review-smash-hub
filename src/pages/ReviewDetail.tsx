@@ -17,6 +17,7 @@ import { CurtainAnimation } from "@/components/CurtainAnimation";
 import { useSound } from "@/hooks/useSound";
 import { UserStarRating } from "@/components/UserStarRating";
 import { AdminRatingsDisplay } from "@/components/AdminRatingsDisplay";
+import { SMCriticsMeter } from "@/components/SMCriticsMeter";
 import { RatingComparison } from "@/components/RatingComparison";
 import { NotificationBell } from "@/components/NotificationBell";
 import { ReviewPolls } from "@/components/ReviewPolls";
@@ -460,10 +461,17 @@ const ReviewDetail = () => {
             </CardContent>
           </Card>
 
-          {/* Rating Section */}
-          <div className="max-w-4xl mx-auto mt-6">
-            {/* Admin Ratings */}
-            <AdminRatingsDisplay adminRatings={review.adminRatings} legacyRating={review.rating} />
+          {/* SM Critics Meter */}
+          <div className="max-w-4xl mx-auto mt-6 flex justify-center">
+            <SMCriticsMeter
+              rating={
+                review.adminOverall ??
+                (review.adminRatings
+                  ? (Object.values(review.adminRatings) as number[]).reduce((a, b) => a + b, 0) /
+                    Object.values(review.adminRatings).length
+                  : parseFloat(review.rating?.match(/[\d.]+/)?.[0] || "0"))
+              }
+            />
           </div>
 
 
