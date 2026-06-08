@@ -477,7 +477,11 @@ const ReviewDetail = () => {
             />
           </div>
 
+          {/* SM Box Office Prediction Meter */}
+          <BoxOfficeMeter rating={parseFloat(review.rating?.match(/[\d.]+/)?.[0] || '0')} />
+
           {/* Rating Meter */}
+          
           
         </div>
       </div>
