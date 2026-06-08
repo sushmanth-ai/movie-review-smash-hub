@@ -460,10 +460,17 @@ const ReviewDetail = () => {
             </CardContent>
           </Card>
 
-          {/* Rating Section */}
-          <div className="max-w-4xl mx-auto mt-6">
-            {/* Admin Ratings */}
-            <AdminRatingsDisplay adminRatings={review.adminRatings} legacyRating={review.rating} />
+          {/* SM Critics Meter */}
+          <div className="max-w-4xl mx-auto mt-6 flex justify-center">
+            <SMCriticsMeter
+              rating={
+                review.adminOverall ??
+                (review.adminRatings
+                  ? Object.values(review.adminRatings).reduce((a: number, b: number) => a + b, 0) /
+                    Object.values(review.adminRatings).length
+                  : parseFloat(review.rating?.match(/[\d.]+/)?.[0] || "0"))
+              }
+            />
           </div>
 
 
