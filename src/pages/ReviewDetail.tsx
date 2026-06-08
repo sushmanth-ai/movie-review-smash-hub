@@ -17,6 +17,7 @@ import { CurtainAnimation } from "@/components/CurtainAnimation";
 import { useSound } from "@/hooks/useSound";
 import { UserStarRating } from "@/components/UserStarRating";
 import { AdminRatingsDisplay } from "@/components/AdminRatingsDisplay";
+import { SMCriticsMeter } from "@/components/SMCriticsMeter";
 import { RatingComparison } from "@/components/RatingComparison";
 import { NotificationBell } from "@/components/NotificationBell";
 import { ReviewPolls } from "@/components/ReviewPolls";
