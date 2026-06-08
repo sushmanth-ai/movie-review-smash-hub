@@ -461,12 +461,9 @@ const ReviewDetail = () => {
           </Card>
 
           {/* Rating Section */}
-          <div className="max-w-4xl mx-auto mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="max-w-4xl mx-auto mt-6">
             {/* Admin Ratings */}
             <AdminRatingsDisplay adminRatings={review.adminRatings} legacyRating={review.rating} />
-            
-            {/* User Rating */}
-            <UserStarRating movieId={review.id} />
           </div>
 
 
