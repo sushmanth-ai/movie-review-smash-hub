@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 interface SMCriticsMeterProps {
   rating: number; // 0 - 5
@@ -12,23 +12,77 @@ const ZONES = [
   { from: 3.9, to: 5.0, color: "#22c55e", glow: "rgba(34,197,94,0.7)" },   // Green
 ];
 
+// Cubic-bezier (0.22, 1, 0.36, 1) — premium "ease-out-quint" feel
+const cubicBezier = (p1x: number, p1y: number, p2x: number, p2y: number) => {
+  const cx = 3 * p1x;
+  const bx = 3 * (p2x - p1x) - cx;
+  const ax = 1 - cx - bx;
+  const cy = 3 * p1y;
+  const by = 3 * (p2y - p1y) - cy;
+  const ay = 1 - cy - by;
+  const sampleX = (t: number) => ((ax * t + bx) * t + cx) * t;
+  const sampleY = (t: number) => ((ay * t + by) * t + cy) * t;
+  const solveX = (x: number) => {
+    let t = x;
+    for (let i = 0; i < 8; i++) {
+      const xv = sampleX(t) - x;
+      const d = (3 * ax * t + 2 * bx) * t + cx;
+      if (Math.abs(d) < 1e-6) break;
+      t -= xv / d;
+    }
+    return t;
+  };
+  return (x: number) => sampleY(solveX(Math.max(0, Math.min(1, x))));
+};
+const easePremium = cubicBezier(0.22, 1, 0.36, 1);
+
 export const SMCriticsMeter: React.FC<SMCriticsMeterProps> = ({ rating, size = 300 }) => {
   const clamped = Math.max(0, Math.min(5, rating || 0));
   const targetAngle = (clamped / 5) * 360; // 0° at top, clockwise
 
   const [animAngle, setAnimAngle] = useState(0);
   const [animRating, setAnimRating] = useState(0);
+  const [isMoving, setIsMoving] = useState(false);
+  const fromAngleRef = useRef(0);
+  const fromRatingRef = useRef(0);
 
   useEffect(() => {
+    const fromA = fromAngleRef.current;
+    const fromR = fromRatingRef.current;
+    const deltaA = targetAngle - fromA;
+    const deltaR = clamped - fromR;
+    // Overshoot ~3% of delta then settle
+    const overshootA = targetAngle + deltaA * 0.04;
+    const overshootR = clamped + deltaR * 0.04;
+    const duration = 1500;
+    const settleStart = 0.82; // start settling back near the end
     const start = performance.now();
-    const duration = 1800;
     let raf = 0;
+    setIsMoving(true);
     const tick = (now: number) => {
       const p = Math.min(1, (now - start) / duration);
-      const eased = 1 - Math.pow(1 - p, 3);
-      setAnimAngle(eased * targetAngle);
-      setAnimRating(eased * clamped);
-      if (p < 1) raf = requestAnimationFrame(tick);
+      const eased = easePremium(p);
+      let a: number;
+      let r: number;
+      if (p < settleStart) {
+        const t = eased / easePremium(settleStart);
+        a = fromA + (overshootA - fromA) * t;
+        r = fromR + (overshootR - fromR) * t;
+      } else {
+        const t = (p - settleStart) / (1 - settleStart);
+        const te = 1 - Math.pow(1 - t, 2);
+        a = overshootA + (targetAngle - overshootA) * te;
+        r = overshootR + (clamped - overshootR) * te;
+      }
+      setAnimAngle(a);
+      setAnimRating(r);
+      if (p < 1) {
+        raf = requestAnimationFrame(tick);
+      } else {
+        fromAngleRef.current = targetAngle;
+        fromRatingRef.current = clamped;
+        setIsMoving(false);
+      }
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
