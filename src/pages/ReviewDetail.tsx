@@ -7,6 +7,7 @@ import { MovieReview } from "@/data/movieReviews";
 import { movieReviewsData } from "@/data/movieReviews";
 import { CommentSection } from "@/components/CommentSection";
 import { ThreeDRatingMeter } from "@/components/ThreeDRatingMeter";
+import { BoxOfficeMeter } from "@/components/BoxOfficeMeter";
 import { TeluguVoiceReader } from "@/components/TeluguVoiceReader";
 import { useFirebaseOperations } from "@/hooks/useFirebaseOperations";
 import { onSnapshot, doc, updateDoc, increment, getDoc } from "firebase/firestore";
