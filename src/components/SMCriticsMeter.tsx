@@ -19,18 +19,17 @@ const getZone = (r: number) => {
   return ZONES[0];
 };
 
-// cubic-bezier easing for ease-out feel
 const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
 
 export const SMCriticsMeter: React.FC<SMCriticsMeterProps> = ({ rating, size = 320 }) => {
   const clamped = Math.max(0, Math.min(5, rating || 0));
-  // Map 0..5 → -90deg (left) .. +90deg (right)
-  const targetAngle = -90 + (clamped / 5) * 180;
+  // 0 rating → 0° (top), 5 rating → 360° (full clockwise)
+  const targetAngle = (clamped / 5) * 360;
 
-  const [animAngle, setAnimAngle] = useState(-90);
+  const [animAngle, setAnimAngle] = useState(0);
   const [animRating, setAnimRating] = useState(0);
   const [settled, setSettled] = useState(false);
-  const fromAngleRef = useRef(-90);
+  const fromAngleRef = useRef(0);
   const fromRatingRef = useRef(0);
 
   useEffect(() => {
@@ -57,142 +56,125 @@ export const SMCriticsMeter: React.FC<SMCriticsMeterProps> = ({ rating, size = 3
     return () => cancelAnimationFrame(raf);
   }, [targetAngle, clamped]);
 
-  const width = size;
-  const height = Math.round(size * 0.62);
-  const cx = width / 2;
-  const cy = height - 16;
+  const cx = size / 2;
+  const cy = size / 2;
   const strokeWidth = Math.round(size * 0.08);
-  const r = (width - strokeWidth) / 2 - 8;
+  const r = (size - strokeWidth) / 2 - 8;
+  const C = 2 * Math.PI * r;
 
   const activeZone = getZone(clamped);
 
-  // Arc path helper for the gauge segments (semicircle from 180° to 360°/0°)
-  const polar = (angleDeg: number, radius: number) => {
-    const rad = (angleDeg * Math.PI) / 180;
-    return { x: cx + radius * Math.cos(rad), y: cy + radius * Math.sin(rad) };
-  };
-
-  const arcPath = (startRating: number, endRating: number) => {
-    // rating 0 → angle 180°, rating 5 → angle 360°
-    const a1 = 180 + (startRating / 5) * 180;
-    const a2 = 180 + (endRating / 5) * 180;
-    const p1 = polar(a1, r);
-    const p2 = polar(a2, r);
-    const large = a2 - a1 > 180 ? 1 : 0;
-    return `M ${p1.x} ${p1.y} A ${r} ${r} 0 ${large} 1 ${p2.x} ${p2.y}`;
-  };
-
-  // Tick marks (every 0.25 rating)
-  const ticks = Array.from({ length: 21 }, (_, i) => i * 0.25);
+  // Tick marks every 9° (0.125 rating)
+  const ticks = Array.from({ length: 40 }, (_, i) => i * 9);
 
   return (
     <div
       className="relative mx-auto group transition-transform duration-300 hover:scale-[1.02]"
       style={{ width: "100%", maxWidth: size }}
     >
-      {/* Glassmorphism card */}
       <div
-        className="relative rounded-2xl overflow-hidden p-4 sm:p-6"
+        className="relative rounded-2xl p-4 sm:p-6"
         style={{
-          background:
-            "linear-gradient(160deg, rgba(20,10,10,0.92), rgba(8,8,12,0.92))",
+          background: "radial-gradient(circle at 50% 30%, #141414, #0a0a0a 70%)",
           backdropFilter: "blur(18px)",
           WebkitBackdropFilter: "blur(18px)",
           border: "1px solid rgba(255,255,255,0.08)",
-          boxShadow: `0 20px 60px -20px ${activeZone.glow}, 0 0 40px -10px ${activeZone.glow}, inset 0 1px 0 rgba(255,255,255,0.05)`,
+          boxShadow: `0 20px 60px -20px ${activeZone.glow}, 0 0 50px -12px ${activeZone.glow}, inset 0 1px 0 rgba(255,255,255,0.05)`,
           transition: "box-shadow 700ms ease",
         }}
       >
-        {/* Neon outer glow ring */}
         <div
           aria-hidden
           className="pointer-events-none absolute -inset-1 rounded-2xl opacity-60 blur-2xl"
           style={{
-            background: `radial-gradient(ellipse at 50% 30%, ${activeZone.glow}, transparent 65%)`,
+            background: `radial-gradient(ellipse at 50% 50%, ${activeZone.glow}, transparent 65%)`,
             transition: "background 700ms ease",
           }}
         />
 
-        <div className="relative">
-          <svg
-            width="100%"
-            viewBox={`0 0 ${width} ${height + 8}`}
-            style={{ display: "block" }}
-          >
+        <div className="relative mx-auto" style={{ width: "100%", maxWidth: size, aspectRatio: "1 / 1" }}>
+          <svg width="100%" height="100%" viewBox={`0 0 ${size} ${size}`}>
             <defs>
-              <linearGradient id="arc-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#ef4444" />
-                <stop offset="40%" stopColor="#f97316" />
-                <stop offset="62%" stopColor="#facc15" />
-                <stop offset="85%" stopColor="#22c55e" />
-              </linearGradient>
-              <radialGradient id="hub-grad" cx="50%" cy="40%" r="60%">
+              {ZONES.map((z, i) => (
+                <filter key={i} id={`smcm-glow-${i}`} x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="3.5" />
+                  <feMerge>
+                    <feMergeNode />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              ))}
+              <radialGradient id="smcm-hub" cx="50%" cy="40%" r="60%">
                 <stop offset="0%" stopColor="#fafafa" />
                 <stop offset="45%" stopColor="#a3a3a3" />
                 <stop offset="100%" stopColor="#1f1f1f" />
               </radialGradient>
-              <linearGradient id="needle-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <linearGradient id="smcm-needle" x1="0%" y1="0%" x2="0%" y2="100%">
                 <stop offset="0%" stopColor="#ffffff" />
                 <stop offset="50%" stopColor="#d4d4d4" />
                 <stop offset="100%" stopColor="#525252" />
               </linearGradient>
-              <filter id="arc-glow" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="4" />
-                <feMerge>
-                  <feMergeNode />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
             </defs>
 
-            {/* Background track */}
-            <path
-              d={arcPath(0, 5)}
+            {/* Track */}
+            <circle
+              cx={cx}
+              cy={cy}
+              r={r}
               fill="none"
-              stroke="rgba(255,255,255,0.06)"
-              strokeWidth={strokeWidth + 4}
-              strokeLinecap="round"
+              stroke="rgba(255,255,255,0.05)"
+              strokeWidth={strokeWidth}
             />
 
-            {/* Color zones */}
-            {ZONES.map((z, i) => (
-              <path
-                key={i}
-                d={arcPath(z.from, z.to)}
-                fill="none"
-                stroke={z.color}
-                strokeWidth={strokeWidth}
-                strokeLinecap="butt"
-                filter="url(#arc-glow)"
-                style={{ opacity: 0.95 }}
-              />
-            ))}
+            {/* Color zones (rotated so 0° = top, clockwise) */}
+            <g transform={`rotate(-90 ${cx} ${cy})`}>
+              {ZONES.map((z, i) => {
+                const a1 = (z.from / 5) * 360;
+                const a2 = (z.to / 5) * 360;
+                const segLen = ((a2 - a1) / 360) * C;
+                const offset = -(a1 / 360) * C;
+                return (
+                  <circle
+                    key={i}
+                    cx={cx}
+                    cy={cy}
+                    r={r}
+                    fill="none"
+                    stroke={z.color}
+                    strokeWidth={strokeWidth}
+                    strokeDasharray={`${segLen} ${C - segLen}`}
+                    strokeDashoffset={offset}
+                    strokeLinecap="butt"
+                    filter={`url(#smcm-glow-${i})`}
+                    style={{ opacity: 0.95 }}
+                  />
+                );
+              })}
+            </g>
 
             {/* Tick marks */}
-            {ticks.map((t, i) => {
-              const isMajor = i % 4 === 0;
-              const angle = 180 + (t / 5) * 180;
-              const inner = polar(angle, r - strokeWidth / 2 - 4);
-              const outer = polar(angle, r - strokeWidth / 2 - (isMajor ? 16 : 8));
+            {ticks.map((deg, i) => {
+              const isMajor = i % 5 === 0;
+              const innerR = r - strokeWidth / 2 - 4;
+              const outerR = innerR - (isMajor ? 12 : 6);
+              const rad = ((deg - 90) * Math.PI) / 180;
+              const x1 = cx + innerR * Math.cos(rad);
+              const y1 = cy + innerR * Math.sin(rad);
+              const x2 = cx + outerR * Math.cos(rad);
+              const y2 = cy + outerR * Math.sin(rad);
               return (
                 <line
                   key={i}
-                  x1={inner.x}
-                  y1={inner.y}
-                  x2={outer.x}
-                  y2={outer.y}
-                  stroke={isMajor ? "rgba(255,255,255,0.55)" : "rgba(255,255,255,0.22)"}
+                  x1={x1}
+                  y1={y1}
+                  x2={x2}
+                  y2={y2}
+                  stroke={isMajor ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.22)"}
                   strokeWidth={isMajor ? 2 : 1}
                   strokeLinecap="round"
                 />
               );
             })}
-
-            {/* Zone end labels (0 and 5) */}
-            <text x={polar(180, r - strokeWidth - 22).x} y={polar(180, r - strokeWidth - 22).y + 4}
-              fill="rgba(255,255,255,0.55)" fontSize={size * 0.038} textAnchor="middle" fontWeight={600}>0</text>
-            <text x={polar(360, r - strokeWidth - 22).x} y={polar(360, r - strokeWidth - 22).y + 4}
-              fill="rgba(255,255,255,0.55)" fontSize={size * 0.038} textAnchor="middle" fontWeight={600}>5</text>
 
             {/* Needle */}
             <g
@@ -205,47 +187,47 @@ export const SMCriticsMeter: React.FC<SMCriticsMeterProps> = ({ rating, size = 3
               }}
             >
               <polygon
-                points={`${cx - 5},${cy + 6} ${cx + 5},${cy + 6} ${cx + 1.5},${cy - r + strokeWidth / 2 + 8} ${cx - 1.5},${cy - r + strokeWidth / 2 + 8}`}
-                fill="url(#needle-grad)"
-                stroke="rgba(0,0,0,0.35)"
-                strokeWidth="0.6"
+                points={`${cx - 5},${cy + 10} ${cx + 5},${cy + 10} ${cx + 1.5},${cy - r + strokeWidth + 6} ${cx - 1.5},${cy - r + strokeWidth + 6}`}
+                fill="url(#smcm-needle)"
+                stroke="rgba(0,0,0,0.4)"
+                strokeWidth="0.5"
               />
               <circle
                 cx={cx}
-                cy={cy - r + strokeWidth / 2 + 8}
+                cy={cy - r + strokeWidth + 6}
                 r={3.5}
                 fill="#ffffff"
                 style={{
                   filter: `drop-shadow(0 0 6px ${activeZone.color}) drop-shadow(0 0 14px ${activeZone.glow})`,
                 }}
               />
+              <circle cx={cx} cy={cy + 18} r={6} fill="#3a3a3a" stroke="#1a1a1a" strokeWidth="1" />
             </g>
 
             {/* Center hub */}
             <circle
               cx={cx}
               cy={cy}
-              r={size * 0.055}
-              fill="url(#hub-grad)"
+              r={size * 0.06}
+              fill="url(#smcm-hub)"
               stroke="rgba(0,0,0,0.7)"
               strokeWidth="1.5"
               style={{
                 filter: settled ? `drop-shadow(0 0 10px ${activeZone.glow})` : "none",
-                animation: settled ? "smcm-pulse 1.8s ease-in-out infinite" : "none",
               }}
             />
-            <circle cx={cx} cy={cy} r={size * 0.018} fill="#0a0a0a" />
+            <circle cx={cx} cy={cy} r={size * 0.02} fill="#0a0a0a" />
           </svg>
 
-          {/* Rating value */}
+          {/* Center rating value */}
           <div
-            className="absolute left-0 right-0 text-center pointer-events-none"
-            style={{ top: `${(height * 0.42) / (height + 8) * 100}%` }}
+            className="absolute inset-0 flex items-center justify-center pointer-events-none"
+            style={{ paddingTop: size * 0.32 }}
           >
             <div
-              className="font-extrabold tabular-nums tracking-tight inline-block"
+              className="font-extrabold tabular-nums tracking-tight"
               style={{
-                fontSize: size * 0.13,
+                fontSize: size * 0.14,
                 lineHeight: 1,
                 color: activeZone.color,
                 textShadow: `0 0 16px ${activeZone.glow}`,
@@ -256,7 +238,7 @@ export const SMCriticsMeter: React.FC<SMCriticsMeterProps> = ({ rating, size = 3
               <span
                 className="opacity-70 font-bold"
                 style={{
-                  fontSize: size * 0.06,
+                  fontSize: size * 0.065,
                   color: "rgba(255,255,255,0.7)",
                   textShadow: "none",
                 }}
@@ -267,8 +249,8 @@ export const SMCriticsMeter: React.FC<SMCriticsMeterProps> = ({ rating, size = 3
           </div>
         </div>
 
-        {/* Verdict */}
-        <div className="mt-2 text-center">
+        {/* Verdict pill */}
+        <div className="mt-3 text-center">
           <div
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold tracking-wide"
             style={{
@@ -285,14 +267,6 @@ export const SMCriticsMeter: React.FC<SMCriticsMeterProps> = ({ rating, size = 3
           </div>
         </div>
       </div>
-
-      <style>{`
-        @keyframes smcm-pulse {
-          0%, 100% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.06); opacity: 0.92; }
-          transform-origin: center;
-        }
-      `}</style>
     </div>
   );
 };
