@@ -17,6 +17,7 @@ import { CurtainAnimation } from "@/components/CurtainAnimation";
 import { useSound } from "@/hooks/useSound";
 import { UserStarRating } from "@/components/UserStarRating";
 import { AdminRatingsDisplay } from "@/components/AdminRatingsDisplay";
+import { SMCriticsMeter } from "@/components/SMCriticsMeter";
 import { RatingComparison } from "@/components/RatingComparison";
 import { NotificationBell } from "@/components/NotificationBell";
 import { ReviewPolls } from "@/components/ReviewPolls";
@@ -460,22 +461,19 @@ const ReviewDetail = () => {
             </CardContent>
           </Card>
 
-          {/* Rating Section */}
-          <div className="max-w-4xl mx-auto mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Admin Ratings */}
-            <AdminRatingsDisplay adminRatings={review.adminRatings} legacyRating={review.rating} />
-            
-            {/* User Rating */}
-            <UserStarRating movieId={review.id} />
-          </div>
-
-          {/* Rating Comparison */}
-          <div className="max-w-md mx-auto mt-4">
-            <RatingComparison 
-              criticRating={parseFloat(review.rating?.match(/[\d.]+/)?.[0] || '0')} 
-              movieId={review.id} 
+          {/* SM Critics Meter */}
+          <div className="max-w-4xl mx-auto mt-6 flex justify-center">
+            <SMCriticsMeter
+              rating={
+                review.adminOverall ??
+                (review.adminRatings
+                  ? (Object.values(review.adminRatings) as number[]).reduce((a, b) => a + b, 0) /
+                    Object.values(review.adminRatings).length
+                  : parseFloat(review.rating?.match(/[\d.]+/)?.[0] || "0"))
+              }
             />
           </div>
+
 
           {/* SM Box Office Prediction Meter */}
           <BoxOfficeMeter rating={parseFloat(review.rating?.match(/[\d.]+/)?.[0] || '0')} />
