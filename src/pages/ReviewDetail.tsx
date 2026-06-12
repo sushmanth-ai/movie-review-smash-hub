@@ -469,13 +469,6 @@ const ReviewDetail = () => {
             <UserStarRating movieId={review.id} />
           </div>
 
-          {/* Rating Comparison */}
-          <div className="max-w-md mx-auto mt-4">
-            <RatingComparison 
-              criticRating={parseFloat(review.rating?.match(/[\d.]+/)?.[0] || '0')} 
-              movieId={review.id} 
-            />
-          </div>
 
           {/* SM Box Office Prediction Meter */}
           <BoxOfficeMeter rating={parseFloat(review.rating?.match(/[\d.]+/)?.[0] || '0')} />
