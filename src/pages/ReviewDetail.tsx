@@ -461,11 +461,21 @@ const ReviewDetail = () => {
           </Card>
 
           {/* Rating Section */}
-          <div className="max-w-4xl mx-auto mt-6">
+          <div className="max-w-4xl mx-auto mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Admin Ratings */}
             <AdminRatingsDisplay adminRatings={review.adminRatings} legacyRating={review.rating} />
+            
+            {/* User Rating */}
+            <UserStarRating movieId={review.id} />
           </div>
 
+          {/* Rating Comparison */}
+          <div className="max-w-md mx-auto mt-4">
+            <RatingComparison 
+              criticRating={parseFloat(review.rating?.match(/[\d.]+/)?.[0] || '0')} 
+              movieId={review.id} 
+            />
+          </div>
 
           {/* SM Box Office Prediction Meter */}
           <BoxOfficeMeter rating={parseFloat(review.rating?.match(/[\d.]+/)?.[0] || '0')} />
