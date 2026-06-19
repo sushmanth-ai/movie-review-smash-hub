@@ -71,15 +71,24 @@ const ReviewDetail = () => {
   useEffect(() => {
     if (!id) return;
     const trackView = async () => {
-      if (db) {
-        try {
-          const reviewDoc = doc(db, "reviews", id);
-          await updateDoc(reviewDoc, {
-            views: increment(1)
-          });
-        } catch (error) {
-          console.log("View tracking error:", error);
+      if (!db) return;
+      try {
+        // Cooldown: only count one view per device per review per 24h
+        const COOLDOWN_MS = 24 * 60 * 60 * 1000;
+        const storageKey = `sm_view_${id}`;
+        const last = Number(localStorage.getItem(storageKey) || 0);
+        const now = Date.now();
+        if (last && now - last < COOLDOWN_MS) {
+          return; // within cooldown — do not increment
         }
+        // Mark optimistically to block refresh spam even if write is in-flight
+        localStorage.setItem(storageKey, String(now));
+        const reviewDoc = doc(db, "reviews", id);
+        await updateDoc(reviewDoc, {
+          views: increment(1)
+        });
+      } catch (error) {
+        console.log("View tracking error:", error);
       }
     };
     if (db) {
@@ -462,7 +471,7 @@ const ReviewDetail = () => {
           </Card>
 
           {/* SM Critics Meter */}
-          <div className="max-w-4xl mx-auto mt-6 flex justify-center">
+          <div className="w-full max-w-md mx-auto mt-8 sm:mt-10 px-4 flex justify-center">
             <SMCriticsMeter
               rating={
                 review.adminOverall ??
@@ -476,7 +485,9 @@ const ReviewDetail = () => {
 
 
           {/* SM Box Office Prediction Meter */}
-          <BoxOfficeMeter rating={parseFloat(review.rating?.match(/[\d.]+/)?.[0] || '0')} />
+          <div className="mt-6 sm:mt-8">
+            <BoxOfficeMeter rating={parseFloat(review.rating?.match(/[\d.]+/)?.[0] || '0')} />
+          </div>
 
           {/* Rating Meter */}
           
