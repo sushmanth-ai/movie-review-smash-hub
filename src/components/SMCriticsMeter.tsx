@@ -87,6 +87,7 @@ export const SMCriticsMeter: React.FC<SMCriticsMeterProps> = ({ rating, size = 3
         height={height + 20}
         viewBox={`0 0 ${width} ${height + 20}`}
         className="relative"
+        shapeRendering="geometricPrecision"
       >
         <defs>
           <filter id="zone-glow" x="-20%" y="-20%" width="140%" height="140%">
@@ -106,6 +107,40 @@ export const SMCriticsMeter: React.FC<SMCriticsMeterProps> = ({ rating, size = 3
             <stop offset="40%" stopColor="#e5e5e5" />
             <stop offset="100%" stopColor="#6b6b6b" />
           </linearGradient>
+          {/* Single horizontal gradient mapped to the semicircle's x-extent.
+              Stops are positioned at the x-projection of each rating boundary
+              so colors line up with zones while rendering as ONE continuous band. */}
+          <linearGradient
+            id="arc-grad"
+            gradientUnits="userSpaceOnUse"
+            x1={cx - r}
+            y1={cy}
+            x2={cx + r}
+            y2={cy}
+          >
+            {(() => {
+              const xOff = (rating: number) => {
+                const deg = ratingToAngle(rating);
+                const rad = ((deg - 90) * Math.PI) / 180;
+                const x = cx + r * Math.cos(rad);
+                return Math.max(0, Math.min(1, (x - (cx - r)) / (2 * r)));
+              };
+              const bounds = [0, 2.9, 3.5, 3.9, 5];
+              const stops: { off: number; color: string }[] = [];
+              const blend = 0.012;
+              for (let i = 0; i < ZONES.length; i++) {
+                const a = xOff(bounds[i]);
+                const b = xOff(bounds[i + 1]);
+                const startOff = i === 0 ? a : a + blend;
+                const endOff = i === ZONES.length - 1 ? b : b - blend;
+                stops.push({ off: startOff, color: ZONES[i].color });
+                stops.push({ off: endOff, color: ZONES[i].color });
+              }
+              return stops.map((s, idx) => (
+                <stop key={idx} offset={`${(s.off * 100).toFixed(3)}%`} stopColor={s.color} />
+              ));
+            })()}
+          </linearGradient>
         </defs>
 
         {/* Track (background arc) */}
@@ -117,23 +152,15 @@ export const SMCriticsMeter: React.FC<SMCriticsMeterProps> = ({ rating, size = 3
           strokeLinecap="butt"
         />
 
-        {/* Color zones LEFT → RIGHT */}
-        {ZONES.map((z, i) => {
-          const a1 = ratingToAngle(z.from);
-          const a2 = ratingToAngle(z.to);
-          return (
-            <path
-              key={i}
-              d={arcPath(cx, cy, r, a1, a2)}
-              fill="none"
-              stroke={z.color}
-              strokeWidth={strokeWidth}
-              strokeLinecap="butt"
-              filter="url(#zone-glow)"
-              style={{ opacity: 0.95 }}
-            />
-          );
-        })}
+        {/* Single continuous color arc */}
+        <path
+          d={arcPath(cx, cy, r, -90, 90)}
+          fill="none"
+          stroke="url(#arc-grad)"
+          strokeWidth={strokeWidth}
+          strokeLinecap="butt"
+          filter="url(#zone-glow)"
+        />
 
         {/* Tick marks */}
         {ticks.map((deg, i) => {
