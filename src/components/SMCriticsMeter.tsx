@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 interface SMCriticsMeterProps {
   rating: number; // 0 - 5
-  size?: number;
+  size?: number; // optional fixed size; otherwise responsive to container
 }
 
 // Zones ordered LEFT → RIGHT (low → high)
