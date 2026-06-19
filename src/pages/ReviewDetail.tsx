@@ -462,7 +462,7 @@ const ReviewDetail = () => {
           </Card>
 
           {/* SM Critics Meter */}
-          <div className="max-w-4xl mx-auto mt-6 flex justify-center">
+          <div className="w-full max-w-md mx-auto mt-8 sm:mt-10 px-4 flex justify-center">
             <SMCriticsMeter
               rating={
                 review.adminOverall ??
@@ -476,7 +476,9 @@ const ReviewDetail = () => {
 
 
           {/* SM Box Office Prediction Meter */}
-          <BoxOfficeMeter rating={parseFloat(review.rating?.match(/[\d.]+/)?.[0] || '0')} />
+          <div className="mt-6 sm:mt-8">
+            <BoxOfficeMeter rating={parseFloat(review.rating?.match(/[\d.]+/)?.[0] || '0')} />
+          </div>
 
           {/* Rating Meter */}
           
