@@ -239,15 +239,18 @@ export const SMCriticsMeter: React.FC<SMCriticsMeterProps> = ({ rating, size: si
         />
         <circle cx={cx} cy={cy} r={size * 0.018} fill="#1a1a1a" />
       </svg>
+      </div>
 
-      {/* Premium rating card below the hub */}
+      {/* Premium rating card below the meter (normal flow, spaced) */}
       <div
-        className="absolute inset-x-0 flex items-center justify-center"
-        style={{ top: cy + size * 0.07 }}
+        className="flex items-center justify-center w-full"
+        style={{ marginTop: "clamp(20px, 4vw, 30px)" }}
       >
         <div
-          className="relative flex items-baseline justify-center gap-0.5 px-5 py-2.5 animate-fade-in"
+          className="relative flex items-baseline justify-center gap-1"
           style={{
+            paddingInline: "clamp(16px, 4vw, 22px)",
+            paddingBlock: "clamp(8px, 2vw, 12px)",
             borderRadius: 18,
             background:
               "linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(20,20,20,0.85) 100%)",
@@ -289,11 +292,10 @@ export const SMCriticsMeter: React.FC<SMCriticsMeterProps> = ({ rating, size: si
             }}
           />
 
-          {/* Rating number */}
           <span
             className="font-black tabular-nums tracking-tight"
             style={{
-              fontSize: size * 0.13,
+              fontSize: Math.max(28, size * 0.13),
               lineHeight: 1,
               color: activeZone.color,
               textShadow: `0 0 18px ${activeZone.glow}`,
@@ -305,7 +307,7 @@ export const SMCriticsMeter: React.FC<SMCriticsMeterProps> = ({ rating, size: si
           <span
             className="font-bold opacity-70"
             style={{
-              fontSize: size * 0.065,
+              fontSize: Math.max(14, size * 0.065),
               color: "rgba(255,255,255,0.65)",
             }}
           >
@@ -316,31 +318,18 @@ export const SMCriticsMeter: React.FC<SMCriticsMeterProps> = ({ rating, size: si
 
       <style>{`
         @keyframes fadeInUp {
-          0% {
-            opacity: 0;
-            transform: translateY(12px) scale(0.96);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
+          0% { opacity: 0; transform: translateY(12px) scale(0.96); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
         }
         @keyframes rotateGlow {
-          0% {
-            filter: hue-rotate(0deg);
-            opacity: 0.5;
-          }
-          50% {
-            opacity: 0.9;
-          }
-          100% {
-            filter: hue-rotate(360deg);
-            opacity: 0.5;
-          }
+          0% { filter: hue-rotate(0deg); opacity: 0.5; }
+          50% { opacity: 0.9; }
+          100% { filter: hue-rotate(360deg); opacity: 0.5; }
         }
       `}</style>
     </div>
   );
 };
+
 
 export default SMCriticsMeter;
