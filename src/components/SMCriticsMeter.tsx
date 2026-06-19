@@ -213,30 +213,105 @@ export const SMCriticsMeter: React.FC<SMCriticsMeterProps> = ({ rating, size = 3
         <circle cx={cx} cy={cy} r={size * 0.018} fill="#1a1a1a" />
       </svg>
 
-      {/* Center rating value (below the hub) */}
+      {/* Premium rating card below the hub */}
       <div
-        className="absolute inset-x-0 flex items-center justify-center pointer-events-none"
+        className="absolute inset-x-0 flex items-center justify-center"
         style={{ top: cy + size * 0.07 }}
       >
         <div
-          className="font-extrabold tabular-nums tracking-tight text-center"
+          className="relative flex items-baseline justify-center gap-0.5 px-5 py-2.5 animate-fade-in"
           style={{
-            fontSize: size * 0.13,
-            lineHeight: 1,
-            color: activeZone.color,
-            textShadow: `0 0 14px ${activeZone.glow}`,
-            transition: "color 400ms ease, text-shadow 400ms ease",
+            borderRadius: 18,
+            background:
+              "linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(20,20,20,0.85) 100%)",
+            backdropFilter: "blur(20px) saturate(140%)",
+            WebkitBackdropFilter: "blur(20px) saturate(140%)",
+            border: `1.5px solid ${activeZone.color}33`,
+            boxShadow: `
+              0 0 0 1px rgba(0,0,0,0.6) inset,
+              0 8px 32px -8px rgba(0,0,0,0.8),
+              0 0 24px -4px ${activeZone.glow},
+              0 0 60px -20px ${activeZone.glow}
+            `,
+            transition: "border-color 600ms ease, box-shadow 600ms ease",
+            animation: "fadeInUp 800ms ease-out forwards",
+            opacity: 0,
           }}
         >
-          {animRating.toFixed(1)}
+          {/* Animated glowing border ring */}
+          <div
+            className="pointer-events-none absolute inset-0 rounded-[18px]"
+            style={{
+              padding: 1.5,
+              background: `linear-gradient(120deg, transparent 30%, ${activeZone.color}66 50%, transparent 70%)`,
+              WebkitMask:
+                "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+              WebkitMaskComposite: "xor",
+              maskComposite: "exclude",
+              animation: "rotateGlow 3s linear infinite",
+              opacity: 0.6,
+            }}
+          />
+
+          {/* Subtle top reflection highlight */}
+          <div
+            className="pointer-events-none absolute inset-x-3 top-0 h-[1px]"
+            style={{
+              background: `linear-gradient(90deg, transparent, ${activeZone.color}55, transparent)`,
+              borderRadius: "inherit",
+            }}
+          />
+
+          {/* Rating number */}
           <span
-            className="opacity-70 font-bold"
-            style={{ fontSize: size * 0.065, color: "rgba(255,255,255,0.7)", textShadow: "none" }}
+            className="font-black tabular-nums tracking-tight"
+            style={{
+              fontSize: size * 0.13,
+              lineHeight: 1,
+              color: activeZone.color,
+              textShadow: `0 0 18px ${activeZone.glow}`,
+              transition: "color 400ms ease, text-shadow 400ms ease",
+            }}
+          >
+            {animRating.toFixed(1)}
+          </span>
+          <span
+            className="font-bold opacity-70"
+            style={{
+              fontSize: size * 0.065,
+              color: "rgba(255,255,255,0.65)",
+            }}
           >
             /5
           </span>
         </div>
       </div>
+
+      <style>{`
+        @keyframes fadeInUp {
+          0% {
+            opacity: 0;
+            transform: translateY(12px) scale(0.96);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+        @keyframes rotateGlow {
+          0% {
+            filter: hue-rotate(0deg);
+            opacity: 0.5;
+          }
+          50% {
+            opacity: 0.9;
+          }
+          100% {
+            filter: hue-rotate(360deg);
+            opacity: 0.5;
+          }
+        }
+      `}</style>
     </div>
   );
 };
