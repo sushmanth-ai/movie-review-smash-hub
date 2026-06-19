@@ -29,12 +29,34 @@ const arcPath = (cx: number, cy: number, r: number, startAngle: number, endAngle
   return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArc} 1 ${end.x} ${end.y}`;
 };
 
-export const SMCriticsMeter: React.FC<SMCriticsMeterProps> = ({ rating, size = 300 }) => {
+export const SMCriticsMeter: React.FC<SMCriticsMeterProps> = ({ rating, size: sizeProp }) => {
   const clamped = Math.max(0, Math.min(5, rating || 0));
   const targetAngle = ratingToAngle(clamped);
 
   const [animAngle, setAnimAngle] = useState(-90);
   const [animRating, setAnimRating] = useState(0);
+
+  // Responsive size: track container width, clamp between 220 and 340
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [autoSize, setAutoSize] = useState<number>(sizeProp ?? 300);
+  useEffect(() => {
+    if (sizeProp) return;
+    const el = containerRef.current?.parentElement;
+    if (!el) return;
+    const update = () => {
+      const w = el.clientWidth || 300;
+      setAutoSize(Math.max(220, Math.min(340, w - 16)));
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    window.addEventListener("resize", update);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, [sizeProp]);
+  const size = sizeProp ?? autoSize;
 
   useEffect(() => {
     const start = performance.now();
@@ -52,21 +74,25 @@ export const SMCriticsMeter: React.FC<SMCriticsMeterProps> = ({ rating, size = 3
     return () => cancelAnimationFrame(raf);
   }, [targetAngle, clamped]);
 
-  // Semicircle layout: render in a square but show top half + small overhang
+  // Semicircle layout
   const width = size;
   const height = Math.round(size * 0.62);
   const cx = width / 2;
-  const cy = Math.round(size * 0.52); // pivot near bottom of semicircle
+  const cy = Math.round(size * 0.52);
   const strokeWidth = Math.round(size * 0.08);
   const r = (size - strokeWidth) / 2 - 8;
 
   const activeZone = ZONES.find((z) => clamped >= z.from && clamped <= z.to) || ZONES[0];
 
-  // Tick marks every 0.25 rating across the top semicircle
   const ticks = Array.from({ length: 21 }, (_, i) => -90 + (i / 20) * 180);
 
   return (
-    <div className="relative mx-auto" style={{ width, height: height + 20 }}>
+    <div
+      ref={containerRef}
+      className="flex flex-col items-center justify-center w-full mx-auto"
+      style={{ maxWidth: 360 }}
+    >
+      <div className="relative" style={{ width, height: height + 16 }}>
       {/* Glass backdrop (semi-pill shape) */}
       <div
         className="absolute inset-x-0 top-0 rounded-[50%/100%] rounded-b-3xl"
@@ -81,6 +107,7 @@ export const SMCriticsMeter: React.FC<SMCriticsMeterProps> = ({ rating, size = 3
           transition: "box-shadow 600ms ease",
         }}
       />
+
 
       <svg
         width={width}
