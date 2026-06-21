@@ -58,9 +58,31 @@ export const SMCriticsMeter: React.FC<SMCriticsMeterProps> = ({ rating, size: si
   }, [sizeProp]);
   const size = sizeProp ?? autoSize;
 
+  // Trigger animation only when the meter scrolls into view (once per visit)
+  const [hasAnimated, setHasAnimated] = useState(false);
   useEffect(() => {
+    const node = containerRef.current;
+    if (!node || hasAnimated) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting && e.intersectionRatio >= 0.35) {
+            setHasAnimated(true);
+            io.disconnect();
+            break;
+          }
+        }
+      },
+      { threshold: [0, 0.35, 0.6, 1] }
+    );
+    io.observe(node);
+    return () => io.disconnect();
+  }, [hasAnimated]);
+
+  useEffect(() => {
+    if (!hasAnimated) return;
     const start = performance.now();
-    const duration = 1800;
+    const duration = 2000;
     const startAngle = -90;
     let raf = 0;
     const tick = (now: number) => {
@@ -72,7 +94,7 @@ export const SMCriticsMeter: React.FC<SMCriticsMeterProps> = ({ rating, size: si
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [targetAngle, clamped]);
+  }, [targetAngle, clamped, hasAnimated]);
 
   // Semicircle layout
   const width = size;
