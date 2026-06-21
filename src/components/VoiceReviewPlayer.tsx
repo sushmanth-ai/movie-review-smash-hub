@@ -13,7 +13,7 @@ const SAMPLE_RATE = 24000;
 export const VoiceReviewPlayer: React.FC<VoiceReviewPlayerProps> = ({
   text,
   autoPlay = true,
-  defaultVoice = "female",
+  defaultVoice = "male",
 }) => {
   const [voice, setVoice] = useState<"female" | "male">(defaultVoice);
   const [status, setStatus] = useState<"idle" | "loading" | "playing" | "paused" | "ended" | "error">("idle");
