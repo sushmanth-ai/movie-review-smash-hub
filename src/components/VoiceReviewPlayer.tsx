@@ -13,7 +13,7 @@ const SAMPLE_RATE = 24000;
 export const VoiceReviewPlayer: React.FC<VoiceReviewPlayerProps> = ({
   text,
   autoPlay = true,
-  defaultVoice = "female",
+  defaultVoice = "male",
 }) => {
   const [voice, setVoice] = useState<"female" | "male">(defaultVoice);
   const [status, setStatus] = useState<"idle" | "loading" | "playing" | "paused" | "ended" | "error">("idle");
@@ -358,7 +358,7 @@ export const VoiceReviewPlayer: React.FC<VoiceReviewPlayerProps> = ({
           <div className="hidden sm:flex flex-col items-end gap-2 shrink-0">
             <Volume2 className="w-5 h-5 text-amber-300/80" />
             <div className="flex bg-black/40 border border-white/10 rounded-full p-0.5">
-              {(["female", "male"] as const).map((v) => (
+              {(["male", "female"] as const).map((v) => (
                 <button
                   key={v}
                   onClick={() => setVoice(v)}
@@ -378,7 +378,7 @@ export const VoiceReviewPlayer: React.FC<VoiceReviewPlayerProps> = ({
         {/* Mobile voice picker */}
         <div className="sm:hidden mt-4 flex justify-center">
           <div className="flex bg-black/40 border border-white/10 rounded-full p-0.5">
-            {(["female", "male"] as const).map((v) => (
+            {(["male", "female"] as const).map((v) => (
               <button
                 key={v}
                 onClick={() => setVoice(v)}
