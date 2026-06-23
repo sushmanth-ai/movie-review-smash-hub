@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { usePolls } from '@/hooks/usePolls';
 import { useSound } from '@/hooks/useSound';
-import { BarChart3, CheckCircle2 } from 'lucide-react';
+import { ChartBar as BarChart3, CircleCheck as CheckCircle2 } from 'lucide-react';
 import { useLanguage } from '@/i18n/LanguageContext';
 
 interface ReviewPollsProps {

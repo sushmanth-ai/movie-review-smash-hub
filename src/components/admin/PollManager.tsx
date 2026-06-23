@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Trash2, BarChart3, X } from 'lucide-react';
+import { Plus, Trash2, ChartBar as BarChart3, X } from 'lucide-react';
 import { createPoll, deletePoll, usePolls } from '@/hooks/usePolls';
 import { useToast } from '@/hooks/use-toast';
 import { collection, onSnapshot } from 'firebase/firestore';

@@ -7,7 +7,10 @@ import { MovieReview } from "@/data/movieReviews";
 import { movieReviewsData } from "@/data/movieReviews";
 import { CommentSection } from "@/components/CommentSection";
 import { ThreeDRatingMeter } from "@/components/ThreeDRatingMeter";
+import { BoxOfficeMeter } from "@/components/BoxOfficeMeter";
 import { TeluguVoiceReader } from "@/components/TeluguVoiceReader";
+import { VoiceReviewPlayer } from "@/components/VoiceReviewPlayer";
+import { CinematicReviewPlayer } from "@/components/CinematicReviewPlayer";
 import { useFirebaseOperations } from "@/hooks/useFirebaseOperations";
 import { onSnapshot, doc, updateDoc, increment, getDoc } from "firebase/firestore";
 import { db } from "@/utils/firebase";
@@ -16,6 +19,7 @@ import { CurtainAnimation } from "@/components/CurtainAnimation";
 import { useSound } from "@/hooks/useSound";
 import { UserStarRating } from "@/components/UserStarRating";
 import { AdminRatingsDisplay } from "@/components/AdminRatingsDisplay";
+import { SMCriticsMeter } from "@/components/SMCriticsMeter";
 import { RatingComparison } from "@/components/RatingComparison";
 import { NotificationBell } from "@/components/NotificationBell";
 import { ReviewPolls } from "@/components/ReviewPolls";
@@ -69,15 +73,24 @@ const ReviewDetail = () => {
   useEffect(() => {
     if (!id) return;
     const trackView = async () => {
-      if (db) {
-        try {
-          const reviewDoc = doc(db, "reviews", id);
-          await updateDoc(reviewDoc, {
-            views: increment(1)
-          });
-        } catch (error) {
-          console.log("View tracking error:", error);
+      if (!db) return;
+      try {
+        // Cooldown: only count one view per device per review per 24h
+        const COOLDOWN_MS = 24 * 60 * 60 * 1000;
+        const storageKey = `sm_view_${id}`;
+        const last = Number(localStorage.getItem(storageKey) || 0);
+        const now = Date.now();
+        if (last && now - last < COOLDOWN_MS) {
+          return; // within cooldown — do not increment
         }
+        // Mark optimistically to block refresh spam even if write is in-flight
+        localStorage.setItem(storageKey, String(now));
+        const reviewDoc = doc(db, "reviews", id);
+        await updateDoc(reviewDoc, {
+          views: increment(1)
+        });
+      } catch (error) {
+        console.log("View tracking error:", error);
       }
     };
     if (db) {
@@ -452,6 +465,39 @@ const ReviewDetail = () => {
               {/* Polls */}
               <ReviewPolls movieId={review.id} />
 
+              {/* 🎬 Cinematic Auto Review Video (in-browser, no MP4) */}
+              <CinematicReviewPlayer
+                title={review.title}
+                poster={review.image}
+                images={[review.image]}
+                rating={parseFloat(review.rating?.match(/[\d.]+/)?.[0] || "0") || review.rating}
+                script={[
+                  `${review.title}.`,
+                  review.review,
+                  review.firstHalf ? `First half: ${review.firstHalf}` : "",
+                  review.secondHalf ? `Second half: ${review.secondHalf}` : "",
+                  review.positives ? `Positives: ${review.positives}` : "",
+                  review.negatives ? `Negatives: ${review.negatives}` : "",
+                  review.overall ? `Overall: ${review.overall}` : "",
+                  review.rating ? `Final rating: ${review.rating}.` : "",
+                ].filter(Boolean).join(" ")}
+              />
+
+              {/* AI Voice Review (English, audio-only player) */}
+              <VoiceReviewPlayer
+                autoPlay={false}
+                text={[
+                  review.title,
+                  review.review,
+                  review.firstHalf ? `First half: ${review.firstHalf}` : "",
+                  review.secondHalf ? `Second half: ${review.secondHalf}` : "",
+                  review.positives ? `Positives: ${review.positives}` : "",
+                  review.negatives ? `Negatives: ${review.negatives}` : "",
+                  review.overall ? `Overall: ${review.overall}` : "",
+                  review.rating ? `Rating: ${review.rating}` : "",
+                ].filter(Boolean).join(". ")}
+              />
+
               {/* Telugu Voice + Comments */}
               <TeluguVoiceReader reviewText={`${review.title}. సమీక్ష: ${review.review}. మొదటి సగం: ${review.firstHalf}. రెండవ సగం: ${review.secondHalf}. సానుకూలాలు: ${review.positives}. ప్రతికూలాలు: ${review.negatives}. మొత్తం మీద: ${review.overall}. రేటింగ్: ${review.rating} స్టార్స్.`} />
 
@@ -459,24 +505,27 @@ const ReviewDetail = () => {
             </CardContent>
           </Card>
 
-          {/* Rating Section */}
-          <div className="max-w-4xl mx-auto mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Admin Ratings */}
-            <AdminRatingsDisplay adminRatings={review.adminRatings} legacyRating={review.rating} />
-            
-            {/* User Rating */}
-            <UserStarRating movieId={review.id} />
-          </div>
-
-          {/* Rating Comparison */}
-          <div className="max-w-md mx-auto mt-4">
-            <RatingComparison 
-              criticRating={parseFloat(review.rating?.match(/[\d.]+/)?.[0] || '0')} 
-              movieId={review.id} 
+          {/* SM Critics Meter */}
+          <div className="w-full max-w-md mx-auto mt-8 sm:mt-10 px-4 flex justify-center">
+            <SMCriticsMeter
+              rating={
+                review.adminOverall ??
+                (review.adminRatings
+                  ? (Object.values(review.adminRatings) as number[]).reduce((a, b) => a + b, 0) /
+                    Object.values(review.adminRatings).length
+                  : parseFloat(review.rating?.match(/[\d.]+/)?.[0] || "0"))
+              }
             />
           </div>
 
+
+          {/* SM Box Office Prediction Meter */}
+          <div className="mt-6 sm:mt-8">
+            <BoxOfficeMeter rating={parseFloat(review.rating?.match(/[\d.]+/)?.[0] || '0')} />
+          </div>
+
           {/* Rating Meter */}
+          
           
         </div>
       </div>

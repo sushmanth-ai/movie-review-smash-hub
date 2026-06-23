@@ -11,3 +11,9 @@ verify_jwt = false
 
 [functions.weekly-digest]
 verify_jwt = false
+
+[functions.fetch-news]
+verify_jwt = false
+
+[functions.voice-review]
+verify_jwt = false

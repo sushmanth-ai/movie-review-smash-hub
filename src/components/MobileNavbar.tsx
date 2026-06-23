@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Search, Star, Shield } from 'lucide-react';
+import { Chrome as Home, Search, Star, Shield, Clapperboard } from 'lucide-react';
 import { useLanguage } from '@/i18n/LanguageContext';
 
 export const MobileNavbar = () => {
@@ -12,24 +12,17 @@ export const MobileNavbar = () => {
     if (path.startsWith('/#') && location.pathname === '/') {
       e.preventDefault();
       navigate(path);
-      const id = path.substring(2);
-      setTimeout(() => {
-        const element = document.getElementById(id);
-        if (element) {
-          const yOffset = -120; // Adjust based on header height
-          const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-          window.scrollTo({ top: y, behavior: 'smooth' });
-        }
-      }, 50);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (path === '/' && location.pathname === '/') {
       e.preventDefault();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
       navigate('/');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   const navItems = [
     { name: 'Home', path: '/', icon: Home, id: 'home' },
+    { name: 'Updates', path: '/updates', icon: Clapperboard, id: 'updates' },
     { name: 'Search', path: '/#search', icon: Search, id: 'search' },
     { name: 'Reviews', path: '/#reviews', icon: Star, id: 'reviews' },
     { name: 'Admin', path: '/admin/dashboard', icon: Shield, id: 'admin' },

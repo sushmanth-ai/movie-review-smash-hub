@@ -4,6 +4,7 @@ import { MovieReview } from '@/data/movieReviews';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { useFirebaseOperations } from '@/hooks/useFirebaseOperations';
 
 interface StoryViewerProps {
   reviews: MovieReview[];
@@ -19,15 +20,25 @@ const SLIDES: StorySlide[] = ['overview', 'firstHalf', 'secondHalf', 'verdict'];
 export const StoryViewer: React.FC<StoryViewerProps> = ({ reviews, initialIndex, onClose }) => {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { trackReviewView } = useFirebaseOperations();
   const [currentReviewIndex, setCurrentReviewIndex] = useState(initialIndex);
+  const trackedRef = useRef<Set<string>>(new Set());
   const [currentSlide, setCurrentSlide] = useState(0);
   const [progress, setProgress] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const startTimeRef = useRef<number>(Date.now());
   const elapsedRef = useRef<number>(0);
 
   const review = reviews[currentReviewIndex];
+
+  // Track view when story changes
+  useEffect(() => {
+    if (review && !trackedRef.current.has(review.id)) {
+      trackedRef.current.add(review.id);
+      trackReviewView(review.id);
+    }
+  }, [currentReviewIndex, review?.id]);
 
   const resetTimer = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
