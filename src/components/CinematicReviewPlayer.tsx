@@ -439,8 +439,6 @@ export const CinematicReviewPlayer: React.FC<CinematicReviewPlayerProps> = ({
     if (slideshow.length <= 1) return;
     const idx = Math.floor(elapsed / 4.0) % slideshow.length;
     setSceneIdx(idx);
-    setKenBurnsIdx((k) => (idx !== sceneIdx ? k + 1 : k));
-     
   }, [elapsed, slideshow.length]);
 
   const isPlaying = status === "playing";
