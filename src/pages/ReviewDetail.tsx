@@ -262,57 +262,23 @@ const ReviewDetail = () => {
             <CardHeader className="pt-8" />
 
             <div className="px-4 sm:px-6">
-              <div className="relative group">
-                <img 
-                  src={review.image} 
-                  alt={review.title} 
-                  className={`w-full max-h-[500px] object-cover rounded-xl mb-6 border-2 border-primary/30 transition-all duration-500 shadow-[0_8px_30px_rgba(0,0,0,0.4)] ${showTrailer ? 'hidden' : 'block'}`} 
-                />
-                
-                {review.trailerUrl && !showTrailer && (
-                  <button 
-                    onClick={() => {
-                      playSound('click');
-                      setShowTrailer(true);
-                    }}
-                    className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 rounded-xl mb-6"
-                  >
-                    <div className="bg-destructive hover:bg-destructive/90 rounded-full p-3 sm:p-5 shadow-[0_0_40px_rgba(255,0,0,0.5)] transform hover:scale-110 transition-all duration-300 animate-pulse">
-                      <Play className="w-8 h-8 sm:w-10 sm:h-10 text-white fill-white" />
-                    </div>
-                    <span className="absolute bottom-4 sm:bottom-8 text-white font-bold text-sm sm:text-lg drop-shadow-lg bg-black/60 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/20">
-                      {t('watchTrailer')}
-                    </span>
-                  </button>
-                )}
-
-                {showTrailer && review.trailerUrl && (
-                  <div className="relative mb-6">
-                    <button 
-                      onClick={() => setShowTrailer(false)}
-                      className="absolute -top-2 -right-2 z-10 bg-destructive hover:bg-destructive/80 rounded-full p-2 shadow-lg transition-colors"
-                    >
-                      <X className="w-5 h-5 text-white" />
-                    </button>
-                    <div className="relative pt-[56.25%] rounded-xl overflow-hidden border-2 border-primary/30 shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
-                      <iframe
-                        className="absolute inset-0 w-full h-full"
-                        src={`https://www.youtube.com/embed/${getYouTubeVideoId(review.trailerUrl)}?autoplay=1&rel=0`}
-                        title={`${review.title} Trailer`}
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      />
-                    </div>
-                    <button 
-                      onClick={() => setShowTrailer(false)}
-                      className="mt-3 mx-auto flex items-center gap-2 bg-primary/20 hover:bg-primary/30 text-primary font-bold px-4 py-2 rounded-lg transition-colors"
-                    >
-                      {t('backToPoster')}
-                    </button>
-                  </div>
-                )}
-              </div>
+              {/* 🎬 Cinematic Auto Review Video replaces the poster */}
+              <CinematicReviewPlayer
+                title={review.title}
+                poster={review.image}
+                images={[review.image]}
+                rating={parseFloat(review.rating?.match(/[\d.]+/)?.[0] || "0") || review.rating}
+                script={[
+                  `${review.title}.`,
+                  review.review,
+                  review.firstHalf ? `First half: ${review.firstHalf}` : "",
+                  review.secondHalf ? `Second half: ${review.secondHalf}` : "",
+                  review.positives ? `Positives: ${review.positives}` : "",
+                  review.negatives ? `Negatives: ${review.negatives}` : "",
+                  review.overall ? `Overall: ${review.overall}` : "",
+                  review.rating ? `Final rating: ${review.rating}.` : "",
+                ].filter(Boolean).join(" ")}
+              />
             </div>
 
             <CardContent className="space-y-6 px-4 sm:px-6">
