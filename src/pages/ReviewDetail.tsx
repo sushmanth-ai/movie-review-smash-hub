@@ -9,7 +9,6 @@ import { CommentSection } from "@/components/CommentSection";
 import { ThreeDRatingMeter } from "@/components/ThreeDRatingMeter";
 import { BoxOfficeMeter } from "@/components/BoxOfficeMeter";
 import { TeluguVoiceReader } from "@/components/TeluguVoiceReader";
-import { VoiceReviewPlayer } from "@/components/VoiceReviewPlayer";
 import { CinematicReviewPlayer } from "@/components/CinematicReviewPlayer";
 import { useFirebaseOperations } from "@/hooks/useFirebaseOperations";
 import { onSnapshot, doc, updateDoc, increment, getDoc } from "firebase/firestore";
@@ -431,21 +430,6 @@ const ReviewDetail = () => {
               {/* Polls */}
               <ReviewPolls movieId={review.id} />
 
-
-              {/* AI Voice Review (English, audio-only player) */}
-              <VoiceReviewPlayer
-                autoPlay={false}
-                text={[
-                  review.title,
-                  review.review,
-                  review.firstHalf ? `First half: ${review.firstHalf}` : "",
-                  review.secondHalf ? `Second half: ${review.secondHalf}` : "",
-                  review.positives ? `Positives: ${review.positives}` : "",
-                  review.negatives ? `Negatives: ${review.negatives}` : "",
-                  review.overall ? `Overall: ${review.overall}` : "",
-                  review.rating ? `Rating: ${review.rating}` : "",
-                ].filter(Boolean).join(". ")}
-              />
 
               {/* Telugu Voice + Comments */}
               <TeluguVoiceReader reviewText={`${review.title}. సమీక్ష: ${review.review}. మొదటి సగం: ${review.firstHalf}. రెండవ సగం: ${review.secondHalf}. సానుకూలాలు: ${review.positives}. ప్రతికూలాలు: ${review.negatives}. మొత్తం మీద: ${review.overall}. రేటింగ్: ${review.rating} స్టార్స్.`} />
