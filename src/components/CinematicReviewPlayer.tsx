@@ -86,7 +86,6 @@ export const CinematicReviewPlayer: React.FC<CinematicReviewPlayerProps> = ({
   const [elapsed, setElapsed] = useState(0);
   const [streamDur, setStreamDur] = useState(0); // duration of buffered/scheduled audio so far
   const [sceneIdx, setSceneIdx] = useState(0);
-  const [kenBurnsIdx, setKenBurnsIdx] = useState(0);
   const [isFs, setIsFs] = useState(false);
 
   const ctxRef = useRef<AudioContext | null>(null);
@@ -456,8 +455,6 @@ export const CinematicReviewPlayer: React.FC<CinematicReviewPlayerProps> = ({
 
   const progressPct = estimatedTotal > 0 ? Math.min(100, (elapsed / estimatedTotal) * 100) : 0;
 
-  const kenBurnsClass = kenBurnsIdx % 4;
-
   return (
     <div className="w-full my-6 animate-fade-in">
       <div
@@ -483,9 +480,6 @@ export const CinematicReviewPlayer: React.FC<CinematicReviewPlayerProps> = ({
                   active ? "opacity-100" : "opacity-0"
                 }`}
                 style={{
-                  animation: active
-                    ? `cinKenBurns${kenBurnsClass} 9s ease-in-out forwards`
-                    : "none",
                   willChange: "transform",
                 }}
                 draggable={false}
@@ -525,24 +519,6 @@ export const CinematicReviewPlayer: React.FC<CinematicReviewPlayerProps> = ({
           </div>
         </div>
 
-        {/* --- Movie title huge cinematic --- */}
-        <div className="absolute top-14 sm:top-16 left-0 right-0 px-4 sm:px-6 z-10 pointer-events-none">
-          <h2
-            className="text-white font-black leading-tight drop-shadow-[0_3px_18px_rgba(0,0,0,0.85)]"
-            style={{
-              fontSize: "clamp(20px, 3.6vw, 40px)",
-              letterSpacing: "-0.02em",
-              textShadow: "0 2px 16px rgba(0,0,0,0.85)",
-            }}
-          >
-            {title}
-          </h2>
-          {rating !== undefined && rating !== "" && (
-            <div className="inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full bg-amber-400/95 text-black font-extrabold text-xs sm:text-sm shadow-lg">
-              ★ {typeof rating === "number" ? rating.toFixed(1) : rating} / 5
-            </div>
-          )}
-        </div>
 
         {/* --- Waveform overlay (bottom of frame, above subtitles) --- */}
         <div className="absolute left-0 right-0 bottom-24 sm:bottom-28 px-6 sm:px-10 z-10 pointer-events-none">
@@ -709,24 +685,6 @@ export const CinematicReviewPlayer: React.FC<CinematicReviewPlayerProps> = ({
         )}
       </div>
 
-      <style>{`
-        @keyframes cinKenBurns0 {
-          0%   { transform: scale(1.05) translate(0,0); }
-          100% { transform: scale(1.18) translate(-2%, -1.5%); }
-        }
-        @keyframes cinKenBurns1 {
-          0%   { transform: scale(1.18) translate(-2%, -1%); }
-          100% { transform: scale(1.05) translate(1.5%, 1%); }
-        }
-        @keyframes cinKenBurns2 {
-          0%   { transform: scale(1.08) translate(1%, -1%); }
-          100% { transform: scale(1.2) translate(-1.5%, 1.5%); }
-        }
-        @keyframes cinKenBurns3 {
-          0%   { transform: scale(1.2) translate(-1%, 1%); }
-          100% { transform: scale(1.06) translate(1%, -1%); }
-        }
-      `}</style>
     </div>
   );
 };
