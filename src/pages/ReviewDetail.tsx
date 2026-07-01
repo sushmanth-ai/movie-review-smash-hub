@@ -10,6 +10,7 @@ import { ThreeDRatingMeter } from "@/components/ThreeDRatingMeter";
 import { BoxOfficeMeter } from "@/components/BoxOfficeMeter";
 import { TeluguVoiceReader } from "@/components/TeluguVoiceReader";
 import { VoiceReviewPlayer } from "@/components/VoiceReviewPlayer";
+import { CinematicReviewPlayer } from "@/components/CinematicReviewPlayer";
 import { useFirebaseOperations } from "@/hooks/useFirebaseOperations";
 import { onSnapshot, doc, updateDoc, increment, getDoc } from "firebase/firestore";
 import { db } from "@/utils/firebase";
@@ -464,8 +465,27 @@ const ReviewDetail = () => {
               {/* Polls */}
               <ReviewPolls movieId={review.id} />
 
-              {/* AI Voice Review (English, cinematic) */}
+              {/* 🎬 Cinematic Auto Review Video (in-browser, no MP4) */}
+              <CinematicReviewPlayer
+                title={review.title}
+                poster={review.image}
+                images={[review.image]}
+                rating={parseFloat(review.rating?.match(/[\d.]+/)?.[0] || "0") || review.rating}
+                script={[
+                  `${review.title}.`,
+                  review.review,
+                  review.firstHalf ? `First half: ${review.firstHalf}` : "",
+                  review.secondHalf ? `Second half: ${review.secondHalf}` : "",
+                  review.positives ? `Positives: ${review.positives}` : "",
+                  review.negatives ? `Negatives: ${review.negatives}` : "",
+                  review.overall ? `Overall: ${review.overall}` : "",
+                  review.rating ? `Final rating: ${review.rating}.` : "",
+                ].filter(Boolean).join(" ")}
+              />
+
+              {/* AI Voice Review (English, audio-only player) */}
               <VoiceReviewPlayer
+                autoPlay={false}
                 text={[
                   review.title,
                   review.review,
