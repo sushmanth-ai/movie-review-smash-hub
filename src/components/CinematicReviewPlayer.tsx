@@ -362,7 +362,22 @@ export const CinematicReviewPlayer: React.FC<CinematicReviewPlayerProps> = ({
     if (!el) return;
     if (!document.fullscreenElement) {
       await el.requestFullscreen?.().catch(() => {});
+      // On mobile / touch devices, lock to landscape for a proper video experience
+      try {
+        const isTouch =
+          typeof window !== "undefined" &&
+          (window.matchMedia?.("(pointer: coarse)").matches ||
+            /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent));
+        const orientation: any = (screen as any).orientation;
+        if (isTouch && orientation?.lock) {
+          await orientation.lock("landscape").catch(() => {});
+        }
+      } catch {}
     } else {
+      try {
+        const orientation: any = (screen as any).orientation;
+        orientation?.unlock?.();
+      } catch {}
       await document.exitFullscreen?.().catch(() => {});
     }
   }, []);
